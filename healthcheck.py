@@ -6,6 +6,14 @@ from get_token import get_token
 from log_setup import Logging
 from storage import Clusters
 
+# =====================================================================
+#
+# NetApp / SolidFire
+# CPE 
+# mnode support utility
+#
+# =====================================================================
+
 logmsg = Logging.logmsg()
 
 class HealthCheck():

@@ -5,6 +5,14 @@ import time
 from get_token import get_token
 from log_setup import Logging
 
+# =====================================================================
+#
+# NetApp / SolidFire
+# CPE 
+# mnode support utility
+#
+# =====================================================================
+
 logmsg = Logging.logmsg()
 
 # Generate a list of clusters

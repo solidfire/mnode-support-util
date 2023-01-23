@@ -3,8 +3,13 @@ import os
 from logging import handlers
 from sys import stdout
 
-
-
+# =====================================================================
+#
+# NetApp / SolidFire
+# CPE 
+# mnode support utility
+#
+# =====================================================================
 
 class Logging():
     def logmsg():

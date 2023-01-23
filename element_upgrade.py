@@ -7,6 +7,13 @@ from get_token import get_token
 from log_setup import Logging
 from mnode import AssetMgmt
 
+# =====================================================================
+#
+# NetApp / SolidFire
+# CPE 
+# mnode support utility
+#
+# =====================================================================
 
 logmsg = Logging.logmsg()
 
@@ -143,7 +150,7 @@ class ElemUpgrade():
     def find_upgrade(repo):
         logmsg.info("\nFind element upgrade")
         get_token(repo)
-        url = ('{}/storage/1/upgrades?includeCompleted=false&storageId={}'.format(repo.URL,repo.STORAGE_ELEMENT_UPGRADE_TARGET))
+        url = ('{}/storage/1/upgrades?includeCompleted=false'.format(repo.URL))
         payload={}
         try:
             logmsg.debug("Sending {}".format(url))

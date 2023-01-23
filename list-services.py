@@ -7,6 +7,14 @@ import yaml
 from git import Git
 import json
 
+# =====================================================================
+#
+# NetApp / SolidFire
+# CPE 
+# mnode support utility
+#
+# =====================================================================
+
 _LOG = logging.getLogger()
 DOCKER_COMPOSE_FILE='./docker-compose.yml'
 

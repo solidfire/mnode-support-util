@@ -310,41 +310,39 @@ if __name__ == "__main__":
     elif args.action == 'elementupgrade':
         if not repo.CURRENT_ASSET_JSON:
             AssetMgmt.get_current_assets(repo)
+        ElemUpgrade.find_upgrade(repo)
         while True:
             ElemUpgrade.upgrade_option(repo)
             if repo.UPGRADE_OPTION == 'q':
                 exit(0)
             if repo.UPGRADE_OPTION == 'p' or repo.UPGRADE_OPTION =='r' or repo.UPGRADE_OPTION =='a':
-                if repo.UPGRADE_OPTION == 'p': repo.UPGRADE_ACTION = "pause"
-                if repo.UPGRADE_OPTION == 'r': repo.UPGRADE_ACTION = "resume"
+                if repo.UPGRADE_OPTION == 'p': 
+                    repo.UPGRADE_ACTION = "pause"
+                    ElemUpgrade.upgrade_action(repo)
+                if repo.UPGRADE_OPTION == 'r': 
+                    repo.UPGRADE_ACTION = "resume"
+                    ElemUpgrade.upgrade_action(repo)
                 if repo.UPGRADE_OPTION == 'a': 
                     repo.UPGRADE_ACTION = "abort"
                     stopandthink = input("ARE YOU CERTAIN YOU WANT TO ABORT THE CURRENT UPGRADE? y/n: ")
                     if stopandthink == 'n':
                         exit(0)
-                if repo.UPGRADE_ID:
-                    question = input("Continue working with upgrade id {} (y/n)? ".format(repo.UPGRADE_ID))
-                    if question == 'n':
-                        ElemUpgrade.discovery(repo)
+                    if repo.UPGRADE_ID:
+                        ElemUpgrade.upgrade_action(repo)
+                    else:
                         ElemUpgrade.find_upgrade(repo)
                         ElemUpgrade.upgrade_action(repo)
-                    if question == 'y':
-                        ElemUpgrade.upgrade_action(repo)
-                else:
-                    ElemUpgrade.discovery(repo)
-                    ElemUpgrade.find_upgrade(repo)
-                    ElemUpgrade.upgrade_action(repo)
             if repo.UPGRADE_OPTION == 's':
                 ElemUpgrade.discovery(repo)
                 ElemUpgrade.select_version(repo)
                 ElemUpgrade.start_upgrade(repo)
                 ElemUpgrade.check_upgrade(repo)
             if repo.UPGRADE_OPTION == 'v':
-                repo.UPGRADE_STATUS_MESSAGE = "no status"
-                ElemUpgrade.discovery(repo)
-                ElemUpgrade.find_upgrade(repo)
-                if repo.UPGRADE_STATUS_MESSAGE != "No running upgrades detected": 
+                if repo.UPGRADE_ID:
                     ElemUpgrade.check_upgrade(repo)
+                else:
+                    logmsg.info("No running upgrades detected")
+                    break
 
     #============================================================
     # One liner list of assets    
@@ -361,7 +359,6 @@ if __name__ == "__main__":
         upload_element_image(repo)
 
         logmsg.info('Upload complete. Refreshing packages.... Please wait')
-        #time.sleep(120)
         while len(new_packages) != (len(current_packages) + 1):
             time.sleep(30)
             new_packages = list_packages(repo)
