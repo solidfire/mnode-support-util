@@ -11,7 +11,7 @@
 class ProgramData():
     # Define the used variables
     def __init__(self, args):
-        self.UTIL_VERSION = "2.4"
+        self.UTIL_VERSION = "2.5"
         self.PAYLOAD = {}
         self.UPDATEFILE = args.updatefile
         # token 
@@ -81,5 +81,6 @@ class ProgramData():
         # Element upgrades
         self.STORAGE_ELEMENT_UPGRADE_TARGET = "none"
         self.STORAGE_ELEMENT_UPGRADE_PACKAGE = "none"
+        self.STORAGE_UPGRADE_LOG = "none"
         self.UPGRADE_TASK_ID = "none"
 

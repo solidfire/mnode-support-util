@@ -102,7 +102,7 @@ class SysInfo():
     def create_tar():
         #============================================================
         # NOT needed when intigrated with HCC or :442 log collection
-        logmsg.info("Creating support tar bundle")
+        logmsg.info("Creating support tar bundle. Please wait....")
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
         tar_file = ("/tmp/mnode-support-bundle-%s.tar" % time_stamp)
@@ -110,7 +110,7 @@ class SysInfo():
             bundle = tarfile.open(tar_file, "w:gz")
             for root, dirs, files in os.walk("/var/log"):
                 for file in files:
-                    logmsg.info("Adding {} to bundle.".format(file))
+                    #logmsg.info("Adding {} to bundle.".format(file))  <<<----- TOO CHATTY
                     bundle.add(os.path.join(root, file))
             logmsg.info("\nDone. Bundle name: {}".format(tar_file))
             bundle.close()

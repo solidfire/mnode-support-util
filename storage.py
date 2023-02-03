@@ -15,6 +15,66 @@ logmsg = Logging.logmsg()
 # =====================================================================
 
 class Clusters():
+    # =====================================================================
+    # Get storage info for a single asset
+    # =====================================================================
+    def get_cluster_by_id(cluster_id, repo):
+        try:
+            get_token(repo) 
+            url = ("{}/storage/1/{}/info".format(repo.URL,cluster_id))
+            logmsg.debug("Sending GET {}".format(url))
+            response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
+            logmsg.debug(response.text)
+            if response.status_code == 200:
+                cluster_info = json.loads(response.text)
+            else:
+                cluster_info = "Unable to fetch cluster data"
+        except requests.exceptions.RequestException as exception:
+            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
+            logmsg.debug(exception)
+        return cluster_info
+
+    # =====================================================================
+    # Get the last upgrade log
+    # =====================================================================
+    def get_upgrade_log(repo):
+        logmsg.info("\nChecking for previous upgrade log")
+        try:
+            get_token(repo) 
+            url = ("{}/storage/1/upgrades?includeCompleted=true".format(repo.URL))
+            logmsg.debug("Sending GET {}".format(url))
+            response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
+            logmsg.debug(response.text)
+            if response.status_code == 200:
+                upgrade = json.loads(response.text)
+                repo.UPGRADE_ID = upgrade[0]['upgradeId']
+                repo.STORAGE_ELEMENT_UPGRADE_TARGET = upgrade[0]['storageId']
+                repo.STORAGE_UPGRADE_LOG = ("/var/log/ElementUpgrade-{}.log".format(repo.STORAGE_ELEMENT_UPGRADE_TARGET))
+                try:
+                    url = ("{}/storage/1/upgrades/{}/log".format(repo.URL,repo.UPGRADE_ID))
+                    logmsg.debug("Sending GET {}".format(url))
+                    response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
+                    logmsg.debug(response.text)
+                    if response.status_code == 200:
+                        try:
+                            with open(repo.STORAGE_UPGRADE_LOG, 'w') as outfile:               
+                                outfile.write(response.text)
+                                logmsg.info("Previous upgrade log saved to {}".format(repo.STORAGE_UPGRADE_LOG))
+                                outfile.close()
+                        except FileNotFoundError:
+                            logmsg.info("Could not open {}".format(outfile)) 
+                except requests.exceptions.RequestException as exception:
+                    logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
+                    logmsg.debug(exception)
+            else:
+                logmsg.info("No previous upgrade found")
+        except requests.exceptions.RequestException as exception:
+            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
+            logmsg.debug(exception)
+
+    # =====================================================================
+    # Get storage info for support bundle
+    # =====================================================================
     def get_storage_info(repo):
         get_token(repo)
         filename = ("{}support-storage-info.json".format(repo.SUPPORT_DIR))

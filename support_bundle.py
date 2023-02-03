@@ -60,7 +60,7 @@ class SupportBundle():
         filename = ("{}support-auth-configuration".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:             
-                logmsg.info("Get auth configuration...")  
+                logmsg.info("Get auth configuration")  
                 Clusters.check_auth_config(repo)
                 outfile.write("Auth client configuration")
                 outfile.write(json.dumps(repo.AUTH_CONFIG))
@@ -150,6 +150,7 @@ class SupportBundle():
                 outfile.close()
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
+        Clusters.get_upgrade_log(repo)
 
         logmsg.info("Get storage cluster(s) details (This may take a while)...")
         Clusters.get_storage_info(repo)
