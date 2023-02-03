@@ -71,7 +71,7 @@ def get_args():
     listassets: One liner list of all assets
     listpackages: One liner list of all packages
     storagebundle: Gather storage support bundle
-    elementupload: Upload Element upgrade image '''))
+    packageupload: Upload upgrade image '''))
  
     return cmd_args.parse_args()
 
@@ -355,7 +355,7 @@ if __name__ == "__main__":
 
     #============================================================
     # Upload Element Upgrade Image
-    elif args.action == 'elementupload':
+    elif args.action == 'packageupload':
         current_packages = list_packages(repo)
         new_packages = []
         upload_element_image(repo)

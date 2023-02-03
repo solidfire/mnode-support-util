@@ -64,7 +64,7 @@ def delete_package(repo):
 
 def upload_element_image(repo):
     get_token(repo)
-    logmsg.info('Add Element upgrade image to package repository')
+    logmsg.info('\nAdd upgrade image to package repository')
     if not repo.UPDATEFILE:
         filename = input('\nPlease enter the full path and file name of the Element upgrade image: ')
     else:
