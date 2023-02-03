@@ -21,7 +21,7 @@ from log_setup import Logging
 from mnode import AssetMgmt, Settings, about
 from package import upload_element_image, list_packages
 from program_data import ProgramData
-from system import SysInfo
+from storage import Clusters
 from storage_healthcheck import StorageHealthcheck
 from storage_bundle import StorageBundle
 from support_bundle import SupportBundle
@@ -69,6 +69,7 @@ def get_args():
     computehealthcheck: Run a compute healthcheck
     elementupgrade: Element upgrade options
     listassets: One liner list of all assets
+    listpackages: One liner list of all packages
     storagebundle: Gather storage support bundle
     elementupload: Upload Element upgrade image '''))
  
@@ -333,6 +334,7 @@ if __name__ == "__main__":
                         ElemUpgrade.find_upgrade(repo)
                         ElemUpgrade.upgrade_action(repo)
             if repo.UPGRADE_OPTION == 's':
+                Clusters.get_upgrade_log(repo)
                 ElemUpgrade.discovery(repo)
                 ElemUpgrade.select_version(repo)
                 ElemUpgrade.start_upgrade(repo)
@@ -366,3 +368,11 @@ if __name__ == "__main__":
         logmsg.info('\nAvailable packages;')
         for package in new_packages:
             logmsg.info('name: {:<20} version: {:<20} id:{}'.format(package['name'],package['version'],package['id']))
+
+    #============================================================
+    # One liner list of packages
+    elif args.action == 'listpackages':
+        logmsg.info("\nNetApp HCI release notes: https://docs.netapp.com/us-en/hci/docs/rn_relatedrn.html")
+        current_packages = list_packages(repo)
+        for package in current_packages:
+            logmsg.info("\n{:<20}{}\n\t{}\n\t{}\n\t{}".format(package["name"],package["version"],package['CIFSUrl'],package['HTTPSUrl'],package['NFSUrl']))

@@ -6,7 +6,8 @@ from time import sleep
 from get_token import get_token
 from log_setup import Logging
 from mnode import AssetMgmt
-
+from package import list_packages
+from storage import Clusters
 # =====================================================================
 #
 # NetApp / SolidFire
@@ -18,6 +19,7 @@ from mnode import AssetMgmt
 logmsg = Logging.logmsg()
 
 class ElemUpgrade():
+    
     #============================================================
     # Choose upgrade option
     #============================================================
@@ -44,19 +46,20 @@ class ElemUpgrade():
         targetcluster = ""
         logmsg.info("\nList of available clusters.")
         for cluster in repo.CURRENT_ASSET_JSON[0]["storage"]:
+            cluster_data = Clusters.get_cluster_by_id(cluster["id"], repo)
             if(cluster["host_name"]):
                 clusterlist[(cluster["host_name"])] = cluster["id"]
-                logmsg.info("+ {}".format(cluster["host_name"]))
+                logmsg.info("+ {:<15}{:<15}".format(cluster["host_name"], cluster_data['cluster']['GetClusterVersionInfo']['clusterVersion']))
                 targetcluster = cluster["host_name"]
                 repo.STORAGE_ELEMENT_UPGRADE_TARGET = clusterlist[(cluster["host_name"])]
             else:
                 clusterlist[(cluster["ip"])] = cluster["id"]
-                logmsg.info("+ {}".format(cluster["ip"]))
+                logmsg.info("+ {:<15}{:<15}".format(cluster["ip"], cluster_data['cluster']['GetClusterVersionInfo']['clusterVersion']))
                 targetcluster = str(cluster["ip"])
                 repo.STORAGE_ELEMENT_UPGRADE_TARGET = clusterlist[(cluster["ip"])]
         if len(clusterlist) > 1:
             while userinput not in clusterlist:
-                userinput = input("Enter the target cluster from the list: ")
+                userinput = input("\nEnter the target cluster from the list: ")
                 targetcluster = userinput
                 repo.STORAGE_ELEMENT_UPGRADE_TARGET = clusterlist[userinput]
         logmsg.info("Upgrade target cluster = {}".format(targetcluster))
@@ -65,10 +68,16 @@ class ElemUpgrade():
     # Select Element version
     #============================================================
     def select_version(repo):
+        logmsg.info("\nAvailable upgrade packages")
+        availablepackages = list_packages(repo)
+        if availablepackages[0]['name']:
+            for package in availablepackages:
+                logmsg.info("+ {:<15}{:<15}".format(package['name'],package['version']))
+
         userinput = "none"
         targetpkg = ""
         pkglist = {}
-        logmsg.info("\nElement upgrade version selection")
+        logmsg.info("\nLooking for a valid upgrade image...")
         get_token(repo)
         url = ("{}/storage/1/clusters/{}/valid-packages".format(repo.URL,repo.STORAGE_ELEMENT_UPGRADE_TARGET))
         try:
@@ -79,7 +88,7 @@ class ElemUpgrade():
                 if response.text.find("solidfire"):
                     packages = json.loads(response.text)
                     if not packages:
-                        logmsg.info("No packages found. Check internet connectivity or upload an image with the -a elementupload option")
+                        logmsg.info("\nNo valid upgrade packages found.\n\tThe selected cluster is at or above available upgrade packages.\n\tUpload a package with the -a elementupload option")
                         exit(0)
                     for package in packages:
                         pkglist[(package["filename"])] = package["packageId"]
@@ -134,6 +143,14 @@ class ElemUpgrade():
                 logmsg.info("Upgrade ID: {}".format(repo.UPGRADE_ID))
                 logmsg.info("Upgrade task ID: {}".format(repo.UPGRADE_TASK_ID))
                 logmsg.info("Waiting 10 seconds to pass initializing state")
+                repo.STORAGE_UPGRADE_LOG = ("/var/log/ElementUpgrade-{}.log".format(repo.STORAGE_ELEMENT_UPGRADE_TARGET))
+                logmsg.info("Writing upgrade details to {}".format(repo.STORAGE_UPGRADE_LOG))
+                try:
+                    with open(repo.STORAGE_UPGRADE_LOG, 'a') as outfile:               
+                        outfile.write(response.text)
+                        outfile.close()
+                except FileNotFoundError:
+                    logmsg.info("Could not open {}".format(repo.STORAGE_UPGRADE_LOG))
                 sleep(10)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
@@ -199,9 +216,7 @@ class ElemUpgrade():
             while percent_complete != 100: 
                 try:
                     get_token(repo)
-                    #logmsg.debug("Sending {}".format(url))
                     response = requests.get(url, headers=repo.HEADER_READ, data = payload, verify=False)
-                    #logmsg.debug(response.text)
                     if response.status_code == 200:
                         response_json = json.loads(response.text)
                         if not response_json["status"]["message"] and not response_json['state']:
@@ -213,11 +228,21 @@ class ElemUpgrade():
                             logmsg.info(response_json['status']['message'])
                             exit(1)
                         if repo.UPGRADE_STATUS_MESSAGE not in response_json["status"]["message"]:
+                            try:
+                                with open(repo.STORAGE_UPGRADE_LOG, 'a') as outfile:               
+                                    outfile.write(response.text)
+                                    outfile.close()
+                            except FileNotFoundError:
+                                logmsg.info("Could not open {}".format(repo.STORAGE_UPGRADE_LOG))        
                             repo.UPGRADE_STATUS_MESSAGE = response_json["status"]["message"]
                             logmsg.info("\nUpgrade status: {}".format(response_json["status"]["message"]))
-                            if response_json["state"]: logmsg.info("Upgrade state: {}".format(response_json["state"]))
-                            if response_json["status"]["percent"]: logmsg.info("Upgrade Percentage: {}".format(str(response_json["status"]["percent"])))
-                            if response_json["status"]["step"]: logmsg.info("Upgrade step: {}".format(response_json["status"]["step"]))
+                            if response_json["state"]: 
+                                logmsg.info("Upgrade state: {}".format(response_json["state"]))
+                            if response_json["status"]["percent"]: 
+                                logmsg.info("Upgrade Percentage: {}".format(str(response_json["status"]["percent"])))
+                                percent_complete = response_json["status"]["percent"]
+                            if response_json["status"]["step"]: 
+                                logmsg.info("Upgrade step: {}".format(response_json["status"]["step"]))
                             if response_json["status"]["availableActions"]:
                                 for action in response_json["status"]["availableActions"]:
                                     logmsg.info("Available action: {}".format(action))

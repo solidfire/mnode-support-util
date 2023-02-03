@@ -27,16 +27,14 @@ def list_packages(repo):
         logmsg.debug(response.text)
         if response.status_code == 200:
             packages = (json.loads(response.text))
-            return packages
         else:
             logmsg.debug(response.text)
-            logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-            logmsg.debug(response.text)
-            exit(1)
+            packages = "Failed to retrieve package list. See /var/log/mnode-support-util.log for details"
     except requests.exceptions.RequestException as exception:
         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
         logmsg.debug(exception)
         logmsg.debug(response.text)
+    return packages
 
 def delete_package(repo):
     get_token(repo)
