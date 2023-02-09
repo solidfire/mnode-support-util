@@ -38,7 +38,7 @@ class Clusters():
     # Get the last upgrade log
     # =====================================================================
     def get_upgrade_log(repo):
-        logmsg.info("\nChecking for previous upgrade log")
+        logmsg.info("\nChecking for previous upgrade log. Please wait...")
         try:
             get_token(repo) 
             url = ("{}/storage/1/upgrades?includeCompleted=true".format(repo.URL))

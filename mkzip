@@ -1,0 +1,4 @@
+zip mnode-support-util.zip *py
+echo '#!/usr/bin/env python' | cat - mnode-support-util.zip > mnode-support-util
+chmod 755 mnode-support-util
+chown admin:admin *

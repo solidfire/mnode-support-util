@@ -69,7 +69,7 @@ def get_args():
     computehealthcheck: Run a compute healthcheck
     elementupgrade: Element upgrade options
     listassets: One liner list of all assets
-    listpackages: One liner list of all packages
+    listpackages: List of all packages and url's
     storagebundle: Gather storage support bundle
     packageupload: Upload upgrade image '''))
  
