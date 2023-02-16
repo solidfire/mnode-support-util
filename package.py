@@ -27,9 +27,12 @@ def list_packages(repo):
         logmsg.debug(response.text)
         if response.status_code == 200:
             packages = (json.loads(response.text))
+            if len(packages) == 0:
+                logmsg.info("\nNo packages found. Please upload with the -a packageupload option")
         else:
             logmsg.debug(response.text)
             packages = "Failed to retrieve package list. See /var/log/mnode-support-util.log for details"
+            logmsg.info(packages)
     except requests.exceptions.RequestException as exception:
         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
         logmsg.debug(exception)
