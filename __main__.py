@@ -374,5 +374,8 @@ if __name__ == "__main__":
     elif args.action == 'listpackages':
         logmsg.info("\nNetApp HCI release notes: https://docs.netapp.com/us-en/hci/docs/rn_relatedrn.html")
         current_packages = list_packages(repo)
-        for package in current_packages:
-            logmsg.info("\n{:<20}{}\n\t{}\n\t{}\n\t{}".format(package["name"],package["version"],package['CIFSUrl'],package['HTTPSUrl'],package['NFSUrl']))
+        if 'Failed' in current_packages:
+            exit(1)
+        else:
+            for package in current_packages:
+                logmsg.info("\n{:<20}{}\n\t{}\n\t{}\n\t{}".format(package["name"],package["version"],package['CIFSUrl'],package['HTTPSUrl'],package['NFSUrl']))
