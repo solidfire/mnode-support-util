@@ -47,12 +47,14 @@ class Clusters():
             logmsg.debug(response.text)
             if response.status_code == 200:
                 upgrade = json.loads(response.text)
-                if (upgrade[0]['upgradeId']):
-                    repo.UPGRADE_ID = upgrade[0]['upgradeId']
-                    repo.STORAGE_ELEMENT_UPGRADE_TARGET = upgrade[0]['storageId']
-                    repo.STORAGE_UPGRADE_LOG = ("/var/log/ElementUpgrade-{}.log".format(repo.STORAGE_ELEMENT_UPGRADE_TARGET))
-                else:
+                try:
+                    if (upgrade[0]['upgradeId']):
+                        repo.UPGRADE_ID = upgrade[0]['upgradeId']
+                        repo.STORAGE_ELEMENT_UPGRADE_TARGET = upgrade[0]['storageId']
+                        repo.STORAGE_UPGRADE_LOG = ("/var/log/ElementUpgrade-{}.log".format(repo.STORAGE_ELEMENT_UPGRADE_TARGET))
+                except:
                     logmsg.info("No prior upgrade detected")
+
                 try:
                     url = ("{}/storage/1/upgrades/{}/log".format(repo.URL,repo.UPGRADE_ID))
                     logmsg.debug("Sending GET {}".format(url))
