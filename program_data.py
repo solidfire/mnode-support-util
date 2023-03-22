@@ -11,7 +11,7 @@
 class ProgramData():
     # Define the used variables
     def __init__(self, args):
-        self.UTIL_VERSION = "2.5"
+        self.UTIL_VERSION = "2.5.1"
         self.PAYLOAD = {}
         self.UPDATEFILE = args.updatefile
         # token 
@@ -84,3 +84,5 @@ class ProgramData():
         self.STORAGE_UPGRADE_LOG = "none"
         self.UPGRADE_TASK_ID = "none"
 
+        self.FAILED_INFO = 'Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code'
+        self.FAILED_DEBUG = '{}: {}".format(response.status_code, response.text'

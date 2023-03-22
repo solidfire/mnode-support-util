@@ -215,19 +215,26 @@ if __name__ == "__main__":
     # Check for valid auth token and auth cluster
     elif args.action == 'healthcheck':
         HealthCheck.check_auth_token(repo)
+        HealthCheck.checkauth_container(repo)
         HealthCheck.checkauth_config(repo)
         HealthCheck.check_time_sync(repo)
-        HealthCheck.display_auth_mvip(repo) 
-        HealthCheck.display_swarm_net(repo)
-        HealthCheck.mnode_about(repo)
+        HealthCheck.display_swarm_net()
+        HealthCheck.service_uptime(repo)
+        HealthCheck.docker_log()
+        HealthCheck.trident_log()
+        HealthCheck.service_logs(repo)
+        HealthCheck.sf_prefrence(repo)
+        HealthCheck.sf_const(repo)
         
 
     #============================================================
     # mnode support bundle
     elif args.action == 'supportbundle':
         logmsg.info("Start support bundle...")
-        system_test = SysInfo(repo)
-        docker_info = DockerInfo(repo)
+        #system_test = SysInfo(repo)
+        SysInfo(repo)
+        #docker_info = DockerInfo()
+        DockerInfo()
         date_time = datetime.now()
         repo.TIME_STAMP = date_time.strftime("%d-%b-%Y-%H.%M.%S")
         SupportBundle(args,repo)

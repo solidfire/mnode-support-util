@@ -415,17 +415,17 @@ class AssetMgmt():
 class Services():
     def get_services(repo):
         get_token(repo)
-        url = ('{}/mnode/services?status=all'.format(repo.URL))
+        url = ('{}/mnode/services?status=all&helper=true'.format(repo.URL))
         try:
             logmsg.debug("Sending GET {}".format(url))
-            response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
+            response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False) 
             logmsg.debug(response.text)
-            if response.status_code == 200:
-                repo.SERVICE_LIST = json.loads(response.text)
+            if response.status_code == 200 :
+                services = json.loads(response.text)
+                return services
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
                 logmsg.debug(response.text)
-                exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
@@ -450,6 +450,70 @@ class Services():
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
             logmsg.debug(response.text) 
+
+    def get_service_log(repo, service):
+        log = []
+        get_token(repo)
+        url = ('{}/mnode/logs?lines=1000&service-name={}&stopped=true'.format(repo.URL, service))
+        try:
+            logmsg.debug("Sending GET {}".format(url))
+            response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False) 
+            logmsg.debug(response.text)
+            if response.status_code == 200 :
+                log = response.text.splitlines()
+                return log
+            else:
+                log = "Failed to retrieve log"
+                logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
+                logmsg.debug(response.text)
+        except requests.exceptions.RequestException as exception:
+            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
+            logmsg.debug(exception)
+            logmsg.debug(response.text) 
+
+    def parse_service_log(repo, log):
+        messages = []
+        found_error = []
+        known_errors = [
+                "ERROR Error received from API Call GetLicenseKey",
+                "Caught Exception HTTP 401: Determining the role from GetClusterConfig",
+                "vim.fault.NoPermission",
+                "incorrect user name or password",
+                "token has expired",
+                "Error getting compute inventory",
+                "Client Error: UNAUTHORIZED",
+                "Invalid login",
+                "Proxy Authentication Required",
+                "SSL_ERROR_SSL",
+                "No JSON object could be decoded",
+                "HTTPError",
+                "INTERNAL SERVER ERROR",
+                "Exception",
+                "Error received",
+                "connection timeout",
+                "FAILED to fetch",
+                "Failed to post data to AIQ",
+                "Error parsing",
+                "Memory cgroup out of memory",
+                "killed as a result of limit",
+                "The token is not yet valid, please ensure client system and auth-server clocks match",
+                "InvalidClientError",
+                "fatal task error",
+                "failed to deactivate service binding for container",
+                "No such container",
+                "Unable to retrieve BMC IP using hardware tag from compute node",
+                "Compute node asset details are not available for compute node",
+                "Failed to get json from mNode API"
+        ]
+        for error in known_errors:
+            for line in log:
+                if error in line: 
+                    if error not in found_error:
+                        found_error.append(line)
+            if len(found_error) > 0:
+                messages.append("\t{} Occurances of {}".format(str(len(found_error)), error))
+                found_error = []
+        return messages
 
 class Settings():
     def get_settings(repo):

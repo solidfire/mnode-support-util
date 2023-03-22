@@ -125,7 +125,6 @@ class Clusters():
             logmsg.debug(exception)
             logmsg.debug(response.text) 
 
-    # remove - no longer functions in 12.3.1+    
     def check_auth_container(repo):
         get_token(repo)
         url = ('{}/storage/1/clusters/check-auth-container'.format(repo.URL))
@@ -134,18 +133,19 @@ class Clusters():
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
             logmsg.debug(response.text)
             if response.status_code == 200 :
-                repo.CHECK_AUTH = json.loads(response.text)
+                return(json.loads(response.text))
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
                 logmsg.debug(response.text)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug(response.text)  
     
     def check_auth_config(repo):
         # SUST-1292 element-auth requires clientid mnode-init. The mnode service id's require mnode-client
         # first force a new token with mnode-init. Later force a new token with mnode-client
+        authconfig = []
         repo.TOKEN_CLIENT = "mnode-init"
         repo.NEW_TOKEN = True
         get_token(repo)
@@ -155,11 +155,12 @@ class Clusters():
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
             logmsg.debug(response.text)
             if response.status_code == 200 :
-                repo.AUTH_CONFIG = json.loads(response.text)
-                #for client in repo.AUTH_CONFIG["apiClients"]:
-                #    logmsg.info("apiClient: {}".format(client["clientId"]))
-                #for resource in repo.AUTH_CONFIG["apiResources"]:
-                #    logmsg.info("apiResource: {}".format(resource["name"]))
+                authconfig = json.loads(response.text)
+                logmsg.debug(authconfig)
+                if len(authconfig["apiClients"]) == 0 and len(authconfig['apiResources'] == 0):
+                    logmsg.info("\tThere is problem with the auth configuration\n\tSee Solution in KB\nhttps://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Element_Software/setup-mnode_script_or_Management_Services_update_fails_on_Element_mNode_12.2_with_configure_element_auth_error")
+                else:
+                    logmsg.info("\tapiClient and apiResources looks good. See /var/log/mnode-support-util.log to verify")
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
                 logmsg.debug(response.text)
