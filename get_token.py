@@ -1,3 +1,4 @@
+import json
 import requests 
 import time
 from log_setup import Logging
@@ -23,14 +24,13 @@ def get_token(repo):
         current_time = time.time()
         try:
             response = requests.post(url, headers={}, data=payload, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
-                token_return = str(response.text)
-                new_token = token_return.split('"')
-                repo.TOKEN = new_token[3]
+                token_return = json.loads(response.text)
+                repo.TOKEN = token_return['access_token']
                 repo.TOKEN_LIFE = current_time
-                repo.HEADER_READ = {"Accept":"*/*", "Authorization":"Bearer {}".format(new_token[3])}
-                repo.HEADER_WRITE = {"Accept": "application/json", "Content-Type": "application/json", "Authorization":"Bearer {}".format(new_token[3])}
+                repo.HEADER_READ = {"Accept":"*/*", "Authorization":"Bearer {}".format(repo.TOKEN)}
+                repo.HEADER_WRITE = {"Accept": "application/json", "Content-Type": "application/json", "Authorization":"Bearer {}".format(repo.TOKEN)}
             else:
                 logmsg.info("DID NOT RECEIVE VALID TOKEN")
                 logmsg.info(str(response.status_code))
@@ -39,5 +39,5 @@ def get_token(repo):
         except requests.exceptions.RequestException as exception:
             logmsg.info("DID NOT RECEIVE VALID TOKEN. An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
             exit(1)

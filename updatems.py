@@ -55,9 +55,9 @@ class UpdateMS():
             logmsg.info("Deploying new MS packages and services. Please wait....")
             logmsg.debug("Sending PUT {}".format(url))
             response = requests.put(url, headers=repo.HEADER_WRITE, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 

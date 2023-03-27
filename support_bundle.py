@@ -226,7 +226,7 @@ class SupportBundle():
                 outfile.close()
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
-
+        
         filename = ("{}support-docker-vols".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
@@ -239,44 +239,19 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
-###
-        get_token(repo)
-        url = ('{}/mnode/services?status=running&helper=false'.format(repo.URL))
-        service_list = []
-        try:
-            logmsg.debug("Sending GET {}".format(url))
-            response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            if response.status_code == 200:
-                service_list = json.loads(response.text)
-                for service in service_list:
-                    url = ('{}/mnode/logs?lines=1000&service-name={}&stopped=true'.format(repo.URL,service['name']))
-                    try:
-                        logmsg.info("Gathering {} logs".format(service['name']))
-                        response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-                        if response.status_code == 200:
-                            logmsg.debug("{} logs = {}".format(service, response.status_code))
-                            filename = ("{}support-service-{}.log".format(repo.SUPPORT_DIR,service['name']))
-                            try:
-                                with open(filename, 'w') as outfile:
-                                    outfile.write(response.text)
-                                    outfile.close()
-                            except FileNotFoundError:
-                                logmsg.info("Could not open {}".format(filename))
-                        else:
-                            logmsg.debug("{} logs = {}".format(service, response.status_code))
-                    except requests.exceptions.RequestException as exception:
-                        logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
-                        logmsg.debug(exception)
-                        logmsg.debug(response.text) 
-            else:
-                logmsg.debug("Failed to retrieve service list")
-                logmsg.debug(response.status_code)
-                logmsg.debug(response.text)
-        except requests.exceptions.RequestException as exception:
-            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
-            logmsg.debug(exception)
-            logmsg.debug(response.text) 
-###
+        #============================================================
+        # Get docker logs
+        logmsg.info("Get service logs...")
+        services = Services.get_services(repo)
+        for service in services:
+            log = Services.get_service_log(repo, service['name'])
+            filename = ("{}support-service-{}.log".format(repo.SUPPORT_DIR,service['name']))
+            try:
+                with open(filename, 'w') as outfile:
+                    for line in log:
+                        outfile.write("{}\n".format(line))
+            except FileNotFoundError:
+                logmsg.info("Could not open {}".format(filename))
 
         filename = ("{}support-docker-network".format(repo.SUPPORT_DIR))
         try:

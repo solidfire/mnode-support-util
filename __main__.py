@@ -15,7 +15,7 @@ from docker import DockerInfo
 from element_upgrade import ElemUpgrade
 from get_token import get_token
 from hardware import Hardware
-from healthcheck import HealthCheck
+from healthcheck import healthcheck_run_all
 from inventory import Inventory
 from log_setup import Logging 
 from mnode import AssetMgmt, Settings, about
@@ -214,20 +214,17 @@ if __name__ == "__main__":
     #============================================================
     # Check for valid auth token and auth cluster
     elif args.action == 'healthcheck':
-        HealthCheck.check_auth_token(repo)
-        HealthCheck.checkauth_config(repo)
-        HealthCheck.check_time_sync(repo)
-        HealthCheck.display_auth_mvip(repo) 
-        HealthCheck.display_swarm_net(repo)
-        HealthCheck.mnode_about(repo)
-        
+        healthcheck_run_all(repo)
 
     #============================================================
     # mnode support bundle
     elif args.action == 'supportbundle':
         logmsg.info("Start support bundle...")
-        system_test = SysInfo(repo)
-        docker_info = DockerInfo(repo)
+        healthcheck_run_all(repo)
+        #system_test = SysInfo(repo)
+        SysInfo(repo)
+        #docker_info = DockerInfo()
+        DockerInfo()
         date_time = datetime.now()
         repo.TIME_STAMP = date_time.strftime("%d-%b-%Y-%H.%M.%S")
         SupportBundle(args,repo)
