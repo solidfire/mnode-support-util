@@ -44,15 +44,15 @@ def get_logs(repo):
                 except requests.exceptions.RequestException as exception:
                     logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                     logmsg.debug(exception)
-                    logmsg.debug(response.text) 
+                    logmsg.debug("{}: {}".format(response.status_code, response.text)) 
         else:
             logmsg.debug("Failed to retrieve service list")
             logmsg.debug(response.status_code)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
     except requests.exceptions.RequestException as exception:
         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
         logmsg.debug(exception)
-        logmsg.debug(response.text) 
+        logmsg.debug("{}: {}".format(response.status_code, response.text)) 
         
 
 class AssetMgmt():
@@ -67,20 +67,20 @@ class AssetMgmt():
                 try:
                     logmsg.debug("Sending GET {}".format(url))
                     response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     if response.status_code == 200:
                         repo.CURRENT_ASSET_JSON = json.loads(response.text)
                     else:
                         logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         exit(1)
                 except requests.exceptions.RequestException as exception:
                     logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                     logmsg.debug(exception)
-                    logmsg.debug(response.text) 
+                    logmsg.debug("{}: {}".format(response.status_code, response.text)) 
             repo.PARENT_ID = (repo.CURRENT_ASSET_JSON[0]['id'])
         except:
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
 
     #============================================================
     # Set asset type for removal or update tasks
@@ -116,18 +116,18 @@ class AssetMgmt():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 repo.CURRENT_ASSET_JSON = json.loads(response.text)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured attempting to gather assets. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def list_assets(repo): 
         get_token(repo)
@@ -177,17 +177,17 @@ class AssetMgmt():
                 try:
                     logmsg.debug("Sending DELETE {}".format(url))
                     response = requests.delete(url, headers=repo.HEADER_READ, data={}, verify=False)
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     if response.status_code == 204: 
                         logmsg.info("Successfully deleted asset")
                     else:
                         logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         exit(1)
                 except requests.exceptions.RequestException as exception:
                     logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                     logmsg.debug(exception)
-                    logmsg.debug(response.text) 
+                    logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def remove_all_assets(repo):
         get_token(repo)
@@ -201,17 +201,17 @@ class AssetMgmt():
                     try:
                         logmsg.debug("Sending DELETE {}".format(url))
                         response = requests.delete(url, headers=repo.HEADER_READ, data={}, verify=False)
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         if response.status_code == 204: 
                             logmsg.info("Successfully deleted asset")
                         else:
                             logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                            logmsg.debug(response.text)
+                            logmsg.debug("{}: {}".format(response.status_code, response.text))
                             exit(1)
                     except requests.exceptions.RequestException as exception:
                         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                         logmsg.debug(exception)
-                        logmsg.debug(response.text) 
+                        logmsg.debug("{}: {}".format(response.status_code, response.text)) 
                 count += 1
 
     def remove_one_asset(repo):
@@ -222,17 +222,17 @@ class AssetMgmt():
         try:
             logmsg.debug("Sending DELETE {}".format(url))
             response = requests.delete(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 204: 
                 logmsg.info("Successfully deleted asset")
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     #============================================================
     # Add the assets
@@ -310,20 +310,20 @@ class AssetMgmt():
                 try:
                     logmsg.debug("Sending POST {}".format(url)) # cannot send password to the log. Figure something else out ,json.dumps(payload)))
                     response = requests.post(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     if response.status_code == 201:
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         logmsg.info("Added {}".format(payload_host_name))
                     if(response.status_code == 409): 
                         logmsg.info("{} Asset already exists in inventory. Skipping.".format(payload['host_name'])) 
                     if(response.status_code != 201 and response.status_code != 409):
                         logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         exit(1)
                 except requests.exceptions.RequestException as exception:
                     logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                     logmsg.debug(exception)
-                    logmsg.debug(response.text) 
+                    logmsg.debug("{}: {}".format(response.status_code, response.text)) 
             count += 1
     
     def update_passwd_by_type(repo):
@@ -347,17 +347,17 @@ class AssetMgmt():
                 try:
                     logmsg.debug("Sending PUT {}  password: new password".format(url))
                     response = requests.put(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     if response.status_code == 200: 
                         logmsg.info("Successfully updated asset")
                     else:
                         logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         exit(1)
                 except requests.exceptions.RequestException as exception:
                     logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                     logmsg.debug(exception)
-                    logmsg.debug(response.text)        
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))        
                 x += 1
                 
     def update_passwd(repo):
@@ -379,17 +379,17 @@ class AssetMgmt():
         try:
             logmsg.debug("Sending PUT {} config:, password: new password".format(url))
             response = requests.put(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200: 
                 logmsg.info("Successfully updated asset")
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def addConfig(repo):
         get_token(repo)
@@ -400,17 +400,17 @@ class AssetMgmt():
         try:
             logmsg.debug("Sending PUT {} {}".format(url,json.dumps(payload)))
             response = requests.put(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 logmsg.info("Applying config \n {}".format(response.request.body))
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(response.text) 
+                logmsg.debug("{}: {}".format(response.status_code, response.text)) 
     
 class Services():
     def get_services(repo):
@@ -419,17 +419,17 @@ class Services():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False) 
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200 :
                 services = json.loads(response.text)
                 return services
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def update_status(repo):
         get_token(repo)
@@ -438,18 +438,18 @@ class Services():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 service_status = json.loads(response.text)
                 logmsg.debug(service_status)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def get_service_log(repo, service):
         log = []
@@ -458,62 +458,18 @@ class Services():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False) 
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200 :
                 log = response.text.splitlines()
                 return log
             else:
                 log = "Failed to retrieve log"
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
-
-    def parse_service_log(repo, log):
-        messages = []
-        found_error = []
-        known_errors = [
-                "ERROR Error received from API Call GetLicenseKey",
-                "Caught Exception HTTP 401: Determining the role from GetClusterConfig",
-                "vim.fault.NoPermission",
-                "incorrect user name or password",
-                "token has expired",
-                "Error getting compute inventory",
-                "Client Error: UNAUTHORIZED",
-                "Invalid login",
-                "Proxy Authentication Required",
-                "SSL_ERROR_SSL",
-                "No JSON object could be decoded",
-                "HTTPError",
-                "INTERNAL SERVER ERROR",
-                "Exception",
-                "Error received",
-                "connection timeout",
-                "FAILED to fetch",
-                "Failed to post data to AIQ",
-                "Error parsing",
-                "Memory cgroup out of memory",
-                "killed as a result of limit",
-                "The token is not yet valid, please ensure client system and auth-server clocks match",
-                "InvalidClientError",
-                "fatal task error",
-                "failed to deactivate service binding for container",
-                "No such container",
-                "Unable to retrieve BMC IP using hardware tag from compute node",
-                "Compute node asset details are not available for compute node",
-                "Failed to get json from mNode API"
-        ]
-        for error in known_errors:
-            for line in log:
-                if error in line: 
-                    if error not in found_error:
-                        found_error.append(line)
-            if len(found_error) > 0:
-                messages.append("\t{} Occurances of {}".format(str(len(found_error)), error))
-                found_error = []
-        return messages
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
 class Settings():
     def get_settings(repo):
@@ -522,17 +478,17 @@ class Settings():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 repo.SETTINGS = json.loads(response.text)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def add_settings(repo):
         get_token(repo)
@@ -546,17 +502,17 @@ class Settings():
                 payload = {"mnode_fqdn": json_data['mnode_fqdn'],  "proxy_ssh_port": json_data['proxy_port'], "proxy_username": json_data['proxy_username'],"proxy_port": json_data['proxy_port'],"use_proxy": json_data['use_proxy'],"proxy_ip_or_hostname": json_data['proxy_ip_or_hostname']}
                 logmsg.debug("Sending PUT {} {}".format(url,json.dumps(payload)))
                 response = requests.put(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 if response.status_code == 200:
                     logmsg.info("Applying settings\n {}".format(response.text))
                 else:
                     logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     exit(1)
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(response.text) 
+                logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
 def about(repo):
     url = ('{}/mnode/1/about'.format(repo.URL))
@@ -564,7 +520,7 @@ def about(repo):
     try:
         logmsg.debug("Sending GET {}".format(url))
         response = requests.get(url, headers=header, data={}, verify=False)
-        logmsg.debug(response.text)
+        logmsg.debug("{}: {}".format(response.status_code, response.text))
         if response.status_code == 200:
             repo.ABOUT = json.loads(response.text)
             authmvip = repo.ABOUT["token_url"].split('/')
@@ -576,9 +532,9 @@ def about(repo):
             logmsg.info("+ Authorative cluster: {}".format(repo.INVENTORY_AUTHORATIVE_CLUSTER))
         else:
             logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             exit(1)
     except requests.exceptions.RequestException as exception:
         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
         logmsg.debug(exception)
-        logmsg.debug(response.text)
+        logmsg.debug("{}: {}".format(response.status_code, response.text))

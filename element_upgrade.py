@@ -83,7 +83,7 @@ class ElemUpgrade():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 if response.text.find("solidfire"):
                     packages = json.loads(response.text)
@@ -104,7 +104,7 @@ class ElemUpgrade():
             else:
                 logmsg.info("Failed to retrieve package list. Check internet connectivity.")
                 logmsg.debug(response.status_code)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
@@ -134,7 +134,7 @@ class ElemUpgrade():
         try:
             logmsg.debug("Sending POST {} {}".format(url,json.dumps(payload)))
             response = requests.post(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 202:
                 logmsg.info("Received successful 202")
                 upgrade_json = json.loads(response.text)
@@ -154,7 +154,7 @@ class ElemUpgrade():
                 sleep(10)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
@@ -172,7 +172,7 @@ class ElemUpgrade():
         try:
             logmsg.debug("Sending {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data = payload, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 response_json = json.loads(response.text)
                 if len(response_json) != 0:
@@ -194,7 +194,7 @@ class ElemUpgrade():
                     logmsg.info(repo.UPGRADE_STATUS_MESSAGE)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
@@ -221,7 +221,7 @@ class ElemUpgrade():
                         response_json = json.loads(response.text)
                         if not response_json["status"]["message"] and not response_json['state']:
                             logmsg.info("Unable to parse json return. See /var/log/mnode-support-util.log for details")
-                            logmsg.debug(response.text)
+                            logmsg.debug("{}: {}".format(response.status_code, response.text))
                             exit(1)
                         if response_json['state'] == 'error':
                             logmsg.info(response_json['state'])
@@ -254,7 +254,7 @@ class ElemUpgrade():
                                     logmsg.info(check)
                     else:
                         logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         exit(1)
                 except requests.exceptions.RequestException as exception:
                     logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
@@ -288,14 +288,14 @@ class ElemUpgrade():
         try:
             logmsg.debug("Sending: PUT {} {}".format(url,json.dumps(payload)))
             response = requests.put(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 response_json = json.loads(response.text)
                 if len(response_json) != 0:
                     logmsg.info("Upgrade state: {}".format(response_json["state"]))
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")

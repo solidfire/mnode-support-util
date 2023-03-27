@@ -39,7 +39,7 @@ class StorageHealthcheck():
         try:
             logmsg.debug("Sending POST {} {}".format(url,json.dumps(payload)))
             response = requests.post(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 202:
                 repo.STORAGE_HEALTHCHECK_TASK = json.loads(response.text)
                 logmsg.info("Healthcheck running...")
@@ -47,17 +47,17 @@ class StorageHealthcheck():
             elif response.status_code == 400:
                 logmsg.info("Healthcheck already running for this target. See /var/log/mnode-support-util.log for details")
                 logmsg.info(response.status_code)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
             else:
                 logmsg.info("Failed to start healthcheck. See /var/log/mnode-support-util.log for details")
                 logmsg.info(response.status_code)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def print_healthcheck_status(repo):
         healthcheck_report = []
@@ -70,7 +70,7 @@ class StorageHealthcheck():
                 get_token(repo)
                 logmsg.debug("Sending GET {}".format(url))
                 response = requests.get(url, headers=repo.HEADER_READ, data=payload, verify=False)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 if response.status_code == 200:
                     healthcheck_report = (json.loads(response.text))
                     while healthcheck_report['state'] != 'finished':
@@ -93,7 +93,7 @@ class StorageHealthcheck():
                                     logmsg.debug(healthcheck_report)
                             else:
                                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                                logmsg.debug(response.text)
+                                logmsg.debug("{}: {}".format(response.status_code, response.text))
                                 exit(1)
                         except:
                             logmsg.info("Unsuccessful return. See /var/log/mnode-support-util.log for details.")
@@ -101,9 +101,9 @@ class StorageHealthcheck():
                     logmsg.info('HealthCheck completed. See report file ' + report_file_name)
                 else:
                     logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     exit(1)
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(response.text) 
+                logmsg.debug("{}: {}".format(response.status_code, response.text)) 

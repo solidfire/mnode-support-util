@@ -41,7 +41,7 @@ class ComputeHealthcheck():
         try:
             logmsg.debug("Sending GET {} {}".format(url,json.dumps(payload)))
             response = requests.get(url, headers=repo.HEADER_READ, data=json.dumps(payload), verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 response_json = json.loads(response.text)
                 if(len(response_json["result"]) != 0):
@@ -56,7 +56,7 @@ class ComputeHealthcheck():
                     exit(1)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
             while userinput not in domainlist:
                 userinput = input("\nEnter the domain name: ")
@@ -73,19 +73,19 @@ class ComputeHealthcheck():
         try:
             logmsg.debug("Sending GET {} {}".format(url,json.dumps(payload)))
             response = requests.post(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 202:
                 repo.COMPUTE_HEALTHCHECK_TASK = json.loads(response.text)
                 logmsg.info("Healthcheck running...")
                 logmsg.info(json.dumps(response.text))
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def print_healthcheck_status(repo):
         healthcheck_report = []
@@ -102,7 +102,7 @@ class ComputeHealthcheck():
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
         
         # prevent the log from filling up with debug messages in the while loop
         logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -124,11 +124,11 @@ class ComputeHealthcheck():
                 else:
                     logmsg.info("Received an unsuccessful return. See /var/log/mnode-support-util.log for details")
                     logmsg.debug(response.status_code)
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(response.text) 
+                logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
         url = task['resourceLink'].split('/')
         url[2] = "127.0.0.1"
@@ -152,6 +152,6 @@ class ComputeHealthcheck():
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text) 
+            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
         # Set logging back to debug
         logging.getLogger("urllib3").setLevel(logging.DEBUG)

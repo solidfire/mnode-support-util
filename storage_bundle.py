@@ -44,7 +44,7 @@ class StorageBundle():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 response_json = json.loads(response.text)
                 if response_json['downloadLink']:
@@ -55,7 +55,7 @@ class StorageBundle():
                         logmsg.info("Deleting bundle {}".format(response_json['downloadLink'].replace("127.0.0.1", repo.MNODEIP)))
                         logmsg.debug("Sending DELETE {}".format(url))
                         response = requests.delete(url, headers=repo.HEADER_WRITE, data={}, verify=False)
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         if response.status_code == 204:
                             logmsg.info("Deleted successfully\n")
                         else:
@@ -81,13 +81,13 @@ class StorageBundle():
                     try:
                         logmsg.debug("Sending POST {} {}".format(url,payload))
                         response = requests.post(url, auth=(creds[1], creds[2]), data=payload, verify=False)
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         if response.status_code == 200:
                             response_json = json.loads(response.text)
                             logmsg.info("Node ID: {} = {}\n".format(str(node['ListAllNodes']['nodeID']),response_json['result']['details']['output']))
                         if response.status_code == 400:
                             logmsg.info("Received 400 BAD_REQUEST. See /var/log/mnode-support-util.log for details. Continuing...")
-                            logmsg.debug(response.text)
+                            logmsg.debug("{}: {}".format(response.status_code, response.text))
                     except requests.exceptions.RequestException as exception:
                         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                         logmsg.debug(exception)    
@@ -105,7 +105,7 @@ class StorageBundle():
             logmsg.info("Retrieving node list")
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 200:
                 repo.CLUSTER_INFO = json.loads(response.text)
                 logmsg.info("\nAvailable nodes: ")
@@ -147,7 +147,7 @@ class StorageBundle():
         try:
             logmsg.debug("Sending POST {} {}".format(url,str(repo.PAYLOAD)))
             response = requests.post(url, headers=repo.HEADER_WRITE, data=repo.PAYLOAD, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             response_json = json.loads(response.text)
             if response.status_code == 201:
                 logmsg.info('Recieved 201: Collection task id {}'.format(response_json['taskId']))
@@ -156,12 +156,12 @@ class StorageBundle():
                 exit(1)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 exit(1)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug(response.text)     
+            logmsg.debug("{}: {}".format(response.status_code, response.text))     
             
     def watch_bundle(repo):
         # prevent the log from filling up with debug messages in the while loop
@@ -188,12 +188,12 @@ class StorageBundle():
                         exit(0)
                 else:
                     logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     exit(1)
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
         # Set logging back to debug
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
@@ -212,6 +212,6 @@ class StorageBundle():
         except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                     
 

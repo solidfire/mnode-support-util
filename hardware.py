@@ -27,17 +27,17 @@ class Hardware():
             try:
                 logmsg.debug("Sending GET {}".format(url))
                 response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-                logmsg.debug(response.text)
+                logmsg.debug("{}: {}".format(response.status_code, response.text))
                 if response.status_code == 200:
                     repo.HARDWARE.append(json.loads(response.text))
                 else:
                     logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                    logmsg.debug(response.text)
+                    logmsg.debug("{}: {}".format(response.status_code, response.text))
                     exit(1)
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(response.text) 
+                logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
     def get_hardware_logs(args, repo):
         get_token(repo)
@@ -53,17 +53,17 @@ class Hardware():
                     try:
                         logmsg.debug("Sending GET {}".format(url))
                         response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-                        logmsg.debug(response.text)
+                        logmsg.debug("{}: {}".format(response.status_code, response.text))
                         if response.status_code == 200:
                             outfile.write(json.dumps(response.text))
                         else:
                             logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                            logmsg.debug(response.text)
+                            logmsg.debug("{}: {}".format(response.status_code, response.text))
                             exit(1)
                     except requests.exceptions.RequestException as exception:
                         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                         logmsg.debug(exception)
-                        logmsg.debug(response.text) 
+                        logmsg.debug("{}: {}".format(response.status_code, response.text)) 
             outfile.close()
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
@@ -113,7 +113,7 @@ SUST-1343
             get_token(repo)
             logmsg.debug("Sending POST {} {}".format(url,payload))
             response = requests.post(url, headers=repo.HEADER_WRITE, data=payload, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code == 202:
                 responsejson = json.loads(response.text)
                 #if responsejson[0]['status'] == 'failed': logmsg.info('Failed. See log: {}'.format(responsejson[0]['upgradesDetails'][0]['_links']['logs']))
@@ -124,7 +124,7 @@ SUST-1343
         except requests.exceptions.RequestException as exception:
                         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                         logmsg.debug(exception)
-                        logmsg.debug(response.text) 
+                        logmsg.debug("{}: {}".format(response.status_code, response.text)) 
 
         
 
