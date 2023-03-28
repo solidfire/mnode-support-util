@@ -166,7 +166,7 @@ class HealthCheck():
                 outputjson = json.loads(response.text)
                 if outputjson['result']['preferences'][0]['name']:
                     print("\t{}: {}".format(outputjson['result']['preferences'][0]['name'], outputjson['result']['preferences'][0]['value']), file=outfile)
-                    print("\tTROUBLESHOOTING TIP: ClusterInterfacePreference must match the IP and if present, the FQDN in token_url", file=outfile)
+                    print("\tTROUBLESHOOTING TIP: ClusterInterfacePreference must match the mnode_host_ip and if present, the FQDN must resolve mnode_host_ip ", file=outfile)
                 else:
                     print("\tNo mnode Interface Preference found. It may have been removed.\n\t", file=outfile)
                     print("\tCreate with: https://<MVIP>/json-rpc/12.0?method=CreateClusterInterfacePreference&name=mnode_ip&value=[mnodeip]", file=outfile)
