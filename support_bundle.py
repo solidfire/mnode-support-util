@@ -8,7 +8,7 @@ from inventory import Inventory
 from log_setup import Logging
 from mnode import AssetMgmt, get_logs, Services, Settings, about
 from storage import Clusters
-from system import SysInfo
+from system import System
 
 logmsg = Logging.logmsg()
 
@@ -22,29 +22,31 @@ logmsg = Logging.logmsg()
 class SupportBundle():
     def __init__(self, args, repo):
 
-## MNODE ABOUT                
+    #============================================================
+    # Get mnode about                
         filename = ("{}support-mnode-about.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:               
                 logmsg.info("Get mnode about")
                 about(repo)
                 json.dump(repo.ABOUT, outfile)
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
-
-## MNODE SETTINGS
+    #============================================================
+    # MNODE SETTINGS
         filename = ("{}support-mnode-settings.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:               
                 logmsg.info("Get mnode settings")
                 Settings.get_settings(repo)
                 json.dump(repo.SETTINGS, outfile)
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
-## GET AUTH TOKEN
+    #============================================================
+    ## GET AUTH TOKEN
         filename = ("{}support-auth-token".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:               
@@ -52,11 +54,12 @@ class SupportBundle():
                 get_token(repo)
                 outfile.write("Auth token: ")
                 outfile.write(repo.TOKEN)
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
-## GET CLUSTER AUTH CONFIG
+    #============================================================
+    ## GET CLUSTER AUTH CONFIG
         filename = ("{}support-auth-configuration".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:             
@@ -67,57 +70,68 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
-## GET AUTH CLUSTER
+    #============================================================
+    ## GET AUTH CLUSTER
         filename = ("{}support-auth-cluster".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get authorative cluster...")
                 outfile.write("\nAuthorative Cluster: ")
                 outfile.write(repo.INVENTORY_AUTHORATIVE_CLUSTER)
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get assets
         filename = ("{}support-get-assets.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get current assets...")
                 AssetMgmt.get_current_assets(repo)
                 outfile.write(json.dumps(repo.CURRENT_ASSET_JSON))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get inventory
         filename = ("{}support-get-inventory.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get inventory (This may take a while)...")
                 Inventory.get_inventory(args, repo)
                 outfile.write(json.dumps(repo.inventory_get))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get services    
         filename = ("{}support-get-services.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get services...")
                 Services.get_services(repo)
                 outfile.write(json.dumps(repo.SERVICE_LIST))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get clusters
         filename = ("{}support-get-clusters.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get clusters...")
                 Clusters.get_clusters(repo)
                 outfile.write(json.dumps(repo.CLUSTERS))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Check auth container
         '''
         remove - no longer functions in 12.3.1+
         filename = ("{}support-check-auth-container.json".format(repo.SUPPORT_DIR))
@@ -126,152 +140,164 @@ class SupportBundle():
                 logmsg.info("Check auth container...")
                 Clusters.check_auth_container(repo)
                 outfile.write(json.dumps(repo.CHECK_AUTH))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
         '''
-
+    #============================================================
+    # Check compute upgrade logs
         filename = ("{}support-check-compute-upgrade.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Check compute firmware upgrade...")
                 Inventory.get_compute_upgrades(args, repo)
                 outfile.write(json.dumps(repo.COMPUTE_UPGRADE))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Check storage upgrade logs
         filename = ("{}support-check-storage-upgrade.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Check storage upgrade...")
                 Inventory.get_storage_upgrades(args, repo)
                 outfile.write(json.dumps(repo.STORAGE_UPGRADE))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
         Clusters.get_upgrade_log(repo)
 
+    #============================================================
+    # Get storage cluster details
         logmsg.info("Get storage cluster(s) details (This may take a while)...")
         Clusters.get_storage_info(repo)
 
+    #============================================================
+    # Storage healthcheck
         filename = ("{}support-health-check.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get health checks...")
                 Clusters.get_health_check(repo)
                 outfile.write(json.dumps(repo.HEALTH_CHECK))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get storage healthcheck logs
         logmsg.info("Get health check logs (This may take a while)...")
         Clusters.get_health_check_logs(repo)
         
+    #============================================================
+    # Get BMC info
         filename = ("{}support-hardware.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get hardware...")
                 Hardware.get_hardware(args, repo)
                 outfile.write(json.dumps(repo.HARDWARE))
-                outfile.close()
+                
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))    
 
         logmsg.info("Get hardware logs...")
         Hardware.get_hardware_logs(args, repo)
 
+    #============================================================
+    # Get docker ps
         filename = ("{}support-docker-ps".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get docker ps... ")
-                DockerInfo.docker_ps(repo)
-                out = "\n".join(repo.DOCKER_PS)
+                docker_ps = DockerInfo.docker_ps()
                 outfile.write("\nDocker ps: ")
-                outfile.write(out)
-                outfile.close()
+                outfile.writelines(docker_ps)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get docker inspect
         filename = ("{}support-docker-inspect.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get docker inspect... ")
-                DockerInfo.docker_inspect(repo)
-                outfile.write(json.dumps(repo.DOCKER_INSPECT))
-                outfile.close()
+                containers = DockerInfo.get_containers()
+                for container in containers:    
+                    out = DockerInfo.docker_inspect(container.split(' ')[0])
+                    outfile.write(json.dumps(out))
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get docker services
         filename = ("{}support-docker-service".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get docker services... ")
-                DockerInfo.docker_service(repo)
-                out = "\n".join(repo.DOCKER_SERVICE)
-                outfile.write("\nDocker service: ")
-                outfile.write(out)
-                outfile.close()
+                services = DockerInfo.docker_service()
+                outfile.write("\nDocker services: ")
+                outfile.writelines(services)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get docker stats
         filename = ("{}support-docker-stats".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get docker stats... ")
-                DockerInfo.docker_stats(repo)
-                out = "\n".join(repo.DOCKER_STATS)
+                docker_stats = DockerInfo.docker_stats()
                 outfile.write("\nDocker stats: ")
-                outfile.write(out)
-                outfile.close()
+                outfile.writelines(docker_stats)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
-        
+
+    #============================================================
+    # Get docker volumes
         filename = ("{}support-docker-vols".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get docker volumes...")
-                DockerInfo.docker_volume(repo)
-                out = "\n".join(repo.DOCKER_VOLUME)
+                volume_stats = DockerInfo.docker_volume()
                 outfile.write("\nDocker volumes: ")
-                outfile.write(out)
-                outfile.close()
+                outfile.writelines(volume_stats)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
-        #============================================================
-        # Get docker logs
-        logmsg.info("Get service logs...")
+    #============================================================
+    # Get docker logs
         services = Services.get_services(repo)
         for service in services:
             log = Services.get_service_log(repo, service['name'])
             filename = ("{}support-service-{}.log".format(repo.SUPPORT_DIR,service['name']))
             try:
                 with open(filename, 'w') as outfile:
-                    for line in log:
-                        outfile.write("{}\n".format(line))
+                    outfile.writelines(log)
             except FileNotFoundError:
                 logmsg.info("Could not open {}".format(filename))
 
+    #============================================================
+    # Get docker network
         filename = ("{}support-docker-network".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get docker network...")
-                DockerInfo.docker_network(repo)
-                out = "\n".join(repo.DOCKER_NETWORK)
+                docker_network = DockerInfo.docker_network()
                 outfile.write("\nDocker network")
-                outfile.write(out)
-                outfile.close()
+                outfile.writelines(docker_network)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
         logmsg.info("Checking BMC ports...")
-        SysInfo.bmc_ports(repo)
+        System.bmc_ports(repo)
         
         logmsg.info("Get system info...")
-        SysInfo.sys_info(repo)
+        System.sys_info(repo)
 
         logmsg.info("Get config files...")
-        SysInfo.local_files(repo)
+        System.local_files(repo)
 
-        SysInfo.create_tar()
+        System.create_tar()

@@ -24,19 +24,19 @@ def list_packages(repo):
     try:
         logmsg.debug('Sending GET {}'.format(url))
         response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-        logmsg.debug("{}: {}".format(response.status_code, response.text))
+        logmsg.debug(response.text)
         if response.status_code == 200:
             packages = (json.loads(response.text))
             if len(packages) == 0:
                 logmsg.info("\nNo packages found. Please upload with the -a packageupload option")
         else:
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             packages = "Failed to retrieve package list. See /var/log/mnode-support-util.log for details"
             logmsg.info(packages)
     except requests.exceptions.RequestException as exception:
         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
         logmsg.debug(exception)
-        logmsg.debug("{}: {}".format(response.status_code, response.text))
+        logmsg.debug(response.text)
     return packages
 
 def delete_package(repo):
@@ -56,14 +56,14 @@ def delete_package(repo):
             logmsg.info("Delete succeeded")
             logmsg.info(json.loads(response.text))
         else:
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             exit(1)
     except requests.exceptions.RequestException as exception:
         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
         logmsg.debug(exception)
-        logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+        logmsg.debug(response.text) 
 
 def upload_element_image(repo):
     get_token(repo)
@@ -89,6 +89,6 @@ def upload_element_image(repo):
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+            logmsg.debug(response.text) 
     session.close()
 
