@@ -3,10 +3,7 @@ import socket
 import tarfile
 from datetime import datetime
 from log_setup import Logging
-from mnode import AssetMgmt
-
-logmsg = Logging.logmsg()
-
+from api_mnode import AssetMgmt
 # =====================================================================
 #
 # NetApp / SolidFire
@@ -17,17 +14,11 @@ logmsg = Logging.logmsg()
 #============================================================
 # Gather mnode system info
 #============================================================
+logmsg = Logging.logmsg()
 
 class SysInfo():
-    def __init__(self, repo):
-        try:
-            logmsg.info("Cleaning up {}".format(repo.SUPPORT_DIR))
-            for f in os.listdir(repo.SUPPORT_DIR):
-                os.remove(os.path.join(repo.SUPPORT_DIR, f))
-        except OSError as exception:
-            logmsg.debug(exception)
 
-    def sys_info(repo):
+    def system_cmds(repo):
         commands = ["/usr/bin/free -h", "/bin/df -h", "/bin/cat /etc/lsb-release", "/bin/ifconfig", "/bin/netstat -an", "/usr/bin/ntpq -p", ("/usr/sbin/ntpdate -q " + repo.INVENTORY_AUTHORATIVE_CLUSTER), "/bin/lsblk"]
         servers = ["monitoring.solidfire.com", "repo.solidfire.com", "sfsupport.solidfire.com"]
         filename = ("{}support-system-commands".format(repo.SUPPORT_DIR))

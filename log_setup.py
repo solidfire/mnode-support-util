@@ -2,7 +2,6 @@ import logging
 import os
 from logging import handlers
 from sys import stdout
-
 # =====================================================================
 #
 # NetApp / SolidFire
@@ -10,6 +9,11 @@ from sys import stdout
 # mnode support utility
 #
 # =====================================================================
+#============================================================
+# Setup logging to file and console
+# DEBUG = /var/log/mnode-support-util.log
+# INFO = console and /var/log/mnode-support-util.log
+#============================================================
 
 class Logging():
     def logmsg():
@@ -29,3 +33,14 @@ class Logging():
         logger.addHandler(console)
         logger.addHandler(rotate_handler)
         return logger
+
+class MLog():
+    def log_failed_return(status, text):
+        logmsg = Logging.logmsg()
+        logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(status))
+        logmsg.debug("FAILED RETURN: {}: {}".format(status, text))
+
+    def log_exception(exception):
+        logmsg = Logging.logmsg()
+        logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
+        logmsg.debug(exception)

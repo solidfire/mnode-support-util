@@ -4,7 +4,7 @@ import requests
 import time
 from get_token import get_token
 from log_setup import Logging
-
+from program_data import PDApi
 # =====================================================================
 #
 # NetApp / SolidFire
@@ -13,145 +13,107 @@ from log_setup import Logging
 #
 # =====================================================================
 
+# =====================================================================
+# Compute healthcheck
+# =====================================================================
+
+#============================================================
+# set up logging
 logmsg = Logging.logmsg()
 
 # Generate a list of clusters
 # 
 class ComputeHealthcheck():
-
+    #============================================================
+    # Display a list of vCenters.
+    # Select target vCenter. Auto select if only one.
     def generate_cluster_list(repo):
         logmsg.info("Generating Controller List....")
         controllerlist = {}
         userinput = ""
-        for controller in repo.CURRENT_ASSET_JSON[0]['controller']:
+        for controller in repo.ASSETS[0]['controller']:
             logmsg.info("Controller name: {} ".format(controller['host_name']))
             controllerlist[(controller["host_name"])] = controller["id"]
-            repo.CONTROLLERS.append(controller['id'])
-        while userinput not in controllerlist:
-            userinput = input("\nEnter the controller name: ")
-            
-        repo.CONTROLLER_ID = controllerlist[userinput]
+        if len(repo.ASSETS[0]['controller']) > 1:
+            while userinput not in controllerlist:
+                userinput = input("\nEnter the controller name: ")            
+            controller_id = controllerlist[userinput]
+        else:
+            controller_id = repo.ASSETS[0]['controller'][0]['id']
+        return controller_id
 
-    def generate_domain_list(repo):
+    #============================================================
+    # Display a list of Host Clusters
+    # Select target host cluster. Auto select if only one
+    def generate_domain_list(repo, controller_id):
+        userinput = "none"
         get_token(repo)
-        url = ('{}/vcenter/1/compute/{}/clusters?includeUnmanaged=true'.format(repo.URL,repo.CONTROLLER_ID))
-        payload = {}
+        url = ('{}/vcenter/1/compute/{}/clusters?includeUnmanaged=true'.format(repo.BASE_URL,controller_id))
         domainlist = {}
-        logmsg.info("\nGenerating Domain list for controller {}".format(userinput))
-        try:
-            logmsg.debug("Sending GET {} {}".format(url,json.dumps(payload)))
-            response = requests.get(url, headers=repo.HEADER_READ, data=json.dumps(payload), verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
-            if response.status_code == 200:
-                response_json = json.loads(response.text)
-                if(len(response_json["result"]) != 0):
-                    for result in response_json["result"]:
-                        try:
-                            logmsg.info("{}".format(result["clusterName"]))
-                            domainlist[(result["clusterName"])] = result["clusterId"]
-                        except:
-                            logmsg.info("No valid result for controller {}".format(userinput))
-                else:
+        logmsg.info("\nGenerating Domain list (Host clusters)...")
+        json_return = PDApi.send_get_return_json(repo, url)
+        if json_return:
+            for result in json_return["result"]:
+                try:
+                    logmsg.info("{}".format(result["clusterName"]))
+                    domainlist[(result["clusterName"])] = result["clusterId"]
+                except:
                     logmsg.info("No valid result for controller {}".format(userinput))
-                    exit(1)
-            else:
-                logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
-                exit(1)
+        else:
+            logmsg.info("No valid result for controller {}".format(userinput))
+            exit(1)
+        if len(domainlist) > 1:
             while userinput not in domainlist:
-                userinput = input("\nEnter the domain name: ")
-                
-            repo.CLUSTER_ID = domainlist[userinput]
-        except requests.exceptions.RequestException as exception:
-            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
-            logmsg.debug(exception)
-        
-    def run_compute_healthcheck(repo):
-        get_token(repo)
-        url = ("{}/vcenter/1/compute/{}/health-checks".format(repo.URL,repo.CONTROLLER_ID))
-        payload = {"cluster": repo.CLUSTER_ID,"nodes":[]}
-        try:
-            logmsg.debug("Sending GET {} {}".format(url,json.dumps(payload)))
-            response = requests.post(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
-            if response.status_code == 202:
-                repo.COMPUTE_HEALTHCHECK_TASK = json.loads(response.text)
-                logmsg.info("Healthcheck running...")
-                logmsg.info(json.dumps(response.text))
-            else:
-                logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
-                exit(1)
-        except requests.exceptions.RequestException as exception:
-            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
-            logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+                    userinput = input("\nEnter the domain name: ")
+                    cluster_id = domainlist[userinput]
+        else:
+            cluster_id = domainlist['NetApp-HCI-Cluster-01']
+        return cluster_id
 
-    def print_healthcheck_status(repo):
-        healthcheck_report = []
-        task = []
-        percent_complete = 0
-        url = ('{}/task-monitor/1/tasks/{}'.format(repo.URL,repo.COMPUTE_HEALTHCHECK_TASK['taskId']))
-        payload = {}
-        try:
-            logmsg.debug("Sending GET {} {}".format(url,payload))
-            get_token(repo)
-            response = requests.get(url, headers=repo.HEADER_READ, data=payload, verify=False)
-            task = (json.loads(response.text))
-            logmsg.info(task['step'])
-        except requests.exceptions.RequestException as exception:
-            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
-            logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
-        
+    #============================================================
+    # Start the healthcheck
+    def run_compute_healthcheck(repo, controller_id, cluster_id):
+        get_token(repo)
+        url = ("{}/vcenter/1/compute/{}/health-checks".format(repo.BASE_URL,controller_id))
+        payload = {"cluster": cluster_id,"nodes":[]}
+        json_return = PDApi.send_post_return_json(repo, url, payload)
+        if json_return:
+            logmsg.info("Healthcheck running...")
+            return json_return
+        else:
+            logmsg.info("Failed return. There may be a Healthcheck already running for this target. See /var/log/mnode-support-util.log for details")
+            exit(1)
+
+    #============================================================
+    # Watch the progress
+    # Write report to file
+    def print_healthcheck_status(repo, healthcheck_start):
         # prevent the log from filling up with debug messages in the while loop
         logging.getLogger("urllib3").setLevel(logging.WARNING)
-        
-        while percent_complete != 100:
-            get_token(repo)
-            step = task['step']
-            try:
-                response = requests.get(url, headers=repo.HEADER_READ, data=payload, verify=False)
-                if response.status_code == 200:
-                    task = (json.loads(response.text))
-                    if percent_complete != task['percentComplete']:
-                        logmsg.debug(task)
-                        logmsg.info("Percent complete: {}".format(str(task['percentComplete'])))
-                        percent_complete = task['percentComplete']
-                    if step != task['step']:
-                        step = task['step']
+        report_file_name = ('{}ComputeHealthcheck-{}.json'.format(repo.SUPPORT_DIR,healthcheck_start['taskId']))
+        step = "none"
+        url = ('{}/task-monitor/1/tasks/{}'.format(repo.BASE_URL,healthcheck_start['taskId']))
+        json_return = PDApi.send_get_return_json(repo, url)
+        if json_return:
+            while json_return['state'] == "inProgress":
+                get_token(repo)
+                json_return = PDApi.send_get_return_json(repo, url, 'no')
+                if json_return:
+                    if step != json_return['step']:
+                        step = json_return['step']
                         logmsg.info(step)
+            if json_return['state'] == 'completed':
+                resource_link = json_return['resourceLink']
+                url = (resource_link.replace("127.0.0.1", repo.ABOUT['mnode_host_ip']))
+                resource_json = PDApi.send_get_return_json(repo, url)
+                with open(report_file_name, "w") as outfile:
+                    print(json.dumps(resource_json), file=outfile)
+                if resource_json['result']['errors']:
+                    logmsg.info("Error(s) encountered")
+                    for error in resource_json['result']['errors']:
+                        logmsg.info("\t{}".format(error))
+                    logmsg.info("Healthcheck completed with error(s). See report {}".format(report_file_name))
                 else:
-                    logmsg.info("Received an unsuccessful return. See /var/log/mnode-support-util.log for details")
-                    logmsg.debug(response.status_code)
-                    logmsg.debug("{}: {}".format(response.status_code, response.text))
-            except requests.exceptions.RequestException as exception:
-                logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
-                logmsg.debug(exception)
-                logmsg.debug("{}: {}".format(response.status_code, response.text)) 
-
-        url = task['resourceLink'].split('/')
-        url[2] = "127.0.0.1"
-        rl = '/'.join(url)
-        try:
-            logmsg.debug("Sending GET {} {}".format(url,payload))
-            get_token(repo)
-            response = requests.get( rl, headers=repo.HEADER_READ, data=payload, verify=False)
-            healthcheck_report = (json.loads(response.text))
-            filename = (repo.SUPPORT_DIR + repo.CLUSTER_ID + "-compute_healthcheck.json")
-            try:
-                with open(filename, 'w') as outfile:  
-                    if healthcheck_report['result']['errors']:
-                        logmsg.info("\nErrors occured")
-                    logmsg.info("Report file: {}".format(filename))
-                    json.dump(healthcheck_report, outfile)
-                    outfile.close()
-            except FileNotFoundError:
-                logmsg.info("Could not open {}".format(filename))
-            logmsg.debug(healthcheck_report)
-        except requests.exceptions.RequestException as exception:
-            logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
-            logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+                    logmsg.info("Healthcheck completed without error(s). See report {}".format(report_file_name))
         # Set logging back to debug
         logging.getLogger("urllib3").setLevel(logging.DEBUG)

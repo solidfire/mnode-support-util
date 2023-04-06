@@ -24,7 +24,7 @@ class Clusters():
             url = ("{}/storage/1/{}/info".format(repo.URL,cluster_id))
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             if response.status_code == 200:
                 cluster_info = json.loads(response.text)
             else:
@@ -44,7 +44,7 @@ class Clusters():
             url = ("{}/storage/1/upgrades?includeCompleted=true".format(repo.URL))
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             if response.status_code == 200:
                 upgrade = json.loads(response.text)
                 try:
@@ -59,7 +59,7 @@ class Clusters():
                     url = ("{}/storage/1/upgrades/{}/log".format(repo.URL,repo.UPGRADE_ID))
                     logmsg.debug("Sending GET {}".format(url))
                     response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-                    logmsg.debug("{}: {}".format(response.status_code, response.text))
+                    logmsg.debug(response.text)
                     if response.status_code == 200:
                         try:
                             with open(repo.STORAGE_UPGRADE_LOG, 'w') as outfile:               
@@ -93,17 +93,17 @@ class Clusters():
                     try:
                         logmsg.debug("Sending GET {}".format(url))
                         response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-                        logmsg.debug("{}: {}".format(response.status_code, response.text))
+                        logmsg.debug(response.text)
                         if response.status_code == 200 :
                             outfile.write(json.dumps(response.text))
                         else:
                             logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                            logmsg.debug("{}: {}".format(response.status_code, response.text))
+                            logmsg.debug(response.text)
                         x += 1
                     except requests.exceptions.RequestException as exception:
                         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                         logmsg.debug(exception)
-                        logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+                        logmsg.debug(response.text) 
             outfile.close()
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
@@ -114,37 +114,34 @@ class Clusters():
             url = ('{}/storage/1/clusters?installationId={}'.format(repo.URL,repo.PARENT_ID))
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             if response.status_code == 200 :
                 repo.CLUSTERS = json.loads(response.text)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
+                logmsg.debug(response.text)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+            logmsg.debug(response.text) 
 
+    # remove - no longer functions in 12.3.1+    
     def check_auth_container(repo):
         get_token(repo)
         url = ('{}/storage/1/clusters/check-auth-container'.format(repo.URL))
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             if response.status_code == 200 :
                 return(json.loads(response.text))
-            elif response.status_code == 500:
-                logmsg.info("API call not supported on target cluster. Don't panic. Expected with EOS 12.3 and higher")
-                return str(response.status_code)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
-                return str(response.status_code)
+                logmsg.debug(response.text)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))  
+            logmsg.debug(response.text) 
     
     def check_auth_config(repo):
         # SUST-1292 element-auth requires clientid mnode-init. The mnode service id's require mnode-client
@@ -157,26 +154,25 @@ class Clusters():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             if response.status_code == 200 :
                 authconfig = json.loads(response.text)
                 logmsg.debug(authconfig)
                 if len(authconfig["apiClients"]) == 0 and len(authconfig['apiResources'] == 0):
-                    msg = ("\tThere is problem with the auth configuration\n\tSee Solution in KB\nhttps://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Element_Software/setup-mnode_script_or_Management_Services_update_fails_on_Element_mNode_12.2_with_configure_element_auth_error")
+                    logmsg.info("\tThere is problem with the auth configuration\n\tSee Solution in KB\nhttps://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Element_Software/setup-mnode_script_or_Management_Services_update_fails_on_Element_mNode_12.2_with_configure_element_auth_error")
                 else:
-                    msg = ("\tapiClient and apiResources looks good. See /var/log/mnode-support-util.log to verify")
+                    logmsg.info("\tapiClient and apiResources looks good. See /var/log/mnode-support-util.log to verify")
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
+                logmsg.debug(response.text)
             # SUST-1292
             repo.TOKEN_CLIENT = "mnode-client"
             get_token(repo)
             repo.NEW_TOKEN = False
-            return msg
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+            logmsg.debug(response.text) 
 
     def get_health_check(repo):
         get_token(repo)
@@ -184,16 +180,16 @@ class Clusters():
         try:
             logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False) 
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(response.text)
             if response.status_code == 200 :
                 repo.HEALTH_CHECK = json.loads(response.text)
             else:
                 logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
+                logmsg.debug(response.text)
         except requests.exceptions.RequestException as exception:
             logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+            logmsg.debug(response.text) 
 
     def get_health_check_logs(repo):
         get_token(repo)
@@ -207,17 +203,17 @@ class Clusters():
                     try:
                         logmsg.debug("Sending GET {}".format(url))
                         response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-                        logmsg.debug("{}: {}".format(response.status_code, response.text))
+                        logmsg.debug(response.text)
                         if response.status_code == 200 :
                             outfile.write(json.dumps(response.text))
                         else:
                             logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code))
-                            logmsg.debug("{}: {}".format(response.status_code, response.text))
+                            logmsg.debug(response.text)
                         x += 1
                     except requests.exceptions.RequestException as exception:
                         logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                         logmsg.debug(exception)
-                        logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+                        logmsg.debug(response.text) 
         except FileNotFoundError:
                 logmsg.info("Could not open {}".format(filename))
 
@@ -240,4 +236,4 @@ class Clusters():
         except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+                logmsg.debug(response.text) 
