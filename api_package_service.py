@@ -51,7 +51,7 @@ class Package:
     # requires some special treatment with the api call. So it does not use PDApi.send_put
     def upload_element_image(repo, updatefile):
         get_token(repo)
-        logmsg.info('\nAdd upgrade image to package repository')
+        logmsg.info('Add upgrade image to package repository')
         if os.path.exists(updatefile) != True:
             logmsg.info("{} not found".format(updatefile))
             exit(1)
@@ -63,12 +63,17 @@ class Package:
                 logmsg.debug('Sending PUT {} {}'.format(url,updatefile))
                 logmsg.info('Loading {} into the package repository. This will take a few minutes'.format(updatefile))
                 response = session.post(url, headers=header, data=f, verify=False) 
-                if response.status_code == 200:
+                if response.status_code == 200 or response.status_code == 202:
                     logmsg.info('Upload successful')
                     logmsg.info(response.text)
+                    response_json = json.loads(response.text)
+                else:
+                    logmsg.info("Package upload fail with status {}\n\t{}".format(response.status_code),response.text)
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
                 logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+                response_json = json.loads(response.text)
         session.close()
+        return response_json
 
