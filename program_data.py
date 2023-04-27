@@ -17,7 +17,7 @@ logmsg = Logging.logmsg()
 
 class ProgramData():
     def __init__(self, args):
-        self.UTIL_VERSION = "3.0"
+        self.UTIL_VERSION = "3.0-SUST-1399"
         #============================================================
         # Very frequently used values
         self.ABOUT = []
@@ -205,7 +205,7 @@ class PDApi():
 
     #============================================================
     # MIP send GET return json
-    def mip_send_get_return_json(creds, url):
+    def mip_send_get_return_json(creds, url, node_ip, payload):
         url = ("https://{}:442/json-rpc/10.0/".format(node_ip))
         try:
             logmsg.debug("Sending POST {} {}".format(url,payload))

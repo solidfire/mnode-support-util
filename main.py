@@ -309,7 +309,7 @@ if __name__ == "__main__":
         
         for package in current_packages:
             if package['version'] == json_return['version']:
-                logmsg.info("Successfuly added: {} {}".format(package['name'], package['version']))
+                logmsg.info("Successfuly added package: {} {}".format(package['name'], package['version']))
                 break
             else:
                 current_packages = Package.list_packages(repo)

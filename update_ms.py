@@ -63,6 +63,8 @@ class UpdateMS():
         logmsg.info("Deploying new MS packages and services. Please wait....")
         json_return = PDApi.send_put_return_json_nopayload(repo, url)
         if json_return:
-            logmsg.debug("{}".format(json_return['message'])) 
+            logmsg.debug("{}".format(json_return['message']))
+        else:
+            logmsg.info("Monitor progress with docker ps.")
         
 
