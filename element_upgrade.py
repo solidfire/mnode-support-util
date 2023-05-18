@@ -130,6 +130,7 @@ class ElemUpgrade():
         logmsg.info("\nWatch upgrade progress. CTRL-C to exit.")
         try:
             while percent_complete != 100:
+                get_token(repo)
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
                 if json_return:
                     if json_return['state'] == 'initializing':
