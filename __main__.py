@@ -1,6 +1,7 @@
 import argparse
 import getpass
 import json
+import os
 import textwrap
 import time
 from asset_tasks import AssetMgmt
@@ -190,6 +191,9 @@ if __name__ == "__main__":
     #============================================================
     # mnode support bundle
     elif args.action == 'supportbundle':
+        isExist = os.path.exists(repo.SUPPORT_DIR)
+        if not isExist:
+            os.makedirs(repo.SUPPORT_DIR)
         logmsg.info("Start support bundle...")
         #healthcheck_run_all(repo)
         SupportBundle(repo)
