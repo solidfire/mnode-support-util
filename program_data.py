@@ -17,7 +17,7 @@ logmsg = Logging.logmsg()
 
 class ProgramData():
     def __init__(self, args):
-        self.UTIL_VERSION = "3.0-SUST-1399"
+        self.UTIL_VERSION = "3.0-CSD-5601"
         #============================================================
         # Very frequently used values
         self.ABOUT = []

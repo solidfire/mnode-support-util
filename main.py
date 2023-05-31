@@ -191,7 +191,7 @@ if __name__ == "__main__":
     # mnode support bundle
     elif args.action == 'supportbundle':
         logmsg.info("Start support bundle...")
-        healthcheck_run_all(repo)
+        #healthcheck_run_all(repo)
         SupportBundle(repo)
 
     #============================================================
