@@ -5,7 +5,7 @@ import tarfile
 from api_hardware import Hardware
 from api_inventory import Inventory
 from api_mnode import Assets, Services, Settings, about
-from api_storage import Clusters, Healthcheck
+from api_storage import Clusters, Healthcheck, Upgrades
 from datetime import datetime
 from docker import Docker
 from get_token import get_token
@@ -28,12 +28,12 @@ class SupportBundle():
     def __init__(self, repo):
         # =====================================================================
         # clean up any old logs
-        try:
-            logmsg.info("Cleaning up {}".format(repo.SUPPORT_DIR))
-            for f in os.listdir(repo.SUPPORT_DIR):
-                os.remove(os.path.join(repo.SUPPORT_DIR, f))
-        except OSError as exception:
-            logmsg.debug(exception)
+        #try:
+        #    logmsg.info("Cleaning up {}".format(repo.SUPPORT_DIR))
+        #    for f in os.listdir(repo.SUPPORT_DIR):
+        #        os.remove(os.path.join(repo.SUPPORT_DIR, f))
+        #except OSError as exception:
+        #    logmsg.debug(exception)
 
         # =====================================================================
         # mnode about
@@ -151,13 +151,26 @@ class SupportBundle():
 
         # =====================================================================
         # check for previous storage upgrade
-        filename = ("{}support-check-storage-upgrade.json".format(repo.SUPPORT_DIR))
+        checkfile = ("{}support-check-storage-upgrade.json".format(repo.SUPPORT_DIR))
+        cutlog = []
         try:
-            with open(filename, 'w') as outfile:
-                logmsg.info("Check storage upgrade...")
-                json_return = Inventory.get_storage_upgrades(repo)
+            with open(checkfile, 'w') as outfile:
+                logmsg.info("Check storage upgrades... This may take a while.")
+                json_return = Upgrades.get_upgrade(repo, active='true')
                 if json_return:
+                    logmsg.info("\tUpgrade(s) found...")
                     outfile.write(json.dumps(json_return))
+                    for upgrade in json_return:
+                        logmsg.info("\tWriting log file for upgrade {}".format(upgrade["upgradeId"]))
+                        logfile = ("{}support-storage-upgrade-{}.log".format(repo.SUPPORT_DIR, upgrade["upgradeId"]))
+                        with open(logfile, 'a') as logf:
+                            url = ("{}/storage/1/upgrades/{}/log".format(repo.BASE_URL,upgrade['upgradeId']))
+                            json_return = PDApi.send_get_return_json(repo, url, debug=False) ## Often fails with RangeError: Maximum call stack exceeded
+                            if json_return:
+                                for line in json_return['mnode_storage']['docker_logs']:
+                                    # strip out the over verbosity
+                                    if "vars in" not in line:
+                                        print(line, file = logf)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
@@ -268,7 +281,7 @@ class SupportBundle():
         logmsg.info("Get service logs...")
         services = Services.get_services(repo)
         for service in services:
-            log = Services.get_service_log(repo, service['name'])
+            log = Services.get_service_log(repo, service['name'], False)
             filename = ("{}support-service-{}.log".format(repo.SUPPORT_DIR,service['name']))
             try:
                 with open(filename, 'a') as outfile:
