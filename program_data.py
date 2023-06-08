@@ -17,7 +17,7 @@ logmsg = Logging.logmsg()
 
 class ProgramData():
     def __init__(self, args):
-        self.UTIL_VERSION = "3.0-SUST-1399"
+        self.UTIL_VERSION = "3.0.1407"
         #============================================================
         # Very frequently used values
         self.ABOUT = []
@@ -44,11 +44,11 @@ class PDApi():
     
     #============================================================
     # send a GET return the json
-    def send_get_return_text(repo, url, debug="yes"):
+    def send_get_return_text(repo, url, debug=True):
         try:
-            if debug == 'yes': logmsg.debug("Sending GET {}".format(url))
+            if debug == True: logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            if debug == 'yes': logmsg.debug("{}: {}".format(response.status_code, response.text))
+            if debug == True: logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -58,11 +58,11 @@ class PDApi():
 
     #============================================================
     # send a GET return the json
-    def send_get_return_json(repo, url, debug="yes"):
+    def send_get_return_json(repo, url, debug=True):
         try:
-            if debug == 'yes': logmsg.debug("Sending GET {}".format(url))
+            if debug == True: logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            if debug == 'yes': logmsg.debug("{}: {}".format(response.status_code, response.text))
+            if debug == True: logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -73,11 +73,11 @@ class PDApi():
 
     #============================================================
     # send a GET return the status code
-    def send_get_return_status(repo, url, debug="yes"):
+    def send_get_return_status(repo, url, debug=True):
         try:
-            if debug == 'yes': logmsg.debug("Sending GET {}".format(url))
+            if debug == True: logmsg.debug("Sending GET {}".format(url))
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            if debug == 'yes': logmsg.debug("{}: {}".format(response.status_code, response.text))
+            if debug == True: logmsg.debug("{}: {}".format(response.status_code, response.text))
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             return response.status_code
