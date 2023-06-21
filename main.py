@@ -191,7 +191,13 @@ if __name__ == "__main__":
     #============================================================
     # mnode support bundle 
     elif args.action == 'supportbundle':
+        isExist = os.path.exists(repo.SUPPORT_DIR)
+        if not isExist:
+            os.makedirs(repo.SUPPORT_DIR)
         logmsg.info("Start support bundle...")
+<<<<<<< HEAD
+        #healthcheck_run_all(repo)
+=======
         # =====================================================================
         # clean up any old logs
         try:
@@ -201,6 +207,7 @@ if __name__ == "__main__":
         except OSError as exception:
             logmsg.debug(exception)
         healthcheck_run_all(repo)
+>>>>>>> main
         SupportBundle(repo)
 
     #============================================================

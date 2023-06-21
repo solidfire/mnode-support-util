@@ -46,6 +46,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 
+        
         # =====================================================================
         # mnode settings
         filename = ("{}support-mnode-settings.json".format(repo.SUPPORT_DIR))
@@ -127,6 +128,7 @@ class SupportBundle():
 
         # =====================================================================
         # get clusters
+        '''
         filename = ("{}support-get-clusters.json".format(repo.SUPPORT_DIR))
         try:
             with open(filename, 'w') as outfile:
@@ -214,6 +216,7 @@ class SupportBundle():
                         outfile.write(text)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))   
+            '''
 
         # =====================================================================
         # get docker ps
@@ -328,6 +331,7 @@ class SupportBundle():
 
         # =====================================================================
         #bmc_ports(repo):
+        '''
         filename = ("{}support-portscan".format(repo.SUPPORT_DIR))
         with open(filename, "a") as outfile:
             for bmc in repo.ASSETS[0]['hardware']:
@@ -363,6 +367,7 @@ class SupportBundle():
                 else:
                     outfile.write("\nPort 443 scan failed for {}".format(bmc['ip']))
                     outfile.write("\nReturn code {}".format(str(response_139)))
+                    '''
 
         # =====================================================================
         #local_files
