@@ -147,16 +147,18 @@ class mNodeHealthCheck():
             print("\t{} Errors found for persistent volume(s) in trident log".format(trident_errors), file=outfile)
             print("\tTROUBLESHOOTING TIP(s): Check the volume access and status. Ensure mnode has connectivty to the cluster SVIP.", file=outfile)
 
+    ''' Duplicate function
     def service_logs(repo, outfile):
         services = Services.get_services(repo)
         print("\n===== Parsing service logs =====".format(str(len(services))), file=outfile)
         for service in services:
-            log = Services.get_service_log(repo, service['name'])
+            log = Services.get_service_log(repo, service['name'], False)
             errors = ParseLogs.parse_service_log(repo, log)
             if len(errors) > 0:
                 print("\n++Errors found in {} log".format(service['name']), file=outfile)
                 for error in errors:
                     print(error, file=outfile)
+    '''
 
     def sf_prefrence(repo, outfile):
         url = ("https://{}/json-rpc/12.0?method=ListClusterInterfacePreferences".format(repo.AUTH_MVIP))
@@ -346,8 +348,8 @@ def healthcheck_run_all(repo):
                 mNodeHealthCheck.docker_log(outfile)
                 logmsg.info("+ Executing trident_log")
                 mNodeHealthCheck.trident_log(outfile)
-                logmsg.info("+ Executing service_logs")
-                mNodeHealthCheck.service_logs(repo, outfile)
+                #logmsg.info("+ Executing service_logs")
+                #mNodeHealthCheck.service_logs(repo, outfile)
         except FileNotFoundError:
             logmsg.info("Could not open {}".format(filename))
 '''

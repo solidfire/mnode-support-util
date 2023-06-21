@@ -117,12 +117,12 @@ class Services():
             logmsg.info("Deploying new MS packages and services. Monitor docker ps until all services have restarted.")
 
     #============================================================
-    # get service log. Not turly part of the Service group
-    def get_service_log(repo, service):
+    # get service log. 
+    def get_service_log(repo, service, log):
         log = []
         get_token(repo)
         url = ('{}/mnode/logs?lines=1000&service-name={}&stopped=true'.format(repo.BASE_URL, service))
-        text = PDApi.send_get_return_text(repo, url)
+        text = PDApi.send_get_return_text(repo, url, debug=log)
         if text:
             log = text.splitlines()
             return log

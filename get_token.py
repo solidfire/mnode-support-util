@@ -29,7 +29,7 @@ def get_token(repo):
         current_time = time.time()
         try:
             response = requests.post(url, headers={}, data=payload, verify=False)
-            logmsg.debug(response.text)
+            logmsg.debug(response.status_code)
             if response.status_code == 200:
                 token_return = json.loads(response.text)
                 if token_return['expires_in']:

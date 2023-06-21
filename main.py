@@ -189,13 +189,25 @@ if __name__ == "__main__":
         healthcheck_run_all(repo)
 
     #============================================================
-    # mnode support bundle
+    # mnode support bundle 
     elif args.action == 'supportbundle':
         isExist = os.path.exists(repo.SUPPORT_DIR)
         if not isExist:
             os.makedirs(repo.SUPPORT_DIR)
         logmsg.info("Start support bundle...")
+<<<<<<< HEAD
         #healthcheck_run_all(repo)
+=======
+        # =====================================================================
+        # clean up any old logs
+        try:
+            logmsg.info("Cleaning up {}".format(repo.SUPPORT_DIR))
+            for f in os.listdir(repo.SUPPORT_DIR):
+                os.remove(os.path.join(repo.SUPPORT_DIR, f))
+        except OSError as exception:
+            logmsg.debug(exception)
+        healthcheck_run_all(repo)
+>>>>>>> main
         SupportBundle(repo)
 
     #============================================================
@@ -304,25 +316,19 @@ if __name__ == "__main__":
     #============================================================
     # Upload Element Upgrade Image
     elif args.action == 'packageupload':
+        pkgadded = False
         if not args.updatefile:
             logmsg.info("Please use --updatefile and specify the full path to the package file")
-        current_packages = Package.list_packages(repo)
-        if current_packages:
-            package_count = len(current_packages)
-        else:
-            package_count = 0
         json_return = Package.upload_element_image(repo, args.updatefile)
         logmsg.info('Refreshing packages.... Please wait')
         time.sleep(30)
-        while True:
+        while pkgadded == False:
+            current_packages = Package.list_packages(repo)
             if current_packages:
                 for package in current_packages:
                     if package['version'] == json_return['version']:
                         logmsg.info("Successfuly added package: {} {}".format(package['name'], package['version']))
-                        break
-            else:
-                current_packages = Package.list_packages(repo)
-        
+                        pkgadded = True
         logmsg.info('\nAvailable packages;')
         for package in current_packages:
             logmsg.info('name: {:<20} version: {:<20} id: {}'.format(package['name'],package['version'],package['id']))
