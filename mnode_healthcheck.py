@@ -46,7 +46,7 @@ class mNodeHealthCheck():
         status = Clusters.check_auth_container(repo) 
         if status == 500:
             print("\tAPI call not supported on target cluster. Don't panic. Expected with EOS 12.3 and higher", file=outfile)
-        elif status['authCheckIssueFound'] == False:
+        elif status["authCheckIssueFound"] == False:
             print("\tNo issues found in auth container status", file=outfile)
         print("\t+ TROUBLESHOOTING TIPS If you know or suspect problems with element_auth. ", file=outfile)
         for step in troubleshooting:
@@ -57,10 +57,10 @@ class mNodeHealthCheck():
         repo.TOKEN_CLIENT = "mnode-init"
         repo.NEW_TOKEN = True
         get_token(repo)
-        url = ('https://{}/auth/api/1/configuration'.format(repo.AUTH_MVIP))
+        url = f'https://{repo.AUTH_MVIP}/auth/api/1/configuration'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
-            config_count = (len(json_return["apiClients"]) + len(json_return['apiResources']))
+            config_count = (len(json_return["apiClients"]) + len(json_return["apiResources"]))
             if config_count == 0:
                 print("\tThere is problem with the auth configuration\n\tSee Solution in KB\nhttps://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Element_Software/setup-mnode_script_or_Management_Services_update_fails_on_Element_mNode_12.2_with_configure_element_auth_error", file=outfile)
             else:
@@ -85,30 +85,30 @@ class mNodeHealthCheck():
         for server in ntpservers:
             splitline = server.split(" ")
             if "gentoo" in splitline[1]:
-                print("\tFound default {}. Please edit /etc/ntp.conf and comment that out.".format(splitline[1]), file=outfile)
+                print(f'\tFound default {splitline[1]}. Please edit /etc/ntp.conf and comment that out.', file=outfile)
             else:
                 if repo.AUTH_MVIP in splitline[1]:
-                    print("\tServer {} is the authorative MVIP. EXCELLENT!!".format(splitline[1]), file=outfile)
+                    print(f'\tServer {splitline[1]} is the authorative MVIP. EXCELLENT!!', file=outfile)
                 else:
-                    print("\tServer {} is not the authorative MVIP.".format(splitline[1]), file=outfile)
+                    print(f'\tServer {splitline[1]} is not the authorative MVIP.', file=outfile)
                 try:
-                    cmd = ("/usr/sbin/ntpdate -q {}".format(splitline[1]))
+                    cmd = f'/usr/sbin/ntpdate -q {splitline[1]}'
                     response = os.popen(cmd).read()
                     if response:
                         splitresponse = response.split(',')
                         offset = splitresponse[2].split(' ')
                     if "0." not in offset[2]:
-                        print("\t\tTime sync offset is greater than 1: {}\n\tTROUBLESHOOTING TIP(s): See document: {}".format(offset,time_doc), file=outfile)
+                        print(f'\t\tTime sync offset is greater than 1: {offset}\n\tTROUBLESHOOTING TIP(s): See document: {time_doc}', file=outfile)
                     else:
-                        print("\t\tSync offset is less than 1: {}".format(offset), file=outfile)
+                        print(f'\t\tSync offset is less than 1: {offset}', file=outfile)
                 except OSError as exception:
                     logmsg.debug(exception)
-                    logmsg.debug("{}: {}".format(response.status_code, response.text))
-                    response = ("ERROR: {} Failed".format(cmd))
+                    logmsg.debug(f'{response.status_code}: {response.text}')
+                    response = (f'ERROR: {cmd} Failed')
         
     def mnode_about(repo, outfile):
         about(repo)
-        print("\n===== mNode about: =====\n {}".format(repo.ABOUT), file=outfile)
+        print(f'\n===== mNode about: =====\n {repo.ABOUT}', file=outfile)
 
     def display_swarm_net(outfile):
         print("\n===== Container swarm network. Ensure IP's do not overlapp with existing network\nhttps://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Element_Software/Element_mNode's_Docker_swarm_network_deploys_on_the_same_subnet_as_the_underlying_management_%2F%2F_infrastructure_network", file=outfile)
@@ -128,7 +128,7 @@ class mNodeHealthCheck():
             if 'hour' in line or 'day' in line:
                 hrday += 1
         if minsec > 0 and hrday > 0:
-            print("\t{} services have short Uptimes. Services may be restarting.\n\tTROUBLESHOOTING TIP(s): Check sudo docker ps. Container service log, /var/log/docker.info and /var/log/syslog".format(str(minsec)), file=outfile)
+            print(f'\t{str(minsec)} services have short Uptimes. Services may be restarting.\n\tTROUBLESHOOTING TIP(s): Check sudo docker ps. Container service log, /var/log/docker.info and /var/log/syslog', file=outfile)
         else:
             print("\tAll services show about the same uptime. No signs of unexpected container restarts", file=outfile)
 
@@ -137,49 +137,36 @@ class mNodeHealthCheck():
         docker_errors = ParseLogs.parse_docker_log()
         if len(docker_errors) > 0:
             for line in docker_errors:
-                print("{}".format(line), file=outfile)
+                print(f'{line}', file=outfile)
 
 
     def trident_log(outfile):
         print("\n===== Parsing /var/log/trident/netapp.log =====", file=outfile)
         trident_errors = ParseLogs.parse_trident_log()
         if trident_errors > 0:
-            print("\t{} Errors found for persistent volume(s) in trident log".format(trident_errors), file=outfile)
+            print(f'\t{trident_errors} Errors found for persistent volume(s) in trident log', file=outfile)
             print("\tTROUBLESHOOTING TIP(s): Check the volume access and status. Ensure mnode has connectivty to the cluster SVIP.", file=outfile)
 
-    ''' Duplicate function
-    def service_logs(repo, outfile):
-        services = Services.get_services(repo)
-        print("\n===== Parsing service logs =====".format(str(len(services))), file=outfile)
-        for service in services:
-            log = Services.get_service_log(repo, service['name'], False)
-            errors = ParseLogs.parse_service_log(repo, log)
-            if len(errors) > 0:
-                print("\n++Errors found in {} log".format(service['name']), file=outfile)
-                for error in errors:
-                    print(error, file=outfile)
-    '''
-
     def sf_prefrence(repo, outfile):
-        url = ("https://{}/json-rpc/12.0?method=ListClusterInterfacePreferences".format(repo.AUTH_MVIP))
+        url = f'https://{repo.AUTH_MVIP}/json-rpc/12.0?method=ListClusterInterfacePreferences'
         print("\n===== Checking cluster ListClusterInterfacePreferences =====", file=outfile)
         try:
             response = requests.get(url,auth=(repo.MVIP_USER, repo.MVIP_PW), data={}, verify=False)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
                 if json_return:
-                    print("\t{}".format(json_return), file=outfile)
+                    print(f'\t{json_return}', file=outfile)
                     print("\tTROUBLESHOOTING TIP: ClusterInterfacePreference must match the mnode_host_ip and if present, the FQDN must resolve mnode_host_ip ", file=outfile)
                 else:
                     print("\tNo mnode Interface Preference found. It may have been removed.\n\t", file=outfile)
                     print("\tCreate with: https://<MVIP>/json-rpc/12.0?method=CreateClusterInterfacePreference&name=mnode_ip&value=[mnodeip]", file=outfile)
             else:
-                print("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code), file=outfile)
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
+                print(f'Failed return {response.status_code} See /var/log/mnode-support-util.log for details', file=outfile)
+                logmsg.debug(f'{response.status_code}: {response.text}')
         except requests.exceptions.RequestException as exception:
             print("An exception occured. See /var/log/mnode-support-util.log for details")
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+            logmsg.debug(f'{response.status_code}: {response.text}') 
 
     def sf_const(repo, outfile):
         constants_reccomended = {
@@ -193,52 +180,52 @@ class mNodeHealthCheck():
             "laAuthContainer":"5",
             "lcAuthContainer": "0"
         }
-        url = ("https://{}/json-rpc/12.0?method=GetConstants".format(repo.AUTH_MVIP))
+        url = f'https://{repo.AUTH_MVIP}/json-rpc/12.0?method=GetConstants'
         print("\n===== Checking cluster Constants =====", file=outfile)
         try:
             response = requests.get(url,auth=(repo.MVIP_USER, repo.MVIP_PW), data={}, verify=False)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
                 if json_return:
-                    for line in json_return['result']:
+                    for line in json_return["result"]:
                         for constant in constants_reccomended:
                             if line == constant:
-                                print("\t{:<40} Current: {:<20} Recomended: {:<20}".format(constant, json_return['result'][line], constants_reccomended[constant]), file=outfile)
+                                print(f'\t{constant:<40} Current: {json_return["result"][line]:<20} Recomended: {constants_reccomended[constant]:<20}', file=outfile)
             else:
-                print("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code), file=outfile)
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
+                print(f'Failed return {response.status_code} See /var/log/mnode-support-util.log for details', file=outfile)
+                logmsg.debug(f'{response.status_code}: {response.text}')
         except requests.exceptions.RequestException as exception:
             print("An exception occured. See /var/log/mnode-support-util.log for details", file=outfile)
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
 
     def get_auth_about(repo, outfile):
         print("\n===== Getting cluster nodes auth about =====", file=outfile)
         print("\tTROUBLESHOOTING TIP(s): If any values do not match other nodes, stop and start the auth container. Recheck https://[mip]/auth/about", file=outfile)
         print("\tssh to the node.\n\tdocker stop element_auth\n\tdocker start element_auth\n\tNOTE docker ps STATUS of Healthy does not mean element_auth is healthy.\n", file=outfile)
-        url = ("https://{}/json-rpc/12.0?method=GetNetworkConfig&force=true".format(repo.AUTH_MVIP))
+        url = (f'https://{repo.AUTH_MVIP}/json-rpc/12.0?method=GetNetworkConfig&force=true')
         try:
             response = requests.get(url,auth=(repo.MVIP_USER, repo.MVIP_PW), data={}, verify=False)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
-                if json_return['result']['nodes']:
-                    for node in json_return['result']['nodes']:
-                        mip = (node['result']['networkInterfaces'][0]['address'])
+                if json_return["result"]["nodes"]:
+                    for node in json_return["result"]["nodes"]:
+                        mip = (node["result"]["networkInterfaces"][0]["address"])
                         try:
-                            response = requests.get("https://{}/auth/about".format(mip), data={}, verify=False)
+                            response = requests.get(f'https://{mip}/auth/about', data={}, verify=False)
                             if response.status_code == 200:
-                                print("\tNode: {:<5} auth about: {:<} ".format(node['nodeID'],response.text), file=outfile)
+                                print(f'\tNode: {node["nodeID"]:<5} auth about: {response.text:<} ', file=outfile)
                         except requests.exceptions.RequestException as exception:
                             print("An exception occured. See /var/log/mnode-support-util.log for details", file=outfile)
                             logmsg.debug(exception)
-                            logmsg.debug("{}: {}".format(response.status_code, response.text))
+                            logmsg.debug(f'{response.status_code}: {response.text}')
             else:
-                print("Failed return {} See /var/log/mnode-support-util.log for details".format(response.status_code), file=outfile)
-                logmsg.debug("{}: {}".format(response.status_code, response.text))
+                print(f'Failed return {response.status_code} See /var/log/mnode-support-util.log for details', file=outfile)
+                logmsg.debug(f'{response.status_code}: {response.text}')
         except requests.exceptions.RequestException as exception:
             print("An exception occured. See /var/log/mnode-support-util.log for details", file=outfile)
             logmsg.debug(exception)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
 
     def inventory_error(repo):
         get_token(repo)
@@ -273,7 +260,7 @@ class ParseLogs():
                 if error in line: 
                     if error not in found_error:
                         found_error.append(error)
-                        messages.append("\n{}:\n\tTROUBLESHOOTING TIP(s): {}".format(line,errors[error]))
+                        messages.append(f'\n{line}:\n\tTROUBLESHOOTING TIP(s): {errors[error]}')
         return messages
 
     #============================================================
@@ -300,7 +287,7 @@ class ParseLogs():
                                 found_error.append(error)
                                 messages.append(line)
         except FileNotFoundError:
-            print("Cannot open {}".format(dockerlog))
+            print(f'Cannot open {dockerlog}')
         return messages
 
     #============================================================
@@ -316,18 +303,18 @@ class ParseLogs():
                 if "ERRO" in line:
                     count += 1
         except FileNotFoundError:
-            print("Cannot open {}".format(tridentlog))
+            print(f'Cannot open {tridentlog}')
         return(count)
 
 def healthcheck_run_all(repo):
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        filename = ("/var/log/mNodeHealthCheck-{}.log".format(time_stamp))
-        logmsg.info("Writing healthcheck to {}".format(filename))
+        filename = f'/var/log/mNodeHealthCheck-{time_stamp}.log'
+        logmsg.info(f'Writing healthcheck to {filename}')
         try:
             with open(filename, 'w') as outfile:
                 for line in repo.ABOUT:
-                    print("{:<25}: {:<25}".format(line,repo.ABOUT[line]), file=outfile)
+                    print(f'{line:<25}: {repo.ABOUT[line]:<25}', file=outfile)
                 logmsg.info("+ Executing check_auth_token")
                 mNodeHealthCheck.check_auth_token(repo, outfile)
                 logmsg.info("+ Executing checkauth_container")
@@ -351,7 +338,7 @@ def healthcheck_run_all(repo):
                 #logmsg.info("+ Executing service_logs")
                 #mNodeHealthCheck.service_logs(repo, outfile)
         except FileNotFoundError:
-            logmsg.info("Could not open {}".format(filename))
+            logmsg.info(f'Could not open {filename}')
 '''
 Save this 
                     print("\tStep 1 - Cleanup: https://kb.netapp.com/Advice_and_Troubleshooting/Hybrid_Cloud_Infrastructure/NetApp_HCI/Management_Node_Docker_environement_cleanup", file=outfile)

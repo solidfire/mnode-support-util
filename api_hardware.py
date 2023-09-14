@@ -28,7 +28,7 @@ class Hardware():
     # get all BMC assets
     def get_hardware(repo):
         get_token(repo)
-        url = ('{}/mnode/1/assets{}/hardware-nodes'.format(repo.BASE_URL, repo.PARENT_ID))
+        url = f'{repo.BASE_URL}/mnode/1/assets{repo.PARENT_ID}/hardware-nodes'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -37,7 +37,7 @@ class Hardware():
     # get BMC info by asset id
     def get_hardware_by_id(repo, hardware_id):
         get_token(repo)
-        url = ('{}/hardware/2/nodes/{}'.format(repo.BASE_URL, hardware_id))
+        url = f'{repo.BASE_URL}/hardware/2/nodes/{hardware_id}'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -46,7 +46,7 @@ class Hardware():
     # get BMC logs 
     def get_hardware_logs(repo, hardware_id):
         get_token(repo)
-        url = ('{}/hardware/2/nodes/{}/bmc-logs'.format(repo.BASE_URL, hardware_id))
+        url = f'{repo.BASE_URL}/hardware/2/nodes/{hardware_id}/bmc-logs'
         text = PDApi.send_get_return_text(repo, url)
         if text:
             return text

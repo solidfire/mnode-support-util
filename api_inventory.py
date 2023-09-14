@@ -28,7 +28,7 @@ class Inventory():
     def refresh_inventory(repo):
         logmsg.info("Refreshing inventory and checking for errors. Please wait. This may take a while")
         get_token(repo)
-        url = ('{}/inventory/1/installations/{}?refresh=true'.format(repo.BASE_URL, repo.PARENT_ID))
+        url = f'{repo.BASE_URL}/inventory/1/installations/{repo.PARENT_ID}?refresh=true'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
           return json_return
@@ -37,7 +37,7 @@ class Inventory():
     # return compute upgrade json
     def get_compute_upgrades(repo):
         get_token(repo)
-        url = ('{}/inventory/1/installations/{}/compute/upgrades?refresh=false'.format(repo.BASE_URL,repo.PARENT_ID))
+        url = f'{repo.BASE_URL}/inventory/1/installations/{repo.PARENT_ID}/compute/upgrades?refresh=false'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
           return json_return
@@ -46,7 +46,7 @@ class Inventory():
     # return storage upgrade json
     def get_storage_upgrades(repo):
         get_token(repo)
-        url = ('{}/inventory/1/installations/{}/storage/upgrades?refresh=false'.format(repo.BASE_URL,repo.PARENT_ID))
+        url = f'{repo.BASE_URL}/inventory/1/installations/{repo.PARENT_ID}/storage/upgrades?refresh=false'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
           return json_return

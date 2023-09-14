@@ -31,7 +31,7 @@ class Package:
     # List available packages
     def list_packages(repo):
         get_token(repo)
-        url = ('{}/package-repository/1/packages/'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/package-repository/1/packages/'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -40,11 +40,11 @@ class Package:
     # Delete a package
     def delete_package(repo, package_id):
         get_token(repo)
-        url = ('{}/package-repository/1/packages/{}'.format(repo.BASE_URL,package_id))
-        logmsg.debug("Sending DELETE {}".format(url))
+        url = f'{repo.BASE_URL}/package-repository/1/packages/{package_id}'
+        logmsg.debug(f'Sending DELETE {url}')
         json_return = PDApi.send_delete_return_status(repo, url)
         if json_return:
-            logmsg.info("{}: {}".format(json_return['version'],json_return['message']))
+            logmsg.info(f'{json_return["version"]}: {json_return["message"]}')
 
     #============================================================
     # upload a package
@@ -53,26 +53,26 @@ class Package:
         get_token(repo)
         logmsg.info('Add upgrade image to package repository')
         if os.path.exists(updatefile) != True:
-            logmsg.info("{} not found".format(updatefile))
+            logmsg.info(f'{updatefile} not found')
             exit(1)
-        header = {"Accept": "application/json", "Prefer": "respond-async", "Content-Type": "application/octet-stream", "Authorization":"Bearer {}".format(repo.TOKEN)}
-        url = ('{}/package-repository/1/packages'.format(repo.BASE_URL))
+        header = {f'"Accept": "application/json", "Prefer": "respond-async", "Content-Type": "application/octet-stream", "Authorization":"Bearer {repo.TOKEN}"'}
+        url = f'{repo.BASE_URL}/package-repository/1/packages'
         session = requests.Session() 
         with open(updatefile, 'rb') as f:
             try:
-                logmsg.debug('Sending PUT {} {}'.format(url,updatefile))
-                logmsg.info('Loading {} into the package repository. This will take a few minutes'.format(updatefile))
+                logmsg.debug(f'Sending PUT {url} {updatefile}')
+                logmsg.info(f'Loading {updatefile} into the package repository. This will take a few minutes')
                 response = session.post(url, headers=header, data=f, verify=False) 
                 if response.status_code == 200 or response.status_code == 202:
                     logmsg.info('Upload successful')
                     logmsg.info(response.text)
                     response_json = json.loads(response.text)
                 else:
-                    logmsg.info("Package upload fail with status {}\n\t{}".format(response.status_code),response.text)
+                    logmsg.info(f'Package upload fail with status {response.status_code}\n\t{response.text}')
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+                logmsg.debug(f'{response.status_code}: {response.text}') 
                 response_json = json.loads(response.text)
         session.close()
         return response_json

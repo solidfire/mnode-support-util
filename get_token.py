@@ -22,22 +22,22 @@ def get_token(repo):
     # See if a new token is needed. mnode-client tokens have a 600 second life span.
     current_time = int(round(time.time()))
     if (current_time > (repo.TOKEN_LIFE + 590) or repo.NEW_TOKEN == True):
-        url = ('https://{}/auth/connect/token'.format(str(repo.AUTH_MVIP)))
+        url = f'https://{str(repo.AUTH_MVIP)}/auth/connect/token'
         requests.packages.urllib3.disable_warnings()
         payload = {'client_id': repo.TOKEN_CLIENT, 'grant_type': 'password', 'username': repo.MVIP_USER, 'password': repo.MVIP_PW}
-        logmsg.debug("Get Token: Sending {}".format(url))
+        logmsg.debug(f'Get Token: Sending {url}')
         current_time = time.time()
         try:
             response = requests.post(url, headers={}, data=payload, verify=False)
             logmsg.debug(response.status_code)
             if response.status_code == 200:
                 token_return = json.loads(response.text)
-                if token_return['expires_in']:
-                    repo.TOKEN = token_return['access_token']
+                if token_return["expires_in"]:
+                    repo.TOKEN = token_return["access_token"]
                     repo.TOKEN_LIFE = current_time
                     repo.NEW_TOKEN = "False"
-                    repo.HEADER_READ = {"Accept":"*/*", "Authorization":"Bearer {}".format(repo.TOKEN)}
-                    repo.HEADER_WRITE = {"Accept": "application/json", "Content-Type": "application/json", "Authorization":"Bearer {}".format(repo.TOKEN)}
+                    repo.HEADER_READ = {f'"Accept":"*/*", "Authorization":"Bearer {repo.TOKEN}"'}
+                    repo.HEADER_WRITE = {f'"Accept": "application/json", "Content-Type": "application/json", "Authorization":"Bearer {repo.TOKEN}"'}
                 else:
                     logmsg.info("\tRecived 200 but not a valid token. See /var/log/mnode-support-util.log for details")
                     repo.TOKEN = "INVALID"

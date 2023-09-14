@@ -17,7 +17,7 @@ logmsg = Logging.logmsg()
 
 class ProgramData():
     def __init__(self, args):
-        self.UTIL_VERSION = "3.0.1407"
+        self.UTIL_VERSION = "3.5"
         #============================================================
         # Very frequently used values
         self.ABOUT = []
@@ -46,9 +46,9 @@ class PDApi():
     # send a GET return the json
     def send_get_return_text(repo, url, debug=True):
         try:
-            if debug == True: logmsg.debug("Sending GET {}".format(url))
+            if debug == True: logmsg.debug(f'Sending GET {url}')
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            if debug == True: logmsg.debug("{}: {}".format(response.status_code, response.text))
+            if debug == True: logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -60,9 +60,9 @@ class PDApi():
     # send a GET return the json
     def send_get_return_json(repo, url, debug=True):
         try:
-            if debug == True: logmsg.debug("Sending GET {}".format(url))
+            if debug == True: logmsg.debug(f'Sending GET {url}')
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            if debug == True: logmsg.debug("{}: {}".format(response.status_code, response.text))
+            if debug == True: logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -75,9 +75,9 @@ class PDApi():
     # send a GET return the status code
     def send_get_return_status(repo, url, debug=True):
         try:
-            if debug == True: logmsg.debug("Sending GET {}".format(url))
+            if debug == True: logmsg.debug(f'Sending GET {url}')
             response = requests.get(url, headers=repo.HEADER_READ, data={}, verify=False)
-            if debug == True: logmsg.debug("{}: {}".format(response.status_code, response.text))
+            if debug == True: logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             return response.status_code
@@ -88,9 +88,9 @@ class PDApi():
     # send a PUT return the json
     def send_put_return_json(repo, url, payload):
         try:
-            logmsg.debug("Sending PUT {}".format(url))
+            logmsg.debug(f'Sending PUT {url}')
             response = requests.put(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -103,9 +103,9 @@ class PDApi():
     # send a PUT return the status code
     def send_put_return_status(repo, url, payload):
         try:
-            logmsg.debug("Sending PUT {}".format(url))
+            logmsg.debug(f'Sending PUT {url}')
             response = requests.put(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             return response.status_code
@@ -116,9 +116,9 @@ class PDApi():
     # send a PUT return the json. No payload
     def send_put_return_json_nopayload(repo, url):
         try:
-            logmsg.debug("Sending POST {}".format(url))
+            logmsg.debug(f'Sending POST {url}')
             response = requests.put(url, headers=repo.HEADER_WRITE, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+            logmsg.debug(f'{response.status_code}: {response.text}') 
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -131,9 +131,9 @@ class PDApi():
     # send a POST return the json
     def send_post_return_json(repo, url, payload):
         try:
-            logmsg.debug("Sending POST {} {}".format(url,json.dumps(payload)))
+            logmsg.debug(f'Sending POST {url} {json.dumps(payload)}')
             response = requests.post(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text)) 
+            logmsg.debug(f'{response.status_code}: {response.text}') 
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -146,9 +146,9 @@ class PDApi():
     # send a PUT return the status code
     def send_post_return_status(repo, url, payload):
         try:
-            logmsg.debug("Sending POST {} {}".format(url,json.dumps(payload)))
+            logmsg.debug(f'Sending POST {url} {json.dumps(payload)}')
             response = requests.post(url, headers=repo.HEADER_WRITE, data=json.dumps(payload), verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             return response.status_code
@@ -159,9 +159,9 @@ class PDApi():
     # send a DELETE return the status code
     def send_delete_return_status(repo, url):
         try:
-            logmsg.debug("Sending DELETE {}".format(url))
+            logmsg.debug(f'Sending DELETE {url}')
             response = requests.delete(url, headers=repo.HEADER_WRITE, data={}, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             return response.status_code
@@ -172,9 +172,9 @@ class PDApi():
     # send a DELETE return the json
     def send_delete_return_json(repo, url):
         try:
-            logmsg.debug("Sending DELETE {}".format(url))
+            logmsg.debug(f'Sending DELETE {url}')
             response = requests.delete(url, headers=repo.HEADER_WRITE, data={}, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -187,7 +187,7 @@ class PDApi():
     # Ensure the creds specified with ('-su', '--stuser') ('-sp', '--stpw') work on the current cluster
     # Prompt for creds if the given creds fail
     def check_cluster_creds(repo, mvip, host_name):
-        url = "https://{}/json-rpc/10.0".format(mvip)
+        url = f'https://{mvip}/json-rpc/10.0'
         payload = "{\n\t\"method\": \"GetClusterInfo\",\n    \"params\": {},\n    \"id\": 1\n}"
         try:
             response = requests.post(url, auth=(repo.MVIP_USER, repo.MVIP_PW), data=payload, verify=False)
@@ -195,8 +195,8 @@ class PDApi():
             stpw = repo.MVIP_PW
             if response.status_code == 401:
                 while response.status_code == 401:
-                    logmsg.info("The provided credentials failed on cluster {}".format(host_name))
-                    stuser = input("Enter admin userid for cluster {} : ".format(host_name))
+                    logmsg.info(f'The provided credentials failed on cluster {host_name}')
+                    stuser = input(f'Enter admin userid for cluster {host_name} : ')
                     stpw = getpass.getpass(prompt="Enter admin password: ")
                     response = requests.post(url, auth=(stuser, stpw), data=payload, verify=False)
             return response.status_code, stuser, stpw
@@ -206,11 +206,11 @@ class PDApi():
     #============================================================
     # MIP send GET return json
     def mip_send_get_return_json(creds, url, node_ip, payload):
-        url = ("https://{}:442/json-rpc/10.0/".format(node_ip))
+        url = f'https://{node_ip}:442/json-rpc/10.0/'
         try:
-            logmsg.debug("Sending POST {} {}".format(url,payload))
+            logmsg.debug(f'Sending POST {url} {payload}')
             response = requests.post(url, auth=(creds[1], creds[2]), data=payload, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
@@ -223,9 +223,9 @@ class PDApi():
     # MIP send POST return json
     def mip_send_post_return_status(repo, url, payload, creds):
         try:
-            logmsg.debug("Sending POST {} {}".format(url,payload))
+            logmsg.debug(f'Sending POST {url} {payload}')
             response = requests.post(url, auth=(creds[1], creds[2]), data=payload, verify=False)
-            logmsg.debug("{}: {}".format(response.status_code, response.text))
+            logmsg.debug(f'{response.status_code}: {response.text}')
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:

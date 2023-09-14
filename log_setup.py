@@ -19,7 +19,7 @@ class Logging():
     def logmsg():
         myuid = os.getuid()
         if myuid != 0:
-            print("Please re-run this utility with sudo. Current uid: {}".format(str(myuid)))
+            print(f'Please re-run this utility with sudo. Current uid: {str(myuid)}')
             exit(1)
         logfile = '/var/log/mnode-support-util.log'
         formatter = logging.Formatter('%(asctime)s [%(filename)s: %(lineno)d] [%(process)d] [%(levelname)s]: %(message)s','%m:%d:%Y %H:%M:%S')
@@ -37,8 +37,8 @@ class Logging():
 class MLog():
     def log_failed_return(status, text):
         logmsg = Logging.logmsg()
-        logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(status))
-        logmsg.debug("FAILED RETURN: {}: {}".format(status, text))
+        logmsg.info(f'Failed return {status} See /var/log/mnode-support-util.log for details')
+        logmsg.debug(f'FAILED RETURN: {status}: {text}')
 
     def log_exception(exception):
         logmsg = Logging.logmsg()

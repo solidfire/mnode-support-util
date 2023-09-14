@@ -28,7 +28,7 @@ def about(repo):
     #============================================================
     # Get assets /mnode/#/about/routes.v1.about.get
     # Populate the instance ABOUT
-    url = ('{}/mnode/1/about'.format(repo.BASE_URL))
+    url = f'{repo.BASE_URL}/mnode/1/about'
     json_return = PDApi.send_get_return_json(repo, url)
     if json_return:
         return json_return
@@ -40,7 +40,7 @@ class Assets():
     # Populate the instance CURRENT_ASSET_JSON
     def get_assets(repo):
         get_token(repo)
-        url = ('{}/mnode/1/assets'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/mnode/1/assets'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -49,11 +49,11 @@ class Assets():
     # Add config{} options
     def addConfig(repo):
         get_token(repo)
-        url = ('{}/mnode/1/assets/{}/'.format(repo.BASE_URL,repo.PARENT_ID))
+        url = f'{repo.BASE_URL}/mnode/1/assets/{repo.PARENT_ID}/'
         payload =  {"config":{"collector":{"noVerifyCert":"true","remoteHost":"monitoring.solidfire.com"}},"telemetry_active": True}
         status = PDApi.send_put_return_status(repo, url, payload)
         if status == 200:
-            logmsg.info("Applied config \n {}".format(payload))
+            logmsg.info(f'Applied config \n {payload}')
             
 
     #============================================================
@@ -68,19 +68,19 @@ class Assets():
     # add an asset
     def post_asset(repo, url, payload):
         get_token(repo)
-        logmsg.info("Adding asset id: {}".format(payload['ip']))
+        logmsg.info(f'Adding asset id: {payload["ip"]}')
         status = PDApi.send_post_return_status(repo, url, payload)
         if status == 201:
-                logmsg.info("Added {}".format(payload['ip'])) # host_name and/or ip from payload
+                logmsg.info(f'Added {payload["ip"]}')
         elif status == 409: 
-                logmsg.info("{} Asset already exists in inventory. Skipping.".format(payload['host_name'])) 
+                logmsg.info(f'{payload["host_name"]} Asset already exists in inventory. Skipping.')
                 
     #============================================================
     # delete an asset
     def delete_asset(repo, asset_type, asset_id):
-        url = ('{}/mnode/1/assets/{}/{}/{}'.format(repo.BASE_URL, repo.PARENT_ID, asset_type['asset_type'], asset_id))
+        url = f'{repo.BASE_URL}/mnode/1/assets/{repo.PARENT_ID}/{asset_type["asset_type"]}/{asset_id}'
         get_token(repo)
-        logmsg.info("Removing asset id: {}".format(asset_id))
+        logmsg.info(f'Removing asset id: {asset_id}')
         status = PDApi.send_delete_return_status(repo, url)
         if status == 204: 
             logmsg.info("\tSuccessfully deleted asset")
@@ -90,8 +90,8 @@ class Assets():
     #============================================================
     # update an asset
     def put_asset(repo, asset_type, asset_id, payload):
-        url = ('{}/mnode/1/assets/{}/{}/{}'.format(repo.BASE_URL,repo.PARENT_ID, asset_type, asset_id))
-        logmsg.info("Updating asset id: {}".format(asset_id))
+        url = f'{repo.BASE_URL}/mnode/1/assets/{repo.PARENT_ID}/{asset_type}/{asset_id}'
+        logmsg.info(f'Updating asset id: {asset_id}')
         status = PDApi.send_put_return_status(repo, url, payload)
         if status == 200: 
                 logmsg.info("Successfully updated asset")
@@ -102,7 +102,7 @@ class Services():
     # return response body
     def get_services(repo):
         get_token(repo)
-        url = ('{}/mnode/services?status=all&helper=true'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/mnode/services?status=all&helper=true'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -110,7 +110,7 @@ class Services():
     #============================================================
     # deploy Management Services from tar.gz file
     def put_deploy(repo):
-        url = ('{}/mnode/1/services/deploy'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/mnode/1/services/deploy'
         get_token(repo)
         status = PDApi.send_put_return_status(repo, url, "")
         if status == 200:
@@ -121,7 +121,7 @@ class Services():
     def get_service_log(repo, service, log):
         log = []
         get_token(repo)
-        url = ('{}/mnode/logs?lines=1000&service-name={}&stopped=true'.format(repo.BASE_URL, service))
+        url = f'{repo.BASE_URL}/mnode/logs?lines=1000&service-name={service}&stopped=true'
         text = PDApi.send_get_return_text(repo, url, debug=log)
         if text:
             log = text.splitlines()
@@ -132,7 +132,7 @@ class Settings():
     # get current settings
     def get_settings(repo):
         get_token(repo)
-        url = ('{}/mnode/settings'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/mnode/settings'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -141,13 +141,13 @@ class Settings():
     # update settings
     def put_settings(repo):
         get_token(repo)
-        url = ('{}/mnode/2/settings'.format(repo.BASE_URL))
-        json_file = "{}support-mnode-settings.json".format(repo.SUPPORT_DIR)
+        url = f'{repo.BASE_URL}/mnode/2/settings'
+        json_file = f'{repo.SUPPORT_DIR}support-mnode-settings.json'
         if os.path.isfile(json_file):
             json_input = open(json_file, "r")
             json_data = json.load(json_input)
             json_input.close()
-            payload = {"mnode_fqdn": json_data['mnode_fqdn'],  "proxy_ssh_port": json_data['proxy_port'], "proxy_username": json_data['proxy_username'],"proxy_port": json_data['proxy_port'],"use_proxy": json_data['use_proxy'],"proxy_ip_or_hostname": json_data['proxy_ip_or_hostname']}
+            payload = {"mnode_fqdn": json_data["mnode_fqdn"],  "proxy_ssh_port": json_data["proxy_port"], "proxy_username": json_data["proxy_username"],"proxy_port": json_data["proxy_port"],"use_proxy": json_data["use_proxy"],"proxy_ip_or_hostname": json_data["proxy_ip_or_hostname"]}
             json_return = PDApi.send_put_return_json(repo, url, payload)
             if json_return:
-                logmsg.info("Applying settings\n {}".format(json_return))
+                logmsg.info(f'Applying settings\n {json_return}')

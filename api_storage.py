@@ -32,7 +32,7 @@ class Storage():
     # return storage info json
     def get_info(repo, storage_id):
         get_token(repo)
-        url = ('{}/storage/1/{}/info'.format(repo.BASE_URL,storage_id))
+        url = f'{repo.BASE_URL}/storage/1/{storage_id}/info'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -42,7 +42,7 @@ class Upgrades():
     # return upgrades. active = default false
     def get_upgrade(repo, active='false'):
         get_token(repo)
-        url = ('{}/storage/1/upgrades?includeCompleted={}'.format(repo.BASE_URL, active))
+        url = f'{repo.BASE_URL}/storage/1/upgrades?includeCompleted={active}'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -52,7 +52,7 @@ class Upgrades():
     def start_upgrade(repo, package_id, storage_id, config_json='{}'):
         get_token(repo)
         payload = { "config": config_json, "packageId":package_id,"storageId":storage_id }
-        url = ('{}/storage/1/upgrades'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/storage/1/upgrades'
         json_return = PDApi.send_post_return_json(repo, url, payload)
         if json_return:
             return json_return
@@ -61,7 +61,7 @@ class Upgrades():
     # return upgrade info by upgrade id
     def get_upgrade_by_id(repo, upgrade_id):
         get_token(repo)
-        url = ('{}/storage/1/upgrades/{}'.format(repo.BASE_URL, upgrade_id))
+        url = f'{repo.BASE_URL}/storage/1/upgrades/{upgrade_id}'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -71,7 +71,7 @@ class Upgrades():
     def update_upgrade(repo, upgrade_id, action, config_json='{}'):
         get_token(repo)
         payload = { "config": config_json, "action":action }
-        url = ("{}/storage/1/upgrades/{}".format(repo.BASE_URL, upgrade_id))
+        url = f'{repo.BASE_URL}/storage/1/upgrades/{upgrade_id}'
         json_return = PDApi.send_put_return_json(repo, url, payload)
         if json_return:
             return json_return
@@ -80,7 +80,7 @@ class Upgrades():
     # get upgrade log
     def get_upgrade_log(repo, upgrade_id):
         get_token(repo)
-        url = ('{}/storage/1/upgrades/{}/log'.format(repo.BASE_URL, upgrade_id))
+        url = f'{repo.BASE_URL}/storage/1/upgrades/{upgrade_id}/log'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -90,7 +90,7 @@ class Healthcheck():
     # get healthchecks. includeCompleted default = false
     def get_healthcheck(repo):
         get_token(repo)
-        url = ('{}/storage/1/health-checks?includeCompleted=true'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/storage/1/health-checks?includeCompleted=true'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -99,7 +99,7 @@ class Healthcheck():
     # run a healthcheck
     def run_healthcheck(repo, storage_id):
         get_token(repo)
-        url = ('{}/storage/1/health-checks'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/storage/1/health-checks'
         payload = {"storageId": storage_id}
         json_return = PDApi.send_post_return_json(repo, url, payload)
         if json_return:
@@ -109,7 +109,7 @@ class Healthcheck():
     # get healthcheck by id
     def get_healthcheck_by_id(repo, healthcheck_id):
         get_token(repo)
-        url = ('{}/storage/1/health-checks/{}'.format(repo.BASE_URL, healthcheck_id))
+        url = f'{repo.BASE_URL}/storage/1/health-checks/{healthcheck_id}'
         text = PDApi.send_get_return_text(repo, url)
         if text:
             return text
@@ -118,7 +118,7 @@ class Healthcheck():
     # get healthcheck log
     def get_healthcheck_log(repo, healthcheck_id):
         get_token(repo)
-        url = ('{}/storage/1/health-checks/{}/log'.format(repo.BASE_URL, healthcheck_id))
+        url = f'{repo.BASE_URL}/storage/1/health-checks/{healthcheck_id}/log'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -128,7 +128,7 @@ class Clusters():
     # get cluster info
     def get_clusters(repo):
         get_token(repo)
-        url = ('{}/storage/1/clusters'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/storage/1/clusters'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -137,7 +137,7 @@ class Clusters():
     # get details by cluster id
     def get_cluster_by_id(repo, storage_id):
         get_token(repo)
-        url = ('{}/storage/1/clusters/{}'.format(repo.BASE_URL, storage_id))
+        url = f'{repo.BASE_URL}/storage/1/clusters/{storage_id}'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return
@@ -146,7 +146,7 @@ class Clusters():
     # This doesn't work past EOS 12.3
     def check_auth_container(repo):
         get_token(repo)
-        url = ('{}/storage/1/clusters/check-auth-container'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/storage/1/clusters/check-auth-container'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             return json_return

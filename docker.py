@@ -35,7 +35,7 @@ class Docker():
         cmd_output = []
         for container in container_list:
             try:
-                inspect = os.popen("/usr/bin/docker inspect {}".format(container)).readlines()
+                inspect = os.popen(f'/usr/bin/docker inspect {container}').readlines()
                 cmd_output.append(inspect)
             except OSError as error:
                 cmd_output = "ERROR: docker inspect failed. See /var/log/mnode-support-util.log for details."

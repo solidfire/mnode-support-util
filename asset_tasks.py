@@ -23,11 +23,11 @@ class AssetMgmt():
     def backup_assets(repo):
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        backup_file = ("/var/log/AssetBackup-{}.json".format(time_stamp))
+        backup_file = f'/var/log/AssetBackup-{time_stamp}.json'
         try:
             with open(backup_file, 'w') as outfile:
                 json.dump(repo.ASSETS, outfile)
-                logmsg.info("Created backup file {}".format(backup_file))
+                logmsg.info(f'Created backup file {backup_file}')
         except OSError as error :
             logmsg.info("Failed to open backup file. See /var/log/mnode-support-util.log for details")
             logmsg.debug(error)
@@ -38,14 +38,14 @@ class AssetMgmt():
         get_token(repo)
         repo.ASSETS = Assets.get_assets(repo)
         if not asset_type:
-            asset_type = ['compute', 'hardware', 'controller', 'storage']
+            asset_type = ["compute', 'hardware', 'controller', 'storage"]
         for item in asset_type:
-            logmsg.info("{} assets".format(item))
+            logmsg.info(f'{item} assets')
             for asset in repo.ASSETS[0][item]:
-                if asset['host_name']:
-                    logmsg.info("\t{:<15} assetID: {:<20} parentID: {:<}".format(asset['host_name'], asset['id'], asset['parent']))
+                if asset["host_name"]:
+                    logmsg.info(f'\t{asset["host_name"]:<15} assetID: {asset["id"]:<20} parentID: {asset["parent"]:<}')
                 else:
-                    logmsg.info("\t{:<15} assetID: {:<20} parentID: {:<}".format(asset['ip'], asset['id'], asset['parent']))
+                    logmsg.info(f'\t{asset["ip"]:<15} assetID: {asset["id"]:<20} parentID: {asset["parent"]:<}')
 
     #============================================================
     # Set asset type for removal or update tasks
@@ -70,8 +70,8 @@ class AssetMgmt():
     # delete an asset
     def remove_one_asset(repo, asset_type, asset_id):
         get_token(repo)
-        url = ('{}/mnode/1/assets/{}/{}/{}'.format(repo.BASE_URL,repo.PARENT_ID,asset_type['asset_type'],asset_id))
-        logmsg.info("Removing asset id: {}".format(asset_id))
+        url = f'{repo.BASE_URL}/mnode/1/assets/{repo.PARENT_ID}/{asset_type["asset_type"]}/{asset_id}'
+        logmsg.info(f'Removing asset id: {asset_id}')
         Assets.delete_asset(repo, url, asset_type, asset_id)
 
     #============================================================
@@ -79,13 +79,13 @@ class AssetMgmt():
     def remove_assets_by_type(repo, remove_type):
         try:
             asset_type = AssetMgmt.set_asset_type(remove_type)
-            url = ('{}/mnode/1/assets/{}'.format(repo.BASE_URL, asset_type['asset_type']))
+            url = f'{repo.BASE_URL}/mnode/1/assets/{asset_type["asset_type"]}'
             assets = Assets.get_asset_by_type(repo, url)
             if assets:
                 for asset in assets:
-                    Assets.delete_asset(repo, asset_type, asset['id'])       
+                    Assets.delete_asset(repo, asset_type, asset["id"])       
             else:
-                logmsg.info("No {} assets found".format(asset_type['asset_name']))
+                logmsg.info(f'No {asset_type["asset_name"]} assets found')
         except:
             # Need to figure out why the except is always run
             # logmsg.info("Could not remove assets")
@@ -94,36 +94,36 @@ class AssetMgmt():
     #============================================================
     # restore assets from json backup file
     def restore(repo, args):
-        add_types = ['c', 'b', 'v', 's']
+        add_types = ["c', 'b', 'v', 's"]
         if args.computeuser and not args.computepw:
             try:
-                    args.computepw = getpass.getpass(prompt="Enter compute {} password: ".format(args.computeuser))
+                    args.computepw = getpass.getpass(prompt=f'Enter compute {args.computeuser} password: ')
             except Exception as error:
                 logmsg.info('ERROR', error)
         if args.bmcuser and not args.bmcpw:
             try:
-                    args.bmcpw = getpass.getpass(prompt="Enter BMC {} password: ".format(args.computeuser))
+                    args.bmcpw = getpass.getpass(prompt=f'Enter BMC {args.bmcuser} password: ')
             except Exception as error:
                 logmsg.info('ERROR', error)
         if args.vcuser and not args.vcpw:
             try:
-                    args.vcpw = getpass.getpass(prompt="Enter vCenter {} password: ".format(args.computeuser))
+                    args.vcpw = getpass.getpass(prompt=f'Enter vCenter {args.vcuser} password: ')
             except Exception as error:
                 logmsg.info('ERROR', error)
         for add_type in add_types:
             asset_type = AssetMgmt.set_asset_type(add_type)
-            url = ('{}/mnode/1/assets/{}/{}'.format(repo.BASE_URL,repo.PARENT_ID,asset_type['asset_type']))
-            for add_asset in repo.JSON_DATA[0][asset_type['asset_name']]:
-                if asset_type['asset_name'] == 'compute':
-                    payload = {"config":{}, "hardware_tag": add_asset['hardware_tag'], "host_name": add_asset['host_name'], "ip": add_asset['ip'], "username": args.computeuser, "password": args.computepw, "type": 'ESXi Host'}
-                elif asset_type['asset_name'] == 'hardware':
-                    payload = {"config":{}, "hardware_tag": add_asset['hardware_tag'], "host_name": add_asset['host_name'], "ip": add_asset['ip'], "username": args.bmcuser, "password": args.bmcpw, "type": 'BMC'}
-                elif asset_type['asset_name'] == 'controller':
-                    payload = {"config":{}, "host_name": add_asset['host_name'], "ip": add_asset['ip'], "username": args.vcuser, "password": args.vcpw, "type": 'vCenter'}
-                elif asset_type['asset_name'] == 'storage':
-                    payload = {"config":{}, "host_name": add_asset['host_name'], "ip": add_asset['ip'], "username": args.stuser, "password": args.stpw}
+            url = f'{repo.BASE_URL}/mnode/1/assets/{repo.PARENT_ID}/{asset_type["asset_type"]}'
+            for add_asset in repo.JSON_DATA[0][asset_type["asset_name"]]:
+                if asset_type["asset_name"] == 'compute':
+                    payload = {"config":{}, "hardware_tag": add_asset["hardware_tag"], "host_name": add_asset["host_name"], "ip": add_asset["ip"], "username": args.computeuser, "password": args.computepw, "type": 'ESXi Host'}
+                elif asset_type["asset_name"] == 'hardware':
+                    payload = {"config":{}, "hardware_tag": add_asset["hardware_tag"], "host_name": add_asset["host_name"], "ip": add_asset["ip"], "username": args.bmcuser, "password": args.bmcpw, "type": 'BMC'}
+                elif asset_type["asset_name"] == 'controller':
+                    payload = {"config":{}, "host_name": add_asset["host_name"], "ip": add_asset["ip"], "username": args.vcuser, "password": args.vcpw, "type": 'vCenter'}
+                elif asset_type["asset_name"] == 'storage':
+                    payload = {"config":{}, "host_name": add_asset["host_name"], "ip": add_asset["ip"], "username": args.stuser, "password": args.stpw}
                 Assets.post_asset(repo, url, payload)
-        if repo.JSON_DATA[0]['config']['collector'] and repo.JSON_DATA[0]['telemetry_active'] == True:
+        if repo.JSON_DATA[0]["config"]["collector"] and repo.JSON_DATA[0]["telemetry_active"] == True:
             Assets.addConfig(repo)
 
     #============================================================
@@ -151,15 +151,15 @@ class AssetMgmt():
             newpassword_verify = getpass.getpass(prompt="Enter new password to verify: ")
             if newpassword != newpassword_verify:
                 logmsg.info("Passwords do not match")
-        input("Press Enter to continue updating {} assets".format(asset_type['asset_name']))
+        input(f'Press Enter to continue updating {asset_type["asset_name"]} assets')
         get_token(repo)
-        for asset in repo.ASSETS[0][asset_type['asset_name']]:
+        for asset in repo.ASSETS[0][asset_type["asset_name"]]:
             payload = {"config":{}, "password": newpassword}
-            url = ('{}/mnode/1/assets/{}/{}/{}'.format(repo.BASE_URL,repo.PARENT_ID,asset_type['asset_type'],asset['id']))
-            logmsg.info("Updating asset:{:<} {:<15}".format(asset['ip'], asset['id']))
+            url = f'{repo.BASE_URL}/mnode/1/assets/{repo.PARENT_ID}/{asset_type["asset_type"]}/{asset["id"]}'
+            logmsg.info(f'Updating asset:{asset["ip"]:<} {asset["id"]:<15}')
             json_return = PDApi.send_put_return_json(repo, url, payload)
             if json_return:
-                logmsg.info("\tSuccessfuly updated".format(json_return['ip'], asset['id']))
+                logmsg.info(f'\tSuccessfuly updated {json_return["ip"]} {asset["id"]}')
 
     #============================================================
     # update one asset password
@@ -173,8 +173,8 @@ class AssetMgmt():
             if newpassword != newpassword_verify:
                 logmsg.info("Passwords do not match")
         payload = {"config":{}, "password": newpassword}
-        url = ('{}/mnode/1/assets/{}/{}/{}'.format(repo.BASE_URL,repo.PARENT_ID,asset_type['asset_type'],asset_id))
-        logmsg.info("Updating asset id: {}".format(asset_id))
+        url = f'{repo.BASE_URL}/mnode/1/assets/{repo.PARENT_ID}/{asset_type["asset_type"]}/{asset_id}'
+        logmsg.info(f'Updating asset id: {asset_id}')
         get_token(repo)
         json_return = PDApi.send_put_return_json(repo, url, payload)
         if json_return:

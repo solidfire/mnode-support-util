@@ -32,7 +32,7 @@ class ElemUpgrade():
     #============================================================
     def upgrade_option():
         userinput = ""
-        options = ['s','v','p','r','a','q']
+        options = ["s','v','p','r','a','q"]
         while userinput not in options:
             userinput = input("\nUpgrade options: Start, View, Pause, Resume, Abort, Quit: s/v/p/r/a/q: ")
         return userinput
@@ -47,10 +47,10 @@ class ElemUpgrade():
         for cluster in repo.ASSETS[0]["storage"]:
             if(cluster["host_name"]):
                 clusterlist[(cluster["host_name"])] = cluster["id"]
-                logmsg.info("\t{}".format(cluster["host_name"]))
+                logmsg.info(f'\t{cluster["host_name"]}')
             else:
                 clusterlist[(cluster["ip"])] = cluster["id"]
-                logmsg.info("\t{}".format(cluster["ip"]))
+                logmsg.info(f'\t{cluster["ip"]}')
         while userinput not in clusterlist:
             userinput = input("\nEnter the target cluster from the list: ")
             ElemUpgrade.upgrade_target = clusterlist[userinput]
@@ -63,17 +63,17 @@ class ElemUpgrade():
         pkglist = {}
         logmsg.info("\nLooking for a valid upgrade image...")
         get_token(repo)
-        url = ("{}/storage/1/clusters/{}/valid-packages".format(repo.BASE_URL,ElemUpgrade.upgrade_target))
+        url = f'{repo.BASE_URL}/storage/1/clusters/{ElemUpgrade.upgrade_target}/valid-packages'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
             for package in json_return:
                     pkglist[(package["filename"])] = package["packageId"]
-                    logmsg.info("\t{}".format(package["filename"]))
+                    logmsg.info(f'\t{package["filename"]}')
                     targetpkg = package["filename"]
             while userinput not in pkglist:
                 userinput = input("\nEnter the target package from the list: ")
                 upgrade_package = pkglist[userinput]
-            logmsg.info("Selected package {}".format(upgrade_package))
+            logmsg.info(f'Selected package {upgrade_package}')
             return upgrade_package
         else:
             logmsg.info("\nNo valid upgrade packages found.\n\tThe selected cluster is at or above available upgrade packages.\n\tUpload a package with the -a elementupload option")
@@ -95,11 +95,11 @@ class ElemUpgrade():
             payload = { "config": configjson, "packageId":upgrade_package,"storageId":ElemUpgrade.upgrade_target }
         else:
             payload = { "config": {}, "packageId":upgrade_package,"storageId":ElemUpgrade.upgrade_target }
-        logmsg.debug("Sending POST {} {}".format(url,json.dumps(payload)))
+        logmsg.debug(f'Sending POST {url} {json.dumps(payload)}')
         json_return = PDApi.send_post_return_json(repo, url, payload)
         if json_return:
-            logmsg.info("\nUpgrade ID: {}".format(json_return["upgradeId"]))
-            logmsg.info("Upgrade task ID: {}".format(json_return["taskId"]))
+            logmsg.info(f'\nUpgrade ID: {json_return["upgradeId"]}')
+            logmsg.info(f'Upgrade task ID: {json_return["taskId"]}')
             ElemUpgrade.upgrade_id = json_return["upgradeId"]
 
     #============================================================
@@ -108,13 +108,13 @@ class ElemUpgrade():
     def find_upgrade(repo):
         logmsg.info("\nFind element upgrade")
         get_token(repo)
-        url = ('{}/storage/1/upgrades?includeCompleted=false'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/storage/1/upgrades?includeCompleted=false'
         json_return = PDApi.send_get_return_json(repo, url)
         if json_return:
-            logmsg.info("Found upgrade ID {}".format(json_return[0]["upgradeId"]))
+            logmsg.info(f'Found upgrade ID {json_return[0]["upgradeId"]}')
             ElemUpgrade.upgrade_id = json_return[0]["upgradeId"]
             if json_return[0]["status"]["availableActions"]:
-                logmsg.info('Available actions: {}'.format(json_return[0]["status"]["availableActions"]))
+                logmsg.info(f'Available actions: {son_return[0]["status"]["availableActions"]}')
         else:
             logmsg.info("No running upgrades detected")
         
@@ -126,30 +126,30 @@ class ElemUpgrade():
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         percent_complete = 0
         status_message = "checkupgrade"
-        url = ("{}/storage/1/upgrades/{}".format(repo.BASE_URL,ElemUpgrade.upgrade_id))
+        url = f'{repo.BASE_URL}/storage/1/upgrades/{ElemUpgrade.upgrade_id}'
         logmsg.info("\nWatch upgrade progress. CTRL-C to exit.")
         try:
             while percent_complete != 100:
                 get_token(repo)
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
                 if json_return:
-                    if json_return['state'] == 'initializing':
+                    if json_return["state"] == 'initializing':
                         logmsg.info("Upgrade is initializing. Waiting 15 seconds to start")
                         time.sleep(15)
-                    elif json_return['state'] == 'error':
-                        logmsg.info("\n{}: {}\nSee /var/log/mnode-support-util.log for details".format(json_return['state'],json_return['status']['message']))
+                    elif json_return["state"] == 'error':
+                        logmsg.info(f'\n{json_return["state"]}: {json_return["status"]["message"]}\nSee /var/log/mnode-support-util.log for details')
                         logmsg.debug(json_return)
-                        if json_return['status']['failedHealthChecks']:
-                            for fail in json_return['status']['failedHealthChecks']:
-                                logmsg.info("\tPassed: {}\t{}".format(fail['passed'], fail['description']))
+                        if json_return["status"]["failedHealthChecks"]:
+                            for fail in json_return["status"]["failedHealthChecks"]:
+                                logmsg.info(f'\tPassed: {fail["passed"]}\t{fail["description"]}')
                         exit(1)
                     elif status_message not in json_return["status"]["message"]:   
                         status_message = json_return["status"]["message"]
-                        logmsg.info("\nUpgrade status: {}\nUpgrade Percentage: {}\nUpgrade step: {}".format(json_return["status"]["message"], str(json_return["status"]["percent"]), json_return["status"]["step"]))
+                        logmsg.info(f'\nUpgrade status: {json_return["status"]["message"]}\nUpgrade Percentage: {str(json_return["status"]["percent"])}\nUpgrade step: {json_return["status"]["step"]}')
                         percent_complete = json_return["status"]["percent"]
                         if json_return["status"]["availableActions"]:
                             for action in json_return["status"]["availableActions"]:
-                                logmsg.info("Available action: {}".format(action))
+                                logmsg.info(f'Available action: {action}')
                         if json_return["status"]["nodeDetails"]:
                             for node in json_return["status"]["nodeDetails"]:
                                 logmsg.info(node)
@@ -165,9 +165,9 @@ class ElemUpgrade():
     # Pause , resume, abort Upgrade
     #============================================================
     def upgrade_action(repo, action):
-        logmsg.info("{} upgrade {}".format(action,ElemUpgrade.upgrade_id))
+        logmsg.info(f'{action} upgrade {ElemUpgrade.upgrade_id}')
         get_token(repo)
-        url = ("{}/storage/1/upgrades/{}".format(repo.BASE_URL,ElemUpgrade.upgrade_id))
+        url = f'{repo.BASE_URL}/storage/1/upgrades/{ElemUpgrade.upgrade_id}'
         payload = { "config": {},"action":action }
         if action == 'resume':
             userinput = str.lower(input("Do you have any config options to add? (y/n) "))
@@ -176,10 +176,10 @@ class ElemUpgrade():
                 payload = { "config": configjson, "action":action }
             else:
                 pass
-        logmsg.debug("Sending: PUT {} {}".format(url,json.dumps(payload)))
+        logmsg.debug(f'Sending: PUT {url} {json.dumps(payload)}')
         json_return = PDApi.send_put_return_json(repo, url, payload)
         if json_return:
-            logmsg.info("Upgrade state: {}".format(json_return["state"]))
+            logmsg.info(f'Upgrade state: {json_return["state"]}')
         
 
     #============================================================

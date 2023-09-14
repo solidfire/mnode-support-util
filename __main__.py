@@ -71,7 +71,7 @@ def get_args():
 def set_parent_id(repo):
     if not repo.ASSETS:
         Assets.get_assets(repo)
-    repo.PARENT_ID = (repo.ASSETS[0]['id'])
+    repo.PARENT_ID = (repo.ASSETS[0]["id"])
 
 #============================================================
 # Set the global authorative cluster mvip since it's used in many places
@@ -96,15 +96,15 @@ if __name__ == "__main__":
 
     #============================================================
     # Display basic info
-    logmsg.info("+ mNode ip: {}\n+ MS version: {}\n+ Authorative cluster: {}\n+ mnode-support-util version: {}\n\n".format(repo.ABOUT['mnode_host_ip'], repo.ABOUT['mnode_bundle_version'], repo.AUTH_MVIP, repo.UTIL_VERSION))
+    logmsg.info(f'+ mNode ip: {repo.ABOUT["mnode_host_ip"]}\n+ MS version: {repo.ABOUT["mnode_bundle_version"]}\n+ Authorative cluster: {repo.AUTH_MVIP}\n+ mnode-support-util version: {repo.UTIL_VERSION}\n\n')
     #============================================================
     # prompt for storage admin password if not provided 
     if not args.stpw:
         try:
-            args.stpw = getpass.getpass(prompt="storage {} password: ".format(args.stuser))
+            args.stpw = getpass.getpass(prompt=f'storage {args.stuser} password: ')
             repo.MVIP_PW = args.stpw
         except Exception as error:
-            logmsg.debug("Get password error: {}".format(error))
+            logmsg.debug(f'Get password error: {error}')
 
     #============================================================
     # Load assets from json file
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     #============================================================
     # Remove all assets to clean up the asset db and refresh the inventory
     elif args.action == 'cleanup':
-        remove_types = ['c', 'b', 'v', 's']
+        remove_types = ["c', 'b', 'v', 's"]
         userinput = input("\nARE YOU SURE YOU WANT TO DELETE ALL ASSETS?[y/n] ")
         if userinput.lower() == 'n':
             exit(0)
@@ -164,10 +164,10 @@ if __name__ == "__main__":
         if not args.json:
             add_tmplt = {"compute":[compute_tmplt], "hardware":[hardware_tmplt], "controller":[controller_tmplt], "storage":[storage_tmplt]}
             logmsg.info("Please specify -j --json file or create you own from the templates below")
-            logmsg.info("[ {} ]".format(json.dumps(add_tmplt, indent=4)))
+            logmsg.info(f'[ {json.dumps(add_tmplt, indent=4)} ]')
             exit(0)
         else:
-            logmsg.info("\nAdding assets from json file {}".format(args.json) )
+            logmsg.info(f'\nAdding assets from json file {args.json}')
         try:
             AssetMgmt.restore(repo, args)
             Inventory.refresh_inventory(repo)
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         # =====================================================================
         # clean up any old logs
         try:
-            logmsg.info("Cleaning up {}".format(repo.SUPPORT_DIR))
+            logmsg.info(f'Cleaning up {repo.SUPPORT_DIR}')
             for f in os.listdir(repo.SUPPORT_DIR):
                 os.remove(os.path.join(repo.SUPPORT_DIR, f))
         except OSError as exception:
@@ -271,7 +271,7 @@ if __name__ == "__main__":
         cluster_id = ComputeHealthcheck.generate_domain_list(repo, controller_id)
         healthcheck_start = ComputeHealthcheck.run_compute_healthcheck(repo, controller_id, cluster_id)
         if healthcheck_start:
-            logmsg.info(healthcheck_start['taskName'])
+            logmsg.info(healthcheck_start["taskName"])
             ComputeHealthcheck.print_healthcheck_status(repo, healthcheck_start)
 
     #============================================================
@@ -320,12 +320,12 @@ if __name__ == "__main__":
             current_packages = Package.list_packages(repo)
             if current_packages:
                 for package in current_packages:
-                    if package['version'] == json_return['version']:
-                        logmsg.info("Successfuly added package: {} {}".format(package['name'], package['version']))
+                    if package["version"] == json_return["version"]:
+                        logmsg.info(f'Successfuly added package: {package["name"]} {package["version"]}')
                         pkgadded = True
         logmsg.info('\nAvailable packages;')
         for package in current_packages:
-            logmsg.info('name: {:<20} version: {:<20} id: {}'.format(package['name'],package['version'],package['id']))
+            logmsg.info(f'name: {package["name"]:<20} version: {package["version"]:<20} id: {package["id"]}')
 
     #============================================================
     # Delete package from package service
@@ -333,8 +333,8 @@ if __name__ == "__main__":
         packages = Package.list_packages(repo)
         packagelist = {}
         for package in packages:
-            packagelist[(package['manifest']['packageFilename'])] = package["id"]
-            logmsg.info(package['manifest']['packageFilename'])
+            packagelist[(package["manifest"]["packageFilename"])] = package["id"]
+            logmsg.info(package["manifest"]["packageFilename"])
         userinput = input("Enter the target package file name: ")
         Package.delete_package(repo, packagelist[userinput])
 
@@ -345,7 +345,7 @@ if __name__ == "__main__":
         json_return = Package.list_packages(repo)
         if json_return:
             for package in json_return:
-                logmsg.info("\n{:<20}{}\n\t{}\n\t{}\n\t{}".format(package["name"],package["version"],package['CIFSUrl'],package['HTTPSUrl'],package['NFSUrl']))
+                logmsg.info(f'\n{package["name"]:<20}{package["version"]}\n\t{package["CIFSUrl"]}\n\t{package["HTTPSUrl"]}\n\t{package["NFSUrl"]}')
 
     elif args.action == 'deletelogs':
         ElemUpgrade.select_target_cluster(repo)

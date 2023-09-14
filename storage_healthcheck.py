@@ -32,10 +32,10 @@ class StorageHealthcheck():
         clusterlist = {}
         for cluster in repo.ASSETS[0]["storage"]:
             if cluster["host_name"]:
-                logmsg.info("+ {}".format(cluster["host_name"]))
+                logmsg.info(f'+ {cluster["host_name"]}')
                 clusterlist[(cluster["host_name"])] = cluster["id"]
             else:
-                logmsg.info("+ {}".format(cluster["ip"]))
+                logmsg.info(f'+ {cluster["ip"]}')
                 clusterlist[(cluster["ip"])] = cluster["id"]
         userinput = input("Enter the target cluster name: ")
         storage_id = clusterlist[userinput]
@@ -45,11 +45,11 @@ class StorageHealthcheck():
     # Start the healthcheck
     def run_storage_healthcheck(repo, storage_id):
         get_token(repo)
-        url = ('{}/storage/1/health-checks'.format(repo.BASE_URL))
+        url = f'{repo.BASE_URL}/storage/1/health-checks'
         payload = {"config":{},"storageId":storage_id}
         json_return = PDApi.send_post_return_json(repo, url, payload)
         if json_return:
-            if json_return['state'] == "initializing":
+            if json_return["state"] == "initializing":
                 logmsg.info("Healthcheck running...")
                 return json_return
             else:
@@ -65,18 +65,18 @@ class StorageHealthcheck():
         json_return = healthcheck_start
         if json_return:
             msg = "none"
-            report_file_name = ('{}StorageHealthcheck-{}.json'.format(repo.SUPPORT_DIR,json_return['storageId']))
-            url = ('{}/storage/1/health-checks/{}'.format(repo.BASE_URL,json_return['healthCheckId']))
-            while not json_return['dateCompleted']:
+            report_file_name = f'{repo.SUPPORT_DIR}StorageHealthcheck-{json_return["storageId"]}.json'
+            url = f'{repo.BASE_URL}/storage/1/health-checks/{json_return["healthCheckId"]}'
+            while not json_return["dateCompleted"]:
                 get_token(repo)
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
-                if json_return['status']:
-                    if msg != json_return['status']['message']:
-                        msg = json_return['status']['message']
-                        logmsg.info(json_return['status']['message'])
-            if json_return['dateCompleted']:
+                if json_return["status"]:
+                    if msg != json_return["status"]["message"]:
+                        msg = json_return["status"]["message"]
+                        logmsg.info(json_return["status"]["message"])
+            if json_return["dateCompleted"]:
                 with open(report_file_name, "w") as outfile:
                     print(json.dumps(json_return), file=outfile)
-                    logmsg.info("Storage Healthcheck completed. Report written to {}".format(report_file_name))
+                    logmsg.info(f'Storage Healthcheck completed. Report written to {report_file_name}')
         # Set logging back to debug
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
