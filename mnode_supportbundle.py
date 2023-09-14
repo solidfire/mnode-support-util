@@ -4,7 +4,7 @@ import socket
 import tarfile
 from api_hardware import Hardware
 from api_inventory import Inventory
-from api_mnode import Assets, Services, Settings, about
+from api_mnode import Services, Settings, about
 from api_storage import Clusters, Healthcheck, Upgrades
 from datetime import datetime
 from docker import Docker

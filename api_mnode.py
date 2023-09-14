@@ -2,7 +2,7 @@ import json
 import os.path
 import urllib3
 from get_token import get_token
-from log_setup import Logging, MLog
+from log_setup import Logging
 from program_data import PDApi
 # =====================================================================
 #

@@ -1,5 +1,5 @@
 import os
-from log_setup import Logging, MLog
+from log_setup import Logging
 
 logmsg = Logging.logmsg()
 

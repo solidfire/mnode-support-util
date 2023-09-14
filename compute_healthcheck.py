@@ -1,7 +1,5 @@
 import json
 import logging
-import requests
-import time
 from get_token import get_token
 from log_setup import Logging
 from program_data import PDApi

@@ -2,11 +2,9 @@ from gettext import translation
 import json
 import logging
 import time
-import requests
 from time import sleep
-from api_storage import Clusters
 from get_token import get_token
-from log_setup import Logging, MLog
+from log_setup import Logging
 from program_data import PDApi
 # =====================================================================
 #

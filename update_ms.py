@@ -1,5 +1,4 @@
 import os
-import requests
 import tarfile
 from get_token import get_token
 from api_mnode import about

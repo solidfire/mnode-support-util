@@ -2,7 +2,7 @@ import getpass
 import json
 from api_mnode import Assets
 from datetime import datetime
-from log_setup import Logging, MLog
+from log_setup import Logging
 from get_token import get_token
 from program_data import PDApi
 # =====================================================================

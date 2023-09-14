@@ -1,11 +1,7 @@
-import json
 import logging
-from urllib import response
-import requests
 from datetime import datetime, timedelta
 from get_token import get_token
 from log_setup import Logging
-from api_storage import Clusters
 from program_data import PDApi
 # =====================================================================
 #
