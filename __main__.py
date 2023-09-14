@@ -48,6 +48,7 @@ def get_args():
     backup: Creates a backup json file of current assets.
     cleanup: Removes all current assets. Or remove assets by type. 
     computehealthcheck: Run a compute healthcheck
+    deletelogs: Delete node log bundles
     elementupgrade: Element upgrade options
     healthcheck: Check mnode functionality. 
     listassets: One liner list of all assets
@@ -282,7 +283,7 @@ if __name__ == "__main__":
             if upgrade_option == 'q':
                     exit(0)
             elif upgrade_option == 's':
-                target_cluster = ElemUpgrade.select_target_cluster(repo)
+                ElemUpgrade.select_target_cluster(repo)
                 package_list = Package.list_packages(repo)
                 upgrade_package = ElemUpgrade.select_version(repo)
                 ElemUpgrade.start_upgrade(repo, upgrade_package)
@@ -345,3 +346,9 @@ if __name__ == "__main__":
         if json_return:
             for package in json_return:
                 logmsg.info("\n{:<20}{}\n\t{}\n\t{}\n\t{}".format(package["name"],package["version"],package['CIFSUrl'],package['HTTPSUrl'],package['NFSUrl']))
+
+    elif args.action == 'deletelogs':
+        ElemUpgrade.select_target_cluster(repo)
+        storage_id = StorageBundle.list_storage_clusters(repo)
+        StorageBundle.get_cluster_nodes(repo, storage_id)
+        StorageBundle.delete_existing_bundle(repo)
