@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import socket
 import tarfile
 from api_hardware import Hardware
@@ -374,7 +375,12 @@ class SupportBundle():
                     with open(file, "r") as read_file:
                         outfile.write("\n#----- {}\n".format(file))
                         outfile.write(read_file.read())
-                    
+        
+        """ gather the vcp logs into /var/log
+        """
+        shutil.copyfile("/opt/solidfire/sioc/data/logs/vcp-remote.log", "/var/log/vcp-remote.log")
+        shutil.copyfile("/opt/solidfire/sioc/data/logs/vcp-service.log", "/var/log/vcp-service.log")
+                            
         # =====================================================================
         #create tar
         logmsg.info("Creating support tar bundle. Please wait....")
