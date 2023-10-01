@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-import urllib3
 from get_token import GetToken
 from log_setup import Logging
 from program_data import PDApi

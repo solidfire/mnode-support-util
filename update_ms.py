@@ -1,6 +1,5 @@
 import os
 import tarfile
-from get_token import GetToken
 #from api_mnode import about
 from log_setup import Logging, MLog
 from program_data import PDApi
