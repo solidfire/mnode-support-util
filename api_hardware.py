@@ -25,7 +25,6 @@ requests.packages.urllib3.disable_warnings()
 class Hardware():
     def get_hardware(repo):
         """  get all BMC assets """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/mnode/1/assets{repo.parent_id}/hardware-nodes'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         if json_return:
@@ -33,7 +32,6 @@ class Hardware():
 
     def get_hardware_by_id(repo, hardware_id):
         """ get BMC info by asset id """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/hardware/2/nodes/{hardware_id}'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         if json_return:
@@ -41,7 +39,6 @@ class Hardware():
 
     def get_hardware_logs(repo, hardware_id):
         """ get BMC logs """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/hardware/2/nodes/{hardware_id}/bmc-logs'
         text = PDApi.send_get_return_text(repo, url, debug=repo.debug)
         if text:

@@ -73,7 +73,6 @@ class ElemUpgrade():
         userinput = "none"
         pkglist = {}
         logmsg.info("\nLooking for a valid upgrade image...")
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/storage/1/clusters/{self.upgrade_target}/valid-packages'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         if json_return:
@@ -93,7 +92,6 @@ class ElemUpgrade():
         """ Start Upgrade
         """
         logmsg.info("\nStarting Element upgrade")
-        ##token = GetToken(repo)
         url = (repo.base_url + "/storage/1/upgrades")
         userinput = ""
         while userinput != 'y' and userinput != 'n':
@@ -116,7 +114,6 @@ class ElemUpgrade():
         """ Find Upgrade
         """
         logmsg.info("\nFind element upgrade")
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/storage/1/upgrades?includeCompleted=false'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         if json_return:
@@ -173,7 +170,6 @@ class ElemUpgrade():
         """ Pause , resume, abort Upgrade
         """
         logmsg.info(f'{action} upgrade {self.upgrade_id}')
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/storage/1/upgrades/{self.upgrade_id}'
         payload = { "config": {},"action":action }
         if action == 'resume':

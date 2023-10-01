@@ -52,7 +52,6 @@ class UpdateMS():
     def deploy(repo):
         """ deploy the package
         """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/mnode/1/services/deploy'
         logmsg.info("Deploying new MS packages and services. Please wait....")
         json_return = PDApi.send_put_return_json_nopayload(repo, url)

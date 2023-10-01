@@ -38,7 +38,6 @@ class mNodeHealthCheck():
         """
         print("\n===== Auth client configuration =====", file=outfile)
         url = f'https://{repo.auth_mvip}/auth/api/1/configuration'
-        ##json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         json_return = requests.get(url, auth=HTTPBasicAuth(repo.mvip_user, repo.mvip_pw), verify=False)
         if json_return:
             config_count = (len(json_return["apiClients"]) + len(json_return["apiResources"]))
@@ -90,7 +89,6 @@ class mNodeHealthCheck():
     def mnode_about(repo, outfile):
         """ Pring mnode about
         """
-        ## about(repo)
         print(f'\n===== mNode about: =====\n {repo.about}', file=outfile)
 
     def display_swarm_net(outfile):

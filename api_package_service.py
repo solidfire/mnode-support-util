@@ -29,7 +29,6 @@ requests.packages.urllib3.disable_warnings()
 class Package:
     def list_packages(repo):
         """ List available packages """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/package-repository/1/packages/'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         if json_return:
@@ -37,7 +36,6 @@ class Package:
 
     def delete_package(repo, package_id):
         """  Delete a package """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/package-repository/1/packages/{package_id}'
         logmsg.debug(f'Sending DELETE {url}')
         json_return = PDApi.send_delete_return_status(repo, url)

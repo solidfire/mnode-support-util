@@ -21,7 +21,6 @@ class StorageHealthcheck():
     def run_storage_healthcheck(repo, storage_id):
         """ Start the healthcheck
         """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/storage/1/health-checks'
         payload = {"config":{},"storageId":storage_id}
         json_return = PDApi.send_post_return_json(repo, url, payload)
@@ -46,7 +45,6 @@ class StorageHealthcheck():
             local_report = f'{repo.support_dir}{report_file_name}'
             url = f'{repo.base_url}/storage/1/health-checks/{json_return["healthCheckId"]}'
             while not json_return["dateCompleted"]:
-                ##token = GetToken(repo)
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
                 if json_return["status"]:
                     if msg != json_return["status"]["message"]:

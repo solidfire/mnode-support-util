@@ -26,7 +26,6 @@ class StorageBundle():
         self.selected_nodes = []
 
     def get_cluster_nodes(self, repo):
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/storage/1/{self.storage_id}/info'
         self.cluster_info = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         
@@ -62,7 +61,6 @@ class StorageBundle():
     
     def make_bundle_payload(self, repo):
         self.select_cluster_nodes(repo)
-
         crash_dumps = input("Gather crash dumps? (y/n): ")
         if crash_dumps.lower() == 'y':
             crash_dumps = True
@@ -94,7 +92,6 @@ class StorageBundle():
         """ start the gather log bundle task
         """
         url = f'{repo.base_url}/logs/1/bundle'
-        ##token = GetToken(repo)
         logmsg.info("Starting log collection")
         json_return = PDApi.send_post_return_json(repo, url, payload)
         if json_return:
@@ -112,7 +109,6 @@ class StorageBundle():
         state = "inProgress"
         percent_complete = 1
         while state == "inProgress":
-            ##token = GetToken(repo)
             json_return = PDApi.send_get_return_json(repo, url, 'no')
             if json_return:
                 state = json_return["state"]
@@ -132,7 +128,6 @@ class StorageBundle():
         """ Check for a bundle already in progress
         """
         url = f'{repo.base_url}/logs/1/bundle'
-        ##token = GetToken(repo)
         logmsg.info("Checking for existing log collection task")
         text_return = PDApi.send_get_return_text(repo, url, debug=repo.debug)
         if "inProgress" in text_return:

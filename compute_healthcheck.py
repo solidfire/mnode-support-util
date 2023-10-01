@@ -41,7 +41,6 @@ class ComputeHealthcheck():
         """  Display a list of Host Clusters
         Select target host cluster. Auto select if only one
         """
-        ##token = GetToken(repo)
         userinput = "none"
         url = f'{repo.base_url}/vcenter/1/compute/{controller_id}/clusters?includeUnmanaged=true'
         domainlist = {}
@@ -68,7 +67,6 @@ class ComputeHealthcheck():
 
     def run_compute_healthcheck(repo, controller_id, cluster_id):
         """ Start the healthcheck """
-        ##token = GetToken(repo)
         url = f'{repo.base_url}/vcenter/1/compute/{controller_id}/health-checks'
         payload = {"cluster": cluster_id,"nodes":[]}
         json_return = PDApi.send_post_return_json(repo, url, payload)
@@ -95,7 +93,6 @@ class ComputeHealthcheck():
         
         if json_return:
             while json_return["state"] == "inProgress":
-                ##token = GetToken(repo)
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
                 if json_return:
                     if step != json_return["step"]:

@@ -33,7 +33,6 @@ class Inventory():
 
     def get_compute_upgrades(repo):
       """ return compute upgrade json """
-      ##token = GetToken(repo)
       url = f'{repo.base_url}/inventory/1/installations/{repo.parent_id}/compute/upgrades?refresh=false'
       json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
       if json_return:
@@ -41,7 +40,6 @@ class Inventory():
 
     def get_storage_upgrades(repo):
       """ return storage upgrade json """
-      ##token = GetToken(repo)
       url = f'{repo.base_url}/inventory/1/installations/{repo.parent_id}/storage/upgrades?refresh=false'
       json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
       if json_return:
