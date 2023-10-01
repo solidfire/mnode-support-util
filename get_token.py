@@ -2,48 +2,60 @@ import json
 import requests
 import time
 from log_setup import Logging, MLog
-# =====================================================================
-#
-# NetApp / SolidFire
-# CPE 
-# mnode support utility
-#
-# =====================================================================
+"""
 
-# =====================================================================
-# Get a token from element auth on the authorative cluster
-# =====================================================================
+ NetApp / SolidFire
+ CPE 
+ mnode support utility
 
-#============================================================
+"""
+
 # set up logging
 logmsg = Logging.logmsg()
 
-def get_token(repo):
-    # See if a new token is needed. mnode-client tokens have a 600 second life span.
-    current_time = int(round(time.time()))
-    if (current_time > (repo.TOKEN_LIFE + 590) or repo.NEW_TOKEN == True):
-        url = ('https://{}/auth/connect/token'.format(str(repo.AUTH_MVIP)))
-        requests.packages.urllib3.disable_warnings()
-        payload = {'client_id': repo.TOKEN_CLIENT, 'grant_type': 'password', 'username': repo.MVIP_USER, 'password': repo.MVIP_PW}
-        logmsg.debug("Get Token: Sending {}".format(url))
-        current_time = time.time()
-        try:
-            response = requests.post(url, headers={}, data=payload, verify=False)
-            logmsg.debug(response.status_code)
-            if response.status_code == 200:
-                token_return = json.loads(response.text)
-                if token_return['expires_in']:
-                    repo.TOKEN = token_return['access_token']
-                    repo.TOKEN_LIFE = current_time
-                    repo.NEW_TOKEN = "False"
-                    repo.HEADER_READ = {"Accept":"*/*", "Authorization":"Bearer {}".format(repo.TOKEN)}
-                    repo.HEADER_WRITE = {"Accept": "application/json", "Content-Type": "application/json", "Authorization":"Bearer {}".format(repo.TOKEN)}
+class GetToken():
+    def __init__(self, repo, force=False):
+        self.auth_mvip = repo.auth_mvip
+        self.header_read = {}
+        self.header_write = {}
+        self.mvip_user = repo.mvip_user
+        self.mvip_pw = repo.mvip_pw
+        self.new_token = force
+        self.token = ""
+        self.token_client = "mnode-client"
+        self.token_life = int()
+        self._get_token(repo)
+        
+    def _get_token(self, repo):
+        """
+        Get a token from element auth on the authorative cluster
+        """
+        # See if a new token is needed. mnode-client tokens have a 600 second life span.
+        current_time = int(round(time.time()))
+        if (current_time > repo.token_life or self.new_token == True):
+            repo.token_life = current_time + 590
+            url = f'https://{str(self.auth_mvip)}/auth/connect/token'
+            requests.packages.urllib3.disable_warnings()
+            payload = {'client_id': self.token_client, 'grant_type': 'password', 'username': self.mvip_user, 'password': self.mvip_pw}
+            logmsg.debug(f'Get Token: Sending {url}')
+            current_time = time.time()
+            try:
+                response = requests.post(url, headers={}, data=payload, verify=False)
+                logmsg.debug(response.status_code)
+                if response.status_code == 200:
+                    token_return = json.loads(response.text)
+                    if token_return["expires_in"]:
+                        self.token = token_return["access_token"]
+                        self.token_life = current_time
+                        self.new_token = False
+                        self.header_read = {"Accept":"*/*", "Authorization": f'Bearer {self.token}'}
+                        self.header_write = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": f'Bearer {self.token}'}
+                    else:
+                        logmsg.info("\tRecived 200 but not a valid token. See /var/log/mnode-support-util.log for details")
+                        self.token = "INVALID"
                 else:
-                    logmsg.info("\tRecived 200 but not a valid token. See /var/log/mnode-support-util.log for details")
-                    repo.TOKEN = "INVALID"
-            else:
-                MLog.log_failed_return(response.status_code, response.text)
+                    MLog.log_failed_return(response.status_code, response.text)
+                    exit(1)
+            except requests.exceptions.RequestException as exception:
+                MLog.log_exception(exception)
                 exit(1)
-        except requests.exceptions.RequestException as exception:
-            MLog.log_exception(exception)
-            exit(1)
