@@ -2,24 +2,26 @@ import logging
 import os
 from logging import handlers
 from sys import stdout
-# =====================================================================
-#
-# NetApp / SolidFire
-# CPE 
-# mnode support utility
-#
-# =====================================================================
-#============================================================
-# Setup logging to file and console
-# DEBUG = /var/log/mnode-support-util.log
-# INFO = console and /var/log/mnode-support-util.log
-#============================================================
+"""
+
+ NetApp / SolidFire
+ CPE 
+ mnode support utility
+
+"""
+"""
+ Setup logging to file and console
+ DEBUG = /var/log/mnode-support-util.log
+ INFO = console and /var/log/mnode-support-util.log
+"""
 
 class Logging():
     def logmsg():
+        """ Standard logging
+        """
         myuid = os.getuid()
         if myuid != 0:
-            print("Please re-run this utility with sudo. Current uid: {}".format(str(myuid)))
+            print(f'Please re-run this utility with sudo. Current uid: {str(myuid)}')
             exit(1)
         logfile = '/var/log/mnode-support-util.log'
         formatter = logging.Formatter('%(asctime)s [%(filename)s: %(lineno)d] [%(process)d] [%(levelname)s]: %(message)s','%m:%d:%Y %H:%M:%S')
@@ -35,10 +37,12 @@ class Logging():
         return logger
 
 class MLog():
+    """ failure logging
+    """
     def log_failed_return(status, text):
         logmsg = Logging.logmsg()
-        logmsg.info("Failed return {} See /var/log/mnode-support-util.log for details".format(status))
-        logmsg.debug("FAILED RETURN: {}: {}".format(status, text))
+        logmsg.info(f'Failed return {status} See /var/log/mnode-support-util.log for details')
+        logmsg.debug(f'FAILED RETURN: {status}: {text}')
 
     def log_exception(exception):
         logmsg = Logging.logmsg()
