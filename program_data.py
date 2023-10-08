@@ -85,6 +85,7 @@ class Common():
         download_file = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{base_filename}'
         download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle/{base_filename}'
         try:
+            logmsg.debug(f'Copy {filename} to {download_file} ')
             shutil.copyfile(filename, download_file)
             logmsg.info(f'Download link: {download_url}')
         except FileNotFoundError as error:
