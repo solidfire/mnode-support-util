@@ -140,6 +140,28 @@ if __name__ == "__main__":
             logmsg.info(healthcheck_start["taskName"])
             ComputeHealthcheck.print_healthcheck_status(repo, healthcheck_start)
     
+        '''
+    Compute firmware upgrade
+    - look for task already in progress
+    - select host cluster
+    - select esx host
+    - check bmc connectivity
+    - - https://10.194.72.4/hardware/2/#/Hardware/app.api.inventory.bmc_connection_status
+    - select firmware package
+    - - https://10.194.72.4/inventory/1/#/Inventory/app.api.v1.inventory.InventoryApi.get_compute_upgrades
+    - run compute healthcheck
+    - - https://10.194.72.4/hardware/2/#/Hardware/app.api.health_checks.post
+    - put compute in maint mode
+    - run the upgrade
+    - - https://10.194.72.4/hardware/2/#/Hardware/app.api.upgrades.post
+    ? attach iso to bmc
+    ? reboot the node
+    - watch the upgrade
+    - - https://10.194.72.4/hardware/2/#/Hardware/app.api.tasks.get
+    api's
+    BMC Update - GET /node/{hardware_id}/upgrade
+    Tasks API - GET /tasks/{task_id}/logs
+        '''
     # Delete storage node logs
     #            
     elif args.action == 'deletelogs':

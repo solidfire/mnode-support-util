@@ -123,6 +123,7 @@ class ElemUpgrade():
                 logmsg.info(f'Available actions: {json_return[0]["status"]["availableActions"]}')
         else:
             logmsg.info("No running upgrades detected")
+            exit(0)
 
     def check_upgrade(self, repo):
         """ Check Upgrade log
