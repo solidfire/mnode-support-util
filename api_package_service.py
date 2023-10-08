@@ -45,7 +45,7 @@ class Package:
         """ upload a package
         requires some special treatment with the api call. So it does not use PDApi.send_put
         """
-        token = GetToken(repo)
+        token = GetToken(repo, True)
         logmsg.info('Add upgrade image to package repository')
         if os.path.exists(updatefile) != True:
             logmsg.info(f'{updatefile} not found')
