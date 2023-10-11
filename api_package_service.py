@@ -67,8 +67,7 @@ class Package:
             except requests.exceptions.RequestException as exception:
                 logmsg.info("An exception occured. See /var/log/mnode-support-util.log for details")
                 logmsg.debug(exception)
-                logmsg.debug(f'{response.status_code}: {response.text}') 
-                response_json = json.loads(response.text)
+                logmsg.debug(f'{response}') 
         session.close()
         return response_json
 
