@@ -72,9 +72,7 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     repo = ProgramData(args)
-    token = GetToken(repo)
-    repo.header_read = token.header_read
-    repo.header_write = token.header_write
+    GetToken(repo)
     assets = Assets(repo)
     logmsg.debug("=== Start mnode-support-util ===")
 
@@ -164,8 +162,7 @@ if __name__ == "__main__":
                 upgrade.start_upgrade(repo, upgrade_package)
                 upgrade.check_upgrade(repo)
             elif upgrade_option == 'v':
-                upgrade.find_upgrade(repo)
-                if upgrade.upgrade_id:
+                if hasattr(upgrade, "upgrade_id"):
                     upgrade.check_upgrade(repo)
             elif upgrade_option == 'p':
                 upgrade.upgrade_action(repo, "pause")

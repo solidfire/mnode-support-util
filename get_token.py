@@ -50,6 +50,8 @@ class GetToken():
                         self.new_token = False
                         self.header_read = {"Accept":"*/*", "Authorization": f'Bearer {self.token}'}
                         self.header_write = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": f'Bearer {self.token}'}
+                        repo.header_read = self.header_read
+                        repo.header_write = self.header_write
                     else:
                         logmsg.info("\tRecived 200 but not a valid token. See /var/log/mnode-support-util.log for details")
                         self.token = "INVALID"
