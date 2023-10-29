@@ -119,8 +119,6 @@ class ElemUpgrade():
         if len(json_return) == 1:
             logmsg.info(f'Running upgrade\nUpgrade ID {json_return[0]["upgradeId"]}\n\tState: {json_return[0]["state"]}\n\tStarted: {json_return[0]["dateCreated"]}\n\tStatus: {json_return[0]["status"]["message"]}\n\tAvailable actions: {json_return[0]["status"]["availableActions"]}\n')
             self.upgrade_id = json_return[0]["upgradeId"]
-            if json_return[0]["status"]["availableActions"]:
-                logmsg.info(f'Available actions: {json_return[0]["status"]["availableActions"]}')
         elif len(json_return) > 1:
             logmsg.info('Running upgrades\n')
             for upgrade in json_return:
