@@ -113,14 +113,20 @@ class ElemUpgrade():
     def find_upgrade(self, repo):
         """ Find Upgrade
         """
-        logmsg.info("\nFind element upgrade")
+        logmsg.info("Find active element upgrade(s)")
         url = f'{repo.base_url}/storage/1/upgrades?includeCompleted=false'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
-            logmsg.info(f'Found upgrade ID {json_return[0]["upgradeId"]}')
+        if len(json_return) == 1:
+            logmsg.info(f'Running upgrade\nUpgrade ID {json_return[0]["upgradeId"]}\n\tState: {json_return[0]["state"]}\n\tStarted: {json_return[0]["dateCreated"]}\n\tStatus: {json_return[0]["status"]["message"]}\n\tAvailable actions: {json_return[0]["status"]["availableActions"]}\n')
             self.upgrade_id = json_return[0]["upgradeId"]
             if json_return[0]["status"]["availableActions"]:
                 logmsg.info(f'Available actions: {json_return[0]["status"]["availableActions"]}')
+        elif len(json_return) > 1:
+            logmsg.info('Running upgrades\n')
+            for upgrade in json_return:
+                logmsg.info(f'Upgrade ID: {upgrade["upgradeId"]}\n\tState: {upgrade["state"]}\n\tStarted: {upgrade["dateCreated"]}\n\tStatus: {upgrade["status"]["message"]}\n\tAvailable actions: {upgrade["status"]["availableActions"]}\n')
+            userinput = input("Enter the upgrade ID to work with or press Enter for new upgrade: ")
+            self.upgrade_id = userinput
         else:
             logmsg.info("No running upgrades detected")
 
@@ -182,5 +188,11 @@ class ElemUpgrade():
         logmsg.debug(f'Sending: PUT {url} {json.dumps(payload)}')
         json_return = PDApi.send_put_return_json(repo, url, payload)
         
-        if json_return:
+        if 'state' in json_return:
             logmsg.info(f'Upgrade state: {json_return["state"]}')
+        elif 'detail' in json_return:
+            logmsg.info(json_return['detail'])
+        else:
+            logmsg.info("Unknown return: See /var/log/mnode-support-util.log for details")
+            logmsg.debug(json.dumps(json_return))
+            exit(1)
