@@ -13,7 +13,7 @@ from get_token import GetToken
 from mnode_healthcheck import healthcheck_run_all
 from mnode_supportbundle import SupportBundle
 from log_setup import Logging
-from program_data import ProgramData, Common
+from program_data import ProgramData, Common, PDApi
 from storage_bundle import StorageBundle
 from storage_healthcheck import StorageHealthcheck
 from element_upgrade import ElemUpgrade
@@ -72,9 +72,7 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     repo = ProgramData(args)
-    token = GetToken(repo)
-    repo.header_read = token.header_read
-    repo.header_write = token.header_write
+    GetToken(repo)
     assets = Assets(repo)
     logmsg.debug("=== Start mnode-support-util ===")
 
@@ -164,8 +162,7 @@ if __name__ == "__main__":
                 upgrade.start_upgrade(repo, upgrade_package)
                 upgrade.check_upgrade(repo)
             elif upgrade_option == 'v':
-                upgrade.find_upgrade(repo)
-                if upgrade.upgrade_id:
+                if hasattr(upgrade, "upgrade_id"):
                     upgrade.check_upgrade(repo)
             elif upgrade_option == 'p':
                 upgrade.upgrade_action(repo, "pause")
@@ -199,19 +196,19 @@ if __name__ == "__main__":
     # Upload Element Upgrade or firmware Image
     #
     elif args.action == 'packageupload':
-        pkgadded = False
+        percent_complete = 0
         if not args.updatefile:
             logmsg.info("Please use --updatefile and specify the full path to the package file")
         json_return = Package.upload_element_image(repo, args.updatefile)
         logmsg.info('Refreshing packages.... Please wait')
-        time.sleep(30)
-        while pkgadded == False:
-            current_packages = Package.list_packages(repo)
-            if current_packages:
-                for package in current_packages:
-                    if package["version"] == json_return["version"]:
-                        logmsg.info(f'Successfuly added package: {package["name"]} {package["version"]}')
-                        pkgadded = True
+        while percent_complete != 100:
+            time.sleep(30)
+            url = f'{repo.base_url}/task-monitor/1/tasks/{json_return["taskId"]}'
+            task_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
+            if task_return['percentComplete'] == 100:
+                percent_complete = 100
+                print(task_return['step'])
+        current_packages = Package.list_packages(repo)
         logmsg.info('\nAvailable packages;')
         for package in current_packages:
             logmsg.info(f'name: {package["name"]:<20} version: {package["version"]:<20} id: {package["id"]}')
