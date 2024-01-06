@@ -172,8 +172,11 @@ class PDApi():
         """
         response = PDApi._send_get(repo, url,  debug)
         if response is not None:
-            response_json = json.loads(response.text)
-            return response_json
+            try:
+                response_json = json.loads(response.text)
+                return response_json
+            except:
+                logmsg.debug(f'Bad return: {response.status_code}\n\t{response.text}')
 
     def send_get_return_status(repo, url,  debug):
         """ send a GET return the status code 

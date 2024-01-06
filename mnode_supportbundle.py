@@ -13,6 +13,7 @@ from get_token import GetToken
 from log_setup import Logging
 from mnode_healthcheck import mNodeHealthCheck
 from program_data import PDApi, Common
+
 """
 
  NetApp / SolidFire
@@ -253,8 +254,8 @@ class SupportBundle():
                 logmsg.info("Get docker inspect... ")
                 container_list = Docker.get_containers()
                 json_return = Docker.docker_inspect(repo, container_list)
-                if json_return:
-                    outfile.write(json.dumps(json_return))
+                if json_return is not None:
+                    outfile.writelines(str(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
@@ -311,13 +312,13 @@ class SupportBundle():
                         outfile.write(f'{line}\n')
             except FileNotFoundError:
                 logmsg.info(f'Could not open {filename}')
-
+        
         """ get docker network
         """
         filename = f'{repo.support_dir}support-docker-network'
         try:
             with open(filename, 'w') as outfile:
-                logmsg.info("Get docker network...")
+                logmsg.info("\nGet docker network...")
                 cmd_return = Docker.docker_network(repo)
                 out = "\n".join(cmd_return)
                 outfile.write(f'\nDocker network\n{out}')
@@ -401,8 +402,11 @@ class SupportBundle():
                         outfile.write(read_file.read())
         """ gather the vcp logs into /var/log
         """
-        shutil.copyfile("/opt/solidfire/sioc/data/logs/vcp-remote.log", "/var/log/vcp-remote.log")
-        shutil.copyfile("/opt/solidfire/sioc/data/logs/vcp-service.log", "/var/log/vcp-service.log")
+        try:
+            shutil.copyfile("/opt/solidfire/sioc/data/logs/vcp-remote.log", "/var/log/vcp-remote.log")
+            shutil.copyfile("/opt/solidfire/sioc/data/logs/vcp-service.log", "/var/log/vcp-service.log")
+        except FileNotFoundError:
+            logmsg.info(f'VCP log files not found. Perhaps customer is not using the VCP')
         
     def make_tar(self, repo):
         """ create tar
@@ -410,7 +414,7 @@ class SupportBundle():
         logmsg.info("Creating support tar bundle. Please wait....")
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        tar_file = (f'mnode-support-bundle-{time_stamp}.tar')
+        tar_file = (f'mnode-support-bundle-{time_stamp}.tar.gz')
         output_file = f'/tmp/{tar_file}'
         try:
             bundle = tarfile.open(output_file, "w:gz")
@@ -420,7 +424,11 @@ class SupportBundle():
             logmsg.info(f'\nDone. Bundle name: {output_file}')
             bundle.close()
             #logmsg.info(f'Please send {output_file} to NetApp support')
+        except:
+            logmsg.info("Failed to create tar bundle.")
+        
+        try:
             Common.cleanup_download_dir("mnode-support-bundle")
             Common.copy_file_to_download(repo, output_file)
         except:
-            logmsg.info("Failed to create tar bundle.")
+            logmsg.info("Failed to copy bundle to download area.")
