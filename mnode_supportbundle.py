@@ -245,15 +245,15 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def docker_inspect(self, repo):
+    def docker_container_inspect(self, repo):
         """ get docker inspect
         """
-        filename = f'{repo.support_dir}support-docker-inspect.json'
+        filename = f'{repo.support_dir}support-docker-container-inspect.json'
         try:
             with open(filename, 'w') as outfile:
                 logmsg.info("Get docker inspect... ")
                 container_list = Docker.get_containers()
-                json_return = Docker.docker_inspect(repo, container_list)
+                json_return = Docker.docker_container_inspect(repo, container_list)
                 if json_return is not None:
                     outfile.writelines(str(json_return))
         except FileNotFoundError:
@@ -325,6 +325,18 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
+        """ get network inspect
+        """
+        filename = f'{repo.support_dir}support-docker-network-inspect'
+        try:
+            with open(filename, 'w') as outfile:
+                logmsg.info("\nGet docker network inspect")
+                cmd_return = Docker.docker_network_inspect(repo)
+                out = "\n".join(cmd_return)
+                outfile.write(out)
+        except FileNotFoundError as error:
+            logmsg.info(f'Could not open {filename}')
+            
     def system_commands(self, repo):
         """ system commands
         """
