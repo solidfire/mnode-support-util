@@ -1,7 +1,6 @@
 import argparse
 import getpass
 import json
-import os
 import textwrap
 import time
 from asset_tasks import AssetMgmt
@@ -300,7 +299,7 @@ if __name__ == "__main__":
         bundle.bmc_logs(repo)
         bundle.bmc_info(repo)
         bundle.docker_ps(repo)
-        bundle.docker_inspect(repo)
+        bundle.docker_container_inspect(repo)
         bundle.docker_stats(repo)
         bundle.docker_service(repo)
         bundle.docker_volume(repo)

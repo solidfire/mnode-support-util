@@ -17,11 +17,11 @@ class Docker():
         """ get docker container id's from docker ps 
         """
         try:
-            cmd_output = subprocess.getoutput("/usr/bin/docker ps | /bin/grep -v CONTAINER | /usr/bin/awk '{print $1}'").splitlines()
+            cmd_output = subprocess.getoutput("/usr/bin/docker ps -q").splitlines()
+            return cmd_output
         except OSError as exception:
-            cmd_output = "Error running docker ps. See /var/log/mnode-support-util.log for details."
+            logmsg.info("ERROR running docker ps. See /var/log/mnode-support-util.log for details.")
             logmsg.debug(exception)
-        return cmd_output
 
     def docker_ps(repo):
         """ docker ps
@@ -29,12 +29,12 @@ class Docker():
         try:
             logmsg.debug("Executing docker ps")
             cmd_output = subprocess.getoutput("/usr/bin/docker ps").splitlines()
+            return cmd_output
         except OSError as error:
-            cmd_output = "ERROR: docker ps Failed. See /var/log/mnode-support-util.log for details."
+            logmsg.info("ERROR: docker ps Failed. See /var/log/mnode-support-util.log for details.")
             logmsg.debug(error)
-        return cmd_output
 
-    def docker_inspect(repo, container_list):
+    def docker_container_inspect(repo, container_list):
         """ docker inspect 
         """
         cmd_output = []
@@ -45,7 +45,7 @@ class Docker():
                 output = inspect.replace("\n", "")
                 cmd_output.append(output)
             except OSError as error:
-                cmd_output = "ERROR: docker inspect failed. See /var/log/mnode-support-util.log for details."
+                logmsg.info("ERROR: docker inspect failed. See /var/log/mnode-support-util.log for details.")
                 logmsg.debug(error)
         return cmd_output
 
@@ -54,41 +54,55 @@ class Docker():
         """
         try:
             cmd_output = subprocess.getoutput("/usr/bin/docker service list").splitlines()
+            return cmd_output
         except OSError as error: 
-            cmd_output = "ERROR: docker service list failed. See /var/log/mnode-support-util.log for details."
+            logmsg.info("ERROR: docker service list failed. See /var/log/mnode-support-util.log for details.")
             logmsg.debug(error)
-        return cmd_output
 
     def docker_volume(repo):
         """ docker volume list
         """
         try:
             cmd_output = subprocess.getoutput("/usr/bin/docker volume list").splitlines()
+            return cmd_output
         except OSError as error:
-            cmd_output = "ERROR: docker volume list failed. See /var/log/mnode-support-util.log for details."
+            logmsg.info("ERROR: docker volume list failed. See /var/log/mnode-support-util.log for details.")
             logmsg.debug(error)
-        return cmd_output
 
     def docker_stats(repo):
         """ docker stats
         """
         try:
             cmd_output = subprocess.getoutput("/usr/bin/docker stats --all --no-stream").splitlines()
+            return cmd_output
         except OSError as error:
-            cmd_output = "ERROR: docker volume list failed. See /var/log/mnode-support-util.log for details."
+            logmsg.info("ERROR: docker volume list failed. See /var/log/mnode-support-util.log for details.")
             logmsg.debug(error)
-        return cmd_output
     
     def docker_network(repo):
         """ docker network list
         """
         try:
             cmd_output = subprocess.getoutput("/usr/bin/docker network ls").splitlines()
+            return cmd_output
         except OSError as error:
-            cmd_output = "ERROR: docker network ls failed. See /var/log/mnode-support-util.log for details."
+            logmsg.info("ERROR: docker network ls failed. See /var/log/mnode-support-util.log for details.")
             logmsg.debug(error)
-        return cmd_output
     
+    def docker_network_inspect(repo):
+        """ docker network inspect
+        """
+        network_inspect = []
+        try:
+            cmd_output = subprocess.getoutput("/usr/bin/docker network ls -q").splitlines()
+            for network in cmd_output:
+                inspect = subprocess.getoutput(f'/usr/bin/docker network inspect {network}')
+                network_inspect.append(f'{inspect}\n\n')
+            return network_inspect
+        except OSError as error:
+            logmsg.info("ERROR: docker network ls failed. See /var/log/mnode-support-util.log for details.")
+            logmsg.debug(error)
+        
     def docker_container_net(container):
         """ get dontainer IP's
         """
@@ -96,8 +110,8 @@ class Docker():
         cmd = ("docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' " + container)
         try: 
             cmd_output = subprocess.getoutput(cmd).read()
+            return cmd_output.rstrip('\n')
         except OSError as error:
-            cmd_output = "ERROR: docker inspect failed. See /var/log/mnode-support-util.log for details."
+            logmsg.info("ERROR: docker inspect failed. See /var/log/mnode-support-util.log for details.")
             logmsg.debug(error)
-        return cmd_output.rstrip('\n')
 
