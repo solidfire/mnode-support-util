@@ -22,7 +22,7 @@ logmsg = Logging.logmsg()
 class ProgramData():
     def __init__(self, args):
         """ Very frequently used values """
-        self.util_version = "3.5.1474"
+        self.util_version = "3.5.1484"
         self.base_url = "https://127.0.0.1"
         self.debug = False
         self.header_read = {}

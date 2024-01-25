@@ -71,15 +71,6 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     repo = ProgramData(args)
-    GetToken(repo)
-    assets = Assets(repo)
-    logmsg.debug("=== Start mnode-support-util ===")
-
-    
-    # Display basic info
-    #
-    logmsg.info(f'+ mNode ip: {repo.about["mnode_host_ip"]}\n+ MS version: {repo.about["mnode_bundle_version"]}\n+ Authorative cluster: {repo.auth_mvip}\n+ mnode-support-util version: {repo.util_version}\n\n')
-    
     # prompt for storage admin password if not provided 
     #
     if not args.stpw:
@@ -88,7 +79,13 @@ if __name__ == "__main__":
             repo.mvip_pw = args.stpw
         except Exception as error:
             logmsg.debug(f'Get password error: {error}')
-
+    GetToken(repo)
+    assets = Assets(repo)
+    logmsg.debug("=== Start mnode-support-util ===")
+    
+    # Display basic info
+    #
+    logmsg.info(f'+ mNode ip: {repo.about["mnode_host_ip"]}\n+ MS version: {repo.about["mnode_bundle_version"]}\n+ Authorative cluster: {repo.auth_mvip}\n+ mnode-support-util version: {repo.util_version}\n\n')
     
     # Load assets from json file
     #
