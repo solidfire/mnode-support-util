@@ -40,7 +40,7 @@ class GetToken():
             logmsg.debug(f'Get Token: Sending {url}')
             current_time = time.time()
             try:
-                response = requests.post(url, headers={}, data=payload, verify=False)
+                response = requests.post(url, headers={}, data=payload, verify=False, timeout=60)
                 logmsg.debug(response.status_code)
                 if response.status_code == 200:
                     token_return = json.loads(response.text)

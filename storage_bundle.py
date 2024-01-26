@@ -25,17 +25,17 @@ class StorageBundle():
         self.nodelist = []
         self.selected_nodes = []
 
-    def get_cluster_nodes(self, repo):
+    def _get_cluster_nodes(self, repo):
         url = f'{repo.base_url}/storage/1/{self.storage_id}/info'
         self.cluster_info = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         
-    def select_cluster_nodes(self, repo):
+    def _select_cluster_nodes(self, repo):
         """ list available nodes in the cluster
             select the nodes to gather bundles from 
         """
         userinput = "999"
         
-        self.get_cluster_nodes(repo)
+        self._get_cluster_nodes(repo)
         logmsg.info("\nAvailable nodes: ")
         for node in self.cluster_info["nodes"]:
             tmp_dict = {
@@ -59,8 +59,8 @@ class StorageBundle():
                         logmsg.info(f'Not a valid nodeID: {id}')
                         exit(1)
     
-    def make_bundle_payload(self, repo):
-        self.select_cluster_nodes(repo)
+    def _make_bundle_payload(self, repo):
+        self._select_cluster_nodes(repo)
         crash_dumps = input("Gather crash dumps? (y/n): ")
         if crash_dumps.lower() == 'y':
             crash_dumps = True
@@ -75,7 +75,7 @@ class StorageBundle():
         payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "storageNodeIds":[storage_node_list]}
         return payload 
 
-    def delete_existing_bundle(self, repo):
+    def _delete_existing_bundle(self, repo):
         """ iterate through the storage nodes and delete existing bundles
         """
         userinput = input("Would you like to delete existing storage node log bundles? (y/n) ")
@@ -88,7 +88,7 @@ class StorageBundle():
                 if json_return:
                     logmsg.info(f'\tNode ID: {node["nodeID"]} = {json_return["result"]["details"]["output"]}')
 
-    def start_bundle(self, repo, payload):
+    def _start_bundle(self, repo, payload):
         """ start the gather log bundle task
         """
         url = f'{repo.base_url}/logs/1/bundle'
@@ -100,7 +100,7 @@ class StorageBundle():
             logmsg.info(f'Status {json_return["status"]}: {json_return["detail"]}')
             exit(1)
 
-    def watch_bundle(self, repo):
+    def _watch_bundle(self, repo):
         """ watch progress and display the download link when completed
         """
         # prevent the log from filling up with debug messages in the while loop
@@ -115,16 +115,16 @@ class StorageBundle():
                 if json_return["taskMonitor"]["percentComplete"] != percent_complete:
                     percent_complete = json_return["taskMonitor"]["percentComplete"]
                     logmsg.info(f'Percent complete: {json_return["taskMonitor"]["percentComplete"]}')
-                if json_return["state"] == "failed":
-                    logmsg.info(f'Log Collection {json_return["state"]} \n{json_return["summary"]}\n{json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
-                    exit(0)
+                #if json_return["state"] == "failed":
+                    #logmsg.info(f'Log Collection {json_return["state"]} \n{json_return["summary"]}\n{json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
+                    #return json_return["downloadLink"]
                 if json_return["downloadLink"]: 
-                    logmsg.info(f'Log bundle creation complete: {json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
-                    exit(0)
+                    #logmsg.info(f'Storage log bundle creation complete: {json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
+                    return json_return["downloadLink"]
         # Set logging back to debug
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
-    def check_running_bundle(self, repo):
+    def _check_running_bundle(self, repo):
         """ Check for a bundle already in progress
         """
         url = f'{repo.base_url}/logs/1/bundle'
@@ -135,5 +135,17 @@ class StorageBundle():
             return "inProgress"
         else:
             return "Completed"
-                    
+
+    def collect_bundle(self, repo)                :
+        if self._check_running_bundle(repo) == 'inProgress':
+                self._watch_bundle(repo)
+        else:
+            payload = self._make_bundle_payload(repo)
+            self._delete_existing_bundle(repo)
+            self._start_bundle(repo, payload)
+            result = self._watch_bundle(repo)
+            if result is False:
+                exit(1)
+            else:
+                return result
 

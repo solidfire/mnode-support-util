@@ -1,8 +1,10 @@
+import datetime
 import getpass
 import json
 import os
 import requests
 import shutil
+import tarfile
 from get_token import GetToken
 from log_setup import Logging, MLog
 """
@@ -42,7 +44,7 @@ class ProgramData():
         """
         header = {"Accept":"*/*"}
         url = (f'{self.base_url}/mnode/1/about')
-        response = requests.get(url, headers=header, data={}, verify=False)
+        response = requests.get(url, headers=header, data={}, verify=False, timeout=60)
         if response is not None:
             response_json = json.loads(response.text)
             return response_json
@@ -83,11 +85,11 @@ class Common():
     def copy_file_to_download(repo, filename):
         base_filename = os.path.basename(filename)
         download_file = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{base_filename}'
-        download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle/{base_filename}'
+        #download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle/{base_filename}'
         try:
             logmsg.debug(f'Copy {filename} to {download_file} ')
             shutil.copyfile(filename, download_file)
-            logmsg.info(f'Download link: {download_url}')
+            #logmsg.info(f'Download link: {download_url}')
         except FileNotFoundError as error:
             logmsg.debug(error)
         
@@ -97,6 +99,21 @@ class Common():
             os.remove(download_files)
         except FileNotFoundError as error:
             logmsg.debug(error)
+
+    def make_download_tar(bundle_type, file_one=None, file_two=None):
+        download_dir = '/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share'
+        date_time = datetime.datetime.now()
+        time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
+        tar_file_name = f'{download_dir}/{bundle_type}-{time_stamp}.tar.gz'
+        with tarfile.open(tar_file_name, 'w:gz') as tar:
+            if file_one is not None:
+                tar.add(f'{download_dir}/{file_one}', arcname=os.path.basename(f'{download_dir}/{file_one}'))
+            if file_two is not None:
+                tar.add(f'{download_dir}/{file_two}', arcname=os.path.basename(f'{download_dir}/{file_two}'))
+        return tar_file_name
+
+        
+        
         
         
 
@@ -114,10 +131,14 @@ class PDApi():
             if debug == True: 
                 logmsg.debug(f'Sending GET {url}')
             response = requests.get(url, headers=repo.header_read, data={}, verify=False)
-            if response is not None:
+            #if response is not None:
+            if response.status_code < 299:
                 if debug == True: 
                     logmsg.debug(f'{response.status_code}: {response.text}')
                 return response
+            else:
+                logmsg.info(f'Failed return {response.status_code} See See /var/log/mnode-support-util.log for details.')
+                logmsg.debug(str(response.content))
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)
     
@@ -128,9 +149,12 @@ class PDApi():
         try:
             logmsg.debug(f'Sending PUT {url}')
             response = requests.put(url, headers=repo.header_write, data=json.dumps(payload), verify=False)
-            if response is not None:
+            if response.status_code < 299:
                 logmsg.debug(f'{response.status_code}: {response.text}')
                 return response
+            else:
+                logmsg.info(f'Failed return {response.status_code} See See /var/log/mnode-support-util.log for details.')
+                logmsg.debug(str(response.content))
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)
             
@@ -141,9 +165,12 @@ class PDApi():
         try:
             logmsg.debug(f'Sending POST {url} {json.dumps(payload)}')
             response = requests.post(url, headers=repo.header_write, data=json.dumps(payload), verify=False)
-            if response is not None:
+            if response.status_code < 299:
                 logmsg.debug(f'{response.status_code}: {response.text}') 
                 return response
+            else:
+                logmsg.info(f'Failed return {response.status_code} See See /var/log/mnode-support-util.log for details.')
+                logmsg.debug(str(response.content))
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)
 
@@ -154,9 +181,12 @@ class PDApi():
         try:
             logmsg.debug(f'Sending DELETE {url}')
             response = requests.delete(url, headers=repo.header_write, data={}, verify=False)
-            if response is not None:
+            if response.status_code < 299:
                 logmsg.debug(f'{response.status_code}: {response.text}')
                 return response
+            else:
+                logmsg.info(f'Failed return {response.status_code} See See /var/log/mnode-support-util.log for details.')
+                logmsg.debug(str(response.content))
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)
             

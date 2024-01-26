@@ -38,7 +38,7 @@ class mNodeHealthCheck():
         """
         print("\n===== Auth client configuration =====", file=outfile)
         url = f'https://{repo.auth_mvip}/auth/api/1/configuration'
-        json_return = requests.get(url, auth=HTTPBasicAuth(repo.mvip_user, repo.mvip_pw), verify=False)
+        json_return = requests.get(url, auth=HTTPBasicAuth(repo.mvip_user, repo.mvip_pw), verify=False, timeout=60)
         if json_return:
             config_count = (len(json_return["apiClients"]) + len(json_return["apiResources"]))
             if config_count == 0:
@@ -142,7 +142,7 @@ class mNodeHealthCheck():
         url = f'https://{repo.auth_mvip}/json-rpc/11.3?method=ListClusterInterfacePreferences'
         print("\n===== Checking cluster ListClusterInterfacePreferences =====", file=outfile)
         try:
-            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
+            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=60)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
                 if json_return:
@@ -176,7 +176,7 @@ class mNodeHealthCheck():
         url = f'https://{repo.auth_mvip}/json-rpc/11.3?method=GetConstants'
         print("\n===== Checking cluster Constants =====", file=outfile)
         try:
-            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
+            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=60)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
                 if json_return:
@@ -200,14 +200,14 @@ class mNodeHealthCheck():
         print("\tssh to the node.\n\tdocker stop element_auth\n\tdocker start element_auth\n\tNOTE docker ps STATUS of Healthy does not mean element_auth is healthy.\n", file=outfile)
         url = (f'https://{repo.auth_mvip}/json-rpc/11.3?method=GetNetworkConfig&force=true')
         try:
-            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
+            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=60)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
                 if json_return["result"]["nodes"]:
                     for node in json_return["result"]["nodes"]:
                         mip = (node['result']['network']['Bond1G']['address'])
                         try:
-                            response = requests.get(f'https://{mip}/auth/about', data={}, verify=False)
+                            response = requests.get(f'https://{mip}/auth/about', data={}, verify=False, timeout=60)
                             if response.status_code == 200:
                                 print(f'\tNode: {node["nodeID"]:<5} auth about: {response.text:<} ', file=outfile)
                         except requests.exceptions.RequestException as exception:

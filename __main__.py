@@ -252,21 +252,7 @@ if __name__ == "__main__":
         if json_return:
             AssetMgmt.check_inventory_errors(json_return)
             AssetMgmt.list_assets(repo)
-            
-    # storage support bundle
-    #
-    elif args.action == 'storagebundle':
-        storage_id = Common.select_target_cluster(repo)
-        bundle = StorageBundle(storage_id)
-               
-        if bundle.check_running_bundle(repo) == 'inProgress':
-            bundle.watch_bundle(repo)
-        else:
-            payload = bundle.make_bundle_payload(repo)
-            bundle.delete_existing_bundle(repo)
-            bundle.start_bundle(repo, payload)
-            bundle.watch_bundle(repo) 
-            
+
     # storage healthcheck
     #
     elif args.action == 'storagehealthcheck':
@@ -275,37 +261,29 @@ if __name__ == "__main__":
         if healthcheck_start:
             StorageHealthcheck.print_healthcheck_status(repo, healthcheck_start)
             
-    # mnode support bundle 
+    # mnode and storage support bundle 
     #
     elif args.action == 'supportbundle':
+        mnode = ""
+        storage = ""
         logmsg.info("Start support bundle...")
-        bundle = SupportBundle(repo)
-        bundle.about(repo)
-        bundle.assets(repo)
-        bundle.inventory(repo)
-        bundle.settings(repo)
-        bundle.services(repo)
-        bundle.token(repo)
-        bundle.auth_cluster(repo)
-        bundle.auth_cluster(repo)
-        bundle.clusters(repo)
-        bundle.storage_healthcheck(repo)
-        bundle.storage_upgrade(repo)
-        bundle.compute_upgrade(repo)
-        bundle.bmc_port_check(repo)
-        bundle.bmc_logs(repo)
-        bundle.bmc_info(repo)
-        bundle.docker_ps(repo)
-        bundle.docker_container_inspect(repo)
-        bundle.docker_stats(repo)
-        bundle.docker_service(repo)
-        bundle.docker_volume(repo)
-        bundle.docker_logs(repo)
-        bundle.local_files(repo)
-        bundle.system_commands(repo)
-        bundle.local_files(repo)
-        bundle.make_tar(repo)
+        userinput = input("\nSelect the type of bundle (m)node, (s)torage, (b)oth: ")
+        if userinput.lower() == 's' or userinput == 'b':
+            storage = 'Storage'
+            storage_id = Common.select_target_cluster(repo)
+            bundle = StorageBundle(storage_id)
+            storage_result = bundle.collect_bundle(repo).split('/')[-1]
+        if userinput.lower() == 'm' or userinput == 'b':
+            mnode = 'mNode'
+            mnode_bundle = SupportBundle(repo)    
+            mnode_result = mnode_bundle.full_bundle(repo).split('/')[-1]
+        bundle_type = f'{mnode}{storage}'
+        download = Common.make_download_tar(bundle_type, mnode_result, storage_result)
+        if download is not None:
+            download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle'
+            logmsg.info(f'Download link: {download_url}/{download.split("/")[-1]}')
         
+            
     # Update Management Services
     #
     elif args.action == 'updatems':
