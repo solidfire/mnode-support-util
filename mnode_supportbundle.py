@@ -474,7 +474,6 @@ class SupportBundle():
             self._docker_network_inspect(repo)
             self._local_files(repo)
             self._system_commands(repo)
-            self._local_files(repo)
             tar_file = self._make_tar(repo)
         except:
             return False

@@ -112,11 +112,6 @@ class Common():
                 tar.add(f'{download_dir}/{file_two}', arcname=os.path.basename(f'{download_dir}/{file_two}'))
         return tar_file_name
 
-        
-        
-        
-        
-
 class PDApi():
     """ routine api calls 
     """ 
