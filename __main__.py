@@ -273,10 +273,12 @@ if __name__ == "__main__":
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
             storage_result = bundle.collect_bundle(repo).split('/')[-1]
+            mnode_result = None
         if userinput.lower() == 'm' or userinput == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
             mnode_result = mnode_bundle.full_bundle(repo).split('/')[-1]
+            storage_result = None
         bundle_type = f'{mnode}{storage}'
         download = Common.make_download_tar(bundle_type, mnode_result, storage_result)
         if download is not None:
