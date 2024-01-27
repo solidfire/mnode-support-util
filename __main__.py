@@ -266,21 +266,20 @@ if __name__ == "__main__":
     elif args.action == 'supportbundle':
         mnode = ""
         storage = ""
+        bundles = []
         logmsg.info("Start support bundle...")
         userinput = input("\nSelect the type of bundle (m)node, (s)torage, (b)oth: ")
         if userinput.lower() == 's' or userinput == 'b':
             storage = 'Storage'
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
-            storage_result = bundle.collect_bundle(repo).split('/')[-1]
-            mnode_result = None
+            bundles.append(bundle.collect_bundle(repo).split('/')[-1])
         if userinput.lower() == 'm' or userinput == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
-            mnode_result = mnode_bundle.full_bundle(repo).split('/')[-1]
-            storage_result = None
+            bundles.append(mnode_bundle.full_bundle(repo).split('/')[-1])
         bundle_type = f'{mnode}{storage}'
-        download = Common.make_download_tar(bundle_type, mnode_result, storage_result)
+        download = Common.make_download_tar(bundle_type, bundles)
         if download is not None:
             download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle'
             logmsg.info(f'Download link: {download_url}/{download.split("/")[-1]}')

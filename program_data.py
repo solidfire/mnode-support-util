@@ -100,16 +100,14 @@ class Common():
         except FileNotFoundError as error:
             logmsg.debug(error)
 
-    def make_download_tar(bundle_type, file_one=None, file_two=None):
+    def make_download_tar(bundle_type, file_list):
         download_dir = '/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share'
         date_time = datetime.datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
         tar_file_name = f'{download_dir}/{bundle_type}-{time_stamp}.tar.gz'
         with tarfile.open(tar_file_name, 'w:gz') as tar:
-            if file_one is not None:
-                tar.add(f'{download_dir}/{file_one}', arcname=os.path.basename(f'{download_dir}/{file_one}'))
-            if file_two is not None:
-                tar.add(f'{download_dir}/{file_two}', arcname=os.path.basename(f'{download_dir}/{file_two}'))
+            for file in file_list:
+                tar.add(f'{download_dir}/{file}', arcname=os.path.basename(f'{download_dir}/{file}'))
         return tar_file_name
 
 class PDApi():
