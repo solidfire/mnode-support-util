@@ -27,6 +27,7 @@ class ProgramData():
         self.util_version = "3.5.1485"
         self.base_url = "https://127.0.0.1"
         self.debug = False
+        self.download_dir = "/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share"
         self.header_read = {}
         self.header_write = {}
         self.log_dir = "/var/log/"
@@ -37,6 +38,7 @@ class ProgramData():
         self.mvip_pw = args.stpw
         self.parent_id = ""
         self.token_life = 0
+        self.download_url = f'https://{self.about["mnode_host_ip"]}/logs/1/bundle'
         
     def _about(self):
         """ Get assets /mnode/#/about/routes.v1.about.get
@@ -73,8 +75,8 @@ class Common():
         return clusterlist[userinput]
     
     def file_download(repo, content, filename):
-        download_file = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{filename}'
-        download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle/{filename}'
+        download_file = f'{repo.download_dir}/{filename}'
+        download_url = f'{repo.download_url}/{filename}'
         try:
             with open(download_file, "w") as outfile:
                 print(content, file=outfile)
@@ -82,32 +84,33 @@ class Common():
         except FileNotFoundError as error:
             logmsg.debug(error) 
             
-    def copy_file_to_download(repo, filename):
+    def copy_file_to_download(repo, filename, quite=False):
         base_filename = os.path.basename(filename)
-        download_file = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{base_filename}'
-        #download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle/{base_filename}'
+        download_file = f'{repo.download_dir}/{base_filename}'
+        download_url = f'{repo.download_url}/{base_filename}'
         try:
             logmsg.debug(f'Copy {filename} to {download_file} ')
             shutil.copyfile(filename, download_file)
-            #logmsg.info(f'Download link: {download_url}')
+            if quite is False:
+                logmsg.info(f'Download link: {download_url}')
         except FileNotFoundError as error:
             logmsg.debug(error)
         
-    def cleanup_download_dir(prefix):
-        download_files = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{prefix}*'
+    def cleanup_download_dir(repo):
+        download_files = os.listdir(repo.download_dir)
         try:
-            os.remove(download_files)
+            for file in download_files:
+                os.remove(f'{repo.download_dir}/{file}')
         except FileNotFoundError as error:
             logmsg.debug(error)
 
-    def make_download_tar(bundle_type, file_list):
-        download_dir = '/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share'
+    def make_download_tar(repo, bundle_type, file_list):
         date_time = datetime.datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        tar_file_name = f'{download_dir}/{bundle_type}-{time_stamp}.tar.gz'
+        tar_file_name = f'{repo.download_dir}/{bundle_type}-{time_stamp}.tar.gz'
         with tarfile.open(tar_file_name, 'w:gz') as tar:
             for file in file_list:
-                tar.add(f'{download_dir}/{file}', arcname=os.path.basename(f'{download_dir}/{file}'))
+                tar.add(f'{repo.download_dir}/{file}', arcname=os.path.basename(f'{repo.download_dir}/{file}'))
         return tar_file_name
 
 class PDApi():

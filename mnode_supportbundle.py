@@ -428,8 +428,8 @@ class SupportBundle():
         logmsg.info("Creating mnode support tar bundle. Please wait....")
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        tar_file = (f'mnode-support-bundle-{time_stamp}.tar.gz')
-        output_file = f'/tmp/{tar_file}'
+        
+        output_file = f'/tmp/mnode-support-bundle-{time_stamp}.tar.gz'
         try:
             bundle = tarfile.open(output_file, "w:gz")
             for root, dirs, files in os.walk("/var/log"):
@@ -441,8 +441,7 @@ class SupportBundle():
         except:
             logmsg.info("Failed to create tar bundle.")
         try:
-            Common.cleanup_download_dir("mnode-support-bundle")
-            Common.copy_file_to_download(repo, output_file)
+            Common.copy_file_to_download(repo, output_file, quite=True)
             return output_file
         except:
             logmsg.info("Failed to copy bundle to download area.")

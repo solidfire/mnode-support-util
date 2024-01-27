@@ -268,21 +268,21 @@ if __name__ == "__main__":
         storage = ""
         bundles = []
         logmsg.info("Start support bundle...")
+        Common.cleanup_download_dir(repo)
         userinput = input("\nSelect the type of bundle (m)node, (s)torage, (b)oth: ")
-        if userinput.lower() == 's' or userinput == 'b':
+        if userinput.lower() == 's' or userinput.lower() == 'b':
             storage = 'Storage'
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
             bundles.append(bundle.collect_bundle(repo).split('/')[-1])
-        if userinput.lower() == 'm' or userinput == 'b':
+        if userinput.lower() == 'm' or userinput.lower() == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
             bundles.append(mnode_bundle.full_bundle(repo).split('/')[-1])
         bundle_type = f'{mnode}{storage}'
-        download = Common.make_download_tar(bundle_type, bundles)
+        download = Common.make_download_tar(repo, bundle_type, bundles)
         if download is not None:
-            download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle'
-            logmsg.info(f'Download link: {download_url}/{download.split("/")[-1]}')
+            logmsg.info(f'Download link: {repo.download_url}/{download.split("/")[-1]}')
         
             
     # Update Management Services
