@@ -171,7 +171,7 @@ class SupportBundle():
             with open(checkfile, 'w') as outfile:
                 logmsg.info("Check storage upgrades... This may take a while.")
                 json_return = Upgrades.get_upgrade(repo, active='true')
-                if json_return is not None is not None:
+                if json_return is not None:
                     logmsg.info("\tUpgrade(s) found...")
                     outfile.write(json.dumps(json_return))
                     for upgrade in json_return:
@@ -181,7 +181,7 @@ class SupportBundle():
                             url = f'{repo.base_url}/storage/1/upgrades/{upgrade["upgradeId"]}/log'
                             json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug) ## Can fail with RangeError: Maximum call stack exceeded
                             logmsg.debug(f'## CPE-633 ## {json_return}')
-                            if json_return is not None is not None:
+                            if json_return is not None:
                                 for line in json_return["mnode_storage"]["docker_logs"]:
                                     # strip out the over verbosity
                                     if "vars in" not in line:
@@ -257,7 +257,7 @@ class SupportBundle():
                 logmsg.info("Get docker inspect... ")
                 container_list = Docker.get_containers()
                 json_return = Docker.docker_container_inspect(repo, container_list)
-                if json_return is not None is not None:
+                if json_return is not None:
                     outfile.writelines(str(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
