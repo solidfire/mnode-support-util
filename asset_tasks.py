@@ -177,7 +177,7 @@ class AssetMgmt():
             url = f'{repo.base_url}/mnode/1/assets/{repo.parent_id}/{asset_type["asset_type"]}/{asset["id"]}'
             logmsg.info(f'Updating asset:{asset["ip"]:<} {asset["id"]:<15}')
             json_return = PDApi.send_put_return_json(repo, url, payload)
-            if json_return:
+            if json_return is not None:
                 logmsg.info(f'\tSuccessfuly updated {json_return["ip"]} {asset["id"]}')
 
     def update_passwd(repo, asset_type):
@@ -194,6 +194,6 @@ class AssetMgmt():
         url = f'{repo.base_url}/mnode/1/assets/{repo.parent_id}/{asset_type["asset_type"]}/{asset_id}'
         logmsg.info(f'Updating asset id: {asset_id}')
         json_return = PDApi.send_put_return_json(repo, url, payload)
-        if json_return is not None:
+        if json_return is not None is not None:
                 logmsg.info("Successfully updated asset")
             

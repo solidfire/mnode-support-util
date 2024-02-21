@@ -185,7 +185,7 @@ if __name__ == "__main__":
     elif args.action == 'listpackages':
         logmsg.info("\nNetApp HCI release notes: https://docs.netapp.com/us-en/hci/docs/rn_relatedrn.html")
         json_return = Package.list_packages(repo)
-        if json_return:
+        if json_return is not None:
             for package in json_return:
                 logmsg.info(f'\n{package["name"]:<20}{package["version"]}\n\t{package["CIFSUrl"]}\n\t{package["HTTPSUrl"]}\n\t{package["NFSUrl"]}')
                 
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     #
     elif args.action == 'refresh':
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             AssetMgmt.list_assets(repo)
             
@@ -322,7 +322,7 @@ if __name__ == "__main__":
         asset_type = AssetMgmt.set_asset_type()
         AssetMgmt.update_passwd_by_type(repo, asset_type) 
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             
     # Update one asset password
@@ -332,7 +332,7 @@ if __name__ == "__main__":
         AssetMgmt.list_assets(repo, asset_type['asset_name'])
         AssetMgmt.update_passwd(repo, asset_type)
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             
     else:

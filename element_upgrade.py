@@ -75,7 +75,7 @@ class ElemUpgrade():
         logmsg.info("\nLooking for a valid upgrade image...")
         url = f'{repo.base_url}/storage/1/clusters/{self.upgrade_target}/valid-packages'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
+        if json_return is not None:
             for package in json_return:
                     pkglist[package["filename"]] = package["packageId"]
                     logmsg.info(f'\t{package["filename"]}')
@@ -105,7 +105,7 @@ class ElemUpgrade():
         logmsg.debug(f'Sending POST {url} {json.dumps(payload)}')
         json_return = PDApi.send_post_return_json(repo, url, payload)
         
-        if json_return:
+        if json_return is not None:
             logmsg.info(f'\nUpgrade ID: {json_return["upgradeId"]}')
             logmsg.info(f'Upgrade task ID: {json_return["taskId"]}')
             self.upgrade_id = json_return["upgradeId"]
@@ -141,14 +141,14 @@ class ElemUpgrade():
             while percent_complete != 100:
                 GetToken(repo)
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
-                if json_return:
-                    if json_return["state"] == 'initializing':
+                if json_return is not None:
+                    if json_return is not None["state"] == 'initializing':
                         logmsg.info("Upgrade is initializing. Waiting 15 seconds to start")
                         time.sleep(15)
-                    elif json_return["state"] == 'error':
+                    elif json_return is not None["state"] == 'error':
                         logmsg.info(f'\n{json_return["state"]}: {json_return["status"]["message"]}\nSee /var/log/mnode-support-util.log for details')
                         logmsg.debug(json_return)
-                        if json_return["status"]["failedHealthChecks"]:
+                        if json_return is not None["status"]["failedHealthChecks"]:
                             for fail in json_return["status"]["failedHealthChecks"]:
                                 logmsg.info(f'\tPassed: {fail["passed"]}\t{fail["description"]}')
                         exit(1)
@@ -156,13 +156,13 @@ class ElemUpgrade():
                         status_message = json_return["status"]["message"]
                         logmsg.info(f'\nUpgrade status: {json_return["status"]["message"]}\nUpgrade Percentage: {str(json_return["status"]["percent"])}\nUpgrade step: {json_return["status"]["step"]}')
                         percent_complete = json_return["status"]["percent"]
-                        if json_return["status"]["availableActions"]:
+                        if json_return is not None["status"]["availableActions"]:
                             for action in json_return["status"]["availableActions"]:
                                 logmsg.info(f'Available action: {action}')
-                        if json_return["status"]["nodeDetails"]:
+                        if json_return is not None["status"]["nodeDetails"]:
                             for node in json_return["status"]["nodeDetails"]:
                                 logmsg.info(node)
-                        if json_return["status"]["failedHealthChecks"]:
+                        if json_return is not None["status"]["failedHealthChecks"]:
                             for check in json_return["status"]["failedHealthChecks"]:
                                 logmsg.info(check)
         except KeyboardInterrupt:

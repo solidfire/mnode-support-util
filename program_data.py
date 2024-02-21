@@ -175,8 +175,9 @@ class PDApi():
             try:
                 response_json = json.loads(response.text)
                 return response_json
-            except:
-                logmsg.debug(f'Bad return: {response.status_code}\n\t{response.text}')
+            except ValueError as error:
+                logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                return None
 
     def send_get_return_status(repo, url,  debug):
         """ send a GET return the status code 
@@ -189,9 +190,12 @@ class PDApi():
         """ send a PUT return the json 
         """
         response = PDApi._send_put(repo, url,  payload)
-        if response is not None:
+        try:
             response_json = json.loads(response.text)
             return response_json
+        except ValueError as error:
+                logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                return None
 
     def send_put_return_status(repo, url,  payload):
         """ send a PUT return the status code 

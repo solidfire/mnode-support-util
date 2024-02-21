@@ -39,7 +39,7 @@ class mNodeHealthCheck():
         print("\n===== Auth client configuration =====", file=outfile)
         url = f'https://{repo.auth_mvip}/auth/api/1/configuration'
         json_return = requests.get(url, auth=HTTPBasicAuth(repo.mvip_user, repo.mvip_pw), verify=False)
-        if json_return:
+        if json_return is not None:
             config_count = (len(json_return["apiClients"]) + len(json_return["apiResources"]))
             if config_count == 0:
                 print("\tThere is problem with the auth configuration\n\tSee Solution in KB\nhttps://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Element_Software/setup-mnode_script_or_Management_Services_update_fails_on_Element_mNode_12.2_with_configure_element_auth_error", file=outfile)
@@ -145,7 +145,7 @@ class mNodeHealthCheck():
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
-                if json_return:
+                if json_return is not None:
                     print(f'\t{json_return}', file=outfile)
                     print("\tTROUBLESHOOTING TIP: ClusterInterfacePreference must match the mnode_ip and if present, the FQDN must resolve mnode_ip ", file=outfile)
                 else:
@@ -179,7 +179,7 @@ class mNodeHealthCheck():
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
-                if json_return:
+                if json_return is not None:
                     for line in json_return["result"]:
                         for constant in constants_reccomended:
                             if line == constant:
@@ -203,7 +203,7 @@ class mNodeHealthCheck():
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
-                if json_return["result"]["nodes"]:
+                if json_return is not None["result"]["nodes"]:
                     for node in json_return["result"]["nodes"]:
                         mip = (node['result']['network']['Bond1G']['address'])
                         try:
@@ -226,7 +226,7 @@ class mNodeHealthCheck():
         """ Print inventory and errors
         """
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             return json_return
         
 class ParseLogs():
