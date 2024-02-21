@@ -109,13 +109,13 @@ class StorageBundle():
             json_return = PDApi.send_get_return_json(repo, url, 'no')
             if json_return is not None:
                 state = json_return["state"]
-                if json_return is not None["taskMonitor"]["percentComplete"] != percent_complete:
+                if json_return["taskMonitor"]["percentComplete"] != percent_complete:
                     percent_complete = json_return["taskMonitor"]["percentComplete"]
                     logmsg.info(f'Percent complete: {json_return["taskMonitor"]}')
-                if json_return is not None["state"] == "failed":
+                if json_return["state"] == "failed":
                     logmsg.info(f'Log Collection {json_return["state"]} \n{json_return["summary"]}\n{json_return["downloadLink"].replace("127.0.0.1", repo.ABOUT["mnode_host_ip"])}')
                     exit(0)
-                if json_return is not None["downloadLink"]: 
+                if json_return["downloadLink"]: 
                     logmsg.info(f'Log bundle creation complete: {json_return["downloadLink"].replace("127.0.0.1", repo.ABOUT["mnode_host_ip"])}')
                     exit(0)
         # Set logging back to debug

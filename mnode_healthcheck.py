@@ -203,7 +203,7 @@ class mNodeHealthCheck():
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
             if response.status_code == 200:
                 json_return = json.loads(response.text)
-                if json_return is not None["result"]["nodes"]:
+                if json_return["result"]["nodes"]:
                     for node in json_return["result"]["nodes"]:
                         mip = (node['result']['network']['Bond1G']['address'])
                         try:

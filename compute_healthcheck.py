@@ -99,7 +99,7 @@ class ComputeHealthcheck():
                         step = json_return["step"]
                         logmsg.info(step)
         
-            if json_return is not None["state"] == 'completed':
+            if json_return["state"] == 'completed':
                 resource_link = json_return["resourceLink"]
                 url = (resource_link.replace("127.0.0.1", repo.about["mnode_host_ip"]))
                 resource_json = PDApi.send_get_return_json(repo, url, debug=repo.debug)

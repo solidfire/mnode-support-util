@@ -24,7 +24,7 @@ class StorageHealthcheck():
         payload = {"config":{},"storageId":storage_id}
         json_return = PDApi.send_post_return_json(repo, url, payload)
         if json_return is not None:
-            if json_return is not None["state"] == "initializing":
+            if json_return["state"] == "initializing":
                 logmsg.info("Healthcheck running...")
                 return json_return
             else:
@@ -45,11 +45,11 @@ class StorageHealthcheck():
             url = f'{repo.base_url}/storage/1/health-checks/{json_return["healthCheckId"]}'
             while not json_return["dateCompleted"]:
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
-                if json_return is not None["status"]:
+                if json_return["status"]:
                     if msg != json_return["status"]["message"]:
                         msg = json_return["status"]["message"]
                         logmsg.info(json_return["status"]["message"])
-            if json_return is not None["dateCompleted"]:
+            if json_return["dateCompleted"]:
                 with open(local_report, "w") as outfile:
                     print(json.dumps(json_return), file=outfile)
                     logmsg.info(f'Storage Healthcheck completed. Report written to {local_report}')
