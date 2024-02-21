@@ -142,7 +142,7 @@ class ElemUpgrade():
                 GetToken(repo)
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
                 if json_return is not None:
-                    if json_return is not None["state"] == 'initializing':
+                    if json_return["state"] == 'initializing':
                         logmsg.info("Upgrade is initializing. Waiting 15 seconds to start")
                         time.sleep(15)
                     elif json_return is not None["state"] == 'error':

@@ -80,7 +80,7 @@ class StorageBundle():
                     creds = PDApi.check_cluster_creds(repo, node_ip, node["ListAllNodes"]["name"])
                     url = f'https://{node_ip}:442/json-rpc/10.0/'
                     json_return = PDApi.mip_send_post_return_status(repo, url, payload, creds)
-                    if json_return:
+                    if json_return is not None:
                         logmsg.info(f'\tNode ID: {str(node["ListAllNodes"]["nodeID"])} = {json_return["result"]["details"]["output"]}')
 
     def start_bundle(repo, payload):
@@ -90,7 +90,7 @@ class StorageBundle():
         get_token(repo)
         logmsg.info("Starting log collection")
         json_return = PDApi.send_post_return_json(repo, url, payload)
-        if json_return:
+        if json_return is not None:
             logmsg.info(f'Recieved 201: Collection task id {json_return["taskId"]}')
         else:
             logmsg.info(f'Status {json_return["status"]}: {json_return["detail"]}')
@@ -107,15 +107,15 @@ class StorageBundle():
         while state == "inProgress":
             get_token(repo)
             json_return = PDApi.send_get_return_json(repo, url, 'no')
-            if json_return:
+            if json_return is not None:
                 state = json_return["state"]
-                if json_return["taskMonitor"]["percentComplete"] != percent_complete:
+                if json_return is not None["taskMonitor"]["percentComplete"] != percent_complete:
                     percent_complete = json_return["taskMonitor"]["percentComplete"]
                     logmsg.info(f'Percent complete: {json_return["taskMonitor"]}')
-                if json_return["state"] == "failed":
+                if json_return is not None["state"] == "failed":
                     logmsg.info(f'Log Collection {json_return["state"]} \n{json_return["summary"]}\n{json_return["downloadLink"].replace("127.0.0.1", repo.ABOUT["mnode_host_ip"])}')
                     exit(0)
-                if json_return["downloadLink"]: 
+                if json_return is not None["downloadLink"]: 
                     logmsg.info(f'Log bundle creation complete: {json_return["downloadLink"].replace("127.0.0.1", repo.ABOUT["mnode_host_ip"])}')
                     exit(0)
         # Set logging back to debug
