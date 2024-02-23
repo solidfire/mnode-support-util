@@ -428,23 +428,17 @@ class SupportBundle():
         logmsg.info("Creating mnode support tar bundle. Please wait....")
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        
-        output_file = f'/tmp/mnode-support-bundle-{time_stamp}.tar.gz'
+        tar_file = f'mnode-support-bundle-{time_stamp}.tar.gz'
+        output_file = f'/tmp/{tar_file}'
         try:
             bundle = tarfile.open(output_file, "w:gz")
             for root, dirs, files in os.walk("/var/log"):
                 for file in files:
                     bundle.add(os.path.join(root, file))
-            #logmsg.info(f'\nDone. Bundle name: {output_file}')
             bundle.close()
-            #logmsg.info(f'Please send {output_file} to NetApp support')
         except:
             logmsg.info("Failed to create tar bundle.")
-        try:
-            Common.copy_file_to_download(repo, output_file, quite=True)
-            return output_file
-        except:
-            logmsg.info("Failed to copy bundle to download area.")
+        return tar_file
 
     def full_bundle(self, repo):
         try:

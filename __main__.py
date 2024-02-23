@@ -73,6 +73,9 @@ if __name__ == "__main__":
     repo = ProgramData(args)
     # prompt for storage admin password if not provided 
     #
+    Common.get_download_dir(repo)
+    logmsg.info(f'====\n\tDEBUG: {repo.download_dir}\n====\n')
+    
     if not args.stpw:
         try:
             args.stpw = getpass.getpass(prompt=f'storage {args.stuser} password: ')
@@ -278,11 +281,14 @@ if __name__ == "__main__":
         if userinput.lower() == 'm' or userinput.lower() == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
-            bundles.append(mnode_bundle.full_bundle(repo).split('/')[-1])
+            bundle_name = mnode_bundle.full_bundle(repo)
+            Common.copy_file_to_download(repo, f'/tmp/{bundle_name}')
+            bundles.append(bundle_name)
         bundle_type = f'{mnode}{storage}'
-        download = Common.make_download_tar(repo, bundle_type, bundles)
-        if download is not None:
-            logmsg.info(f'Download link: {repo.download_url}/{download.split("/")[-1]}')
+        if len(bundles) == 2:
+            download = Common.make_download_tar(repo, bundle_type, bundles)
+            if download is not None:
+                logmsg.info(f'Download link: {repo.download_url}/{download}')
         
             
     # Update Management Services

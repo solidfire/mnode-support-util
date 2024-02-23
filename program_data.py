@@ -4,6 +4,7 @@ import json
 import os
 import requests
 import shutil
+import subprocess
 import tarfile
 from get_token import GetToken
 from log_setup import Logging, MLog
@@ -27,7 +28,7 @@ class ProgramData():
         self.util_version = "3.5.1485"
         self.base_url = "https://127.0.0.1"
         self.debug = False
-        self.download_dir = "/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share"
+        self.download_dir = ""
         self.header_read = {}
         self.header_write = {}
         self.log_dir = "/var/log/"
@@ -83,22 +84,38 @@ class Common():
                 logmsg.info(f'Download link: {download_url}')
         except FileNotFoundError as error:
             logmsg.debug(error) 
+
+    def get_download_dir(repo):
+        docker_ps = subprocess.getoutput("docker ps | grep mnode_logs-svc | awk '{print $1}'")
+        docker_inspect = subprocess.getoutput(f'docker inspect {docker_ps}')
+        try:
+            json_output = json.loads(docker_inspect)
+        except ValueError as error:
+            logmsg.info(error)
+        for mount in json_output[0]['Mounts']:
+            if mount['Type'] == 'volume' and 'NetApp-HCI-logs-service' in mount['Name']:
+                repo.download_dir = f'{mount["Source"]}/bundle/share'
             
     def copy_file_to_download(repo, filename, quite=False):
         base_filename = os.path.basename(filename)
         download_file = f'{repo.download_dir}/{base_filename}'
         download_url = f'{repo.download_url}/{base_filename}'
-        try:
-            logmsg.debug(f'Copy {filename} to {download_file} ')
-            shutil.copyfile(filename, download_file)
-            if quite is False:
-                logmsg.info(f'Download link: {download_url}')
-        except FileNotFoundError as error:
-            logmsg.debug(error)
+        if os.path.exists(repo.download_dir) == True:    
+            try:
+                logmsg.debug(f'Copy {filename} to {download_file} ')
+                shutil.copyfile(filename, download_file)
+                if quite is False:
+                    logmsg.info(f'Download link: {download_url}')
+                    return True
+            except FileNotFoundError as error:
+                logmsg.debug(error)
+        else:
+            logmsg.info(f'{repo.download_dir} does not exist')
+            return False
         
     def cleanup_download_dir(repo):
-        download_files = os.listdir(repo.download_dir)
         try:
+            download_files = os.listdir(repo.download_dir)
             for file in download_files:
                 os.remove(f'{repo.download_dir}/{file}')
         except FileNotFoundError as error:
@@ -107,8 +124,9 @@ class Common():
     def make_download_tar(repo, bundle_type, file_list):
         date_time = datetime.datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        tar_file_name = f'{repo.download_dir}/{bundle_type}-{time_stamp}.tar.gz'
-        with tarfile.open(tar_file_name, 'w:gz') as tar:
+        tar_file_name = f'{bundle_type}-{time_stamp}.tar.gz'
+        dest_tar_file = f'{repo.download_dir}/{tar_file_name}'
+        with tarfile.open(dest_tar_file, 'w:gz') as tar:
             for file in file_list:
                 tar.add(f'{repo.download_dir}/{file}', arcname=os.path.basename(f'{repo.download_dir}/{file}'))
         return tar_file_name
