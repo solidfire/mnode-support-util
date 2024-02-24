@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime, timedelta
 from log_setup import Logging
@@ -61,6 +62,7 @@ class StorageBundle():
     
     def _make_bundle_payload(self, repo):
         self._select_cluster_nodes(repo)
+        storage_node_list = []
         crash_dumps = input("Gather crash dumps? (y/n): ")
         if crash_dumps.lower() == 'y':
             crash_dumps = True
@@ -71,22 +73,10 @@ class StorageBundle():
         time_now = datetime.now()
         log_history = str(time_now - timedelta(hours=int(log_hours)))
 
-        storage_node_list = ','.join(f'{value["uuid"]}' for value in self.selected_nodes)
-        payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "storageNodeIds":[storage_node_list]}
+        for value in self.selected_nodes:
+            storage_node_list.append(f'{value["uuid"]}')
+        payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "storageNodeIds":storage_node_list}
         return payload 
-
-    def _delete_existing_bundle(self, repo):
-        """ iterate through the storage nodes and delete existing bundles
-        """
-        userinput = input("Would you like to delete existing storage node log bundles? (y/n) ")
-        if userinput.lower() == 'y':
-            payload = "{\n\t\"method\": \"DeleteAllSupportBundles\",\n\"params\": {},\n\"id\": 1\n}" 
-            for node in self.selected_nodes:
-                creds = PDApi.check_cluster_creds(repo, node['mip'], node['name'])
-                url = f'https://{node["mip"]}:442/json-rpc/10.0/'
-                json_return = PDApi.mip_send_post_return_status(url, payload, creds)
-                if json_return:
-                    logmsg.info(f'\tNode ID: {node["nodeID"]} = {json_return["result"]["details"]["output"]}')
 
     def _start_bundle(self, repo, payload):
         """ start the gather log bundle task
@@ -94,7 +84,7 @@ class StorageBundle():
         url = f'{repo.base_url}/logs/1/bundle'
         logmsg.info("Starting log collection")
         json_return = PDApi.send_post_return_json(repo, url, payload)
-        if json_return:
+        if json_return is not None:
             logmsg.info(f'Recieved 201: Collection task id {json_return["taskId"]}')
         else:
             logmsg.info(f'Status {json_return["status"]}: {json_return["detail"]}')
@@ -110,15 +100,15 @@ class StorageBundle():
         percent_complete = 1
         while state == "inProgress":
             json_return = PDApi.send_get_return_json(repo, url, 'no')
-            if json_return:
+            if json_return is not None:
                 state = json_return["state"]
                 if json_return["taskMonitor"]["percentComplete"] != percent_complete:
                     percent_complete = json_return["taskMonitor"]["percentComplete"]
                     logmsg.info(f'Percent complete: {json_return["taskMonitor"]["percentComplete"]}')
-                #if json_return["state"] == "failed":
-                    #logmsg.info(f'Log Collection {json_return["state"]} \n{json_return["summary"]}\n{json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
-                    #return json_return["downloadLink"]
-                if json_return["downloadLink"]: 
+                if json_return["state"] == "failed":
+                    logmsg.info(f'Log Collection {json_return["state"]} \n{json_return["summary"]}\n{json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
+                    return json_return["downloadLink"]
+                if json_return['downloadLink'] is not None: 
                     #logmsg.info(f'Storage log bundle creation complete: {json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
                     return json_return["downloadLink"]
         # Set logging back to debug
@@ -141,7 +131,7 @@ class StorageBundle():
                 self._watch_bundle(repo)
         else:
             payload = self._make_bundle_payload(repo)
-            self._delete_existing_bundle(repo)
+            self.delete_existing_bundle(repo)
             self._start_bundle(repo, payload)
             result = self._watch_bundle(repo)
             if result is False:
@@ -149,3 +139,16 @@ class StorageBundle():
             else:
                 return result
 
+    def delete_existing_bundle(self, repo):
+        """ iterate through the storage nodes and delete existing bundles
+        """
+        #self._select_cluster_nodes(repo)
+        userinput = input("Would you like to delete existing storage node log bundles? (y/n) ")
+        if userinput.lower() == 'y':
+            payload = "{\n\t\"method\": \"DeleteAllSupportBundles\",\n\"params\": {},\n\"id\": 1\n}" 
+            for node in self.selected_nodes:
+                creds = PDApi.check_cluster_creds(repo, node['mip'], node['name'])
+                url = f'https://{node["mip"]}:442/json-rpc/10.0/'
+                json_return = PDApi.mip_send_post_return_status(url, payload, creds)
+                if json_return is not None:
+                    logmsg.info(f'\tNode ID: {node["nodeID"]} = {json_return["result"]["details"]["output"]}')

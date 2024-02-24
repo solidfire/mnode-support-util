@@ -33,13 +33,15 @@ class ProgramData():
         self.header_write = {}
         self.log_dir = "/var/log/"
         self.support_dir = "/var/log/mnode-support/"
-        self.about = self._about()
-        self.auth_mvip = self._auth_mvip()
         self.mvip_user = args.stuser
         self.mvip_pw = args.stpw
         self.parent_id = ""
         self.token_life = 0
+        self.timeout = args.timeout
+        self.about = self._about()
+        self.auth_mvip = self._auth_mvip()
         self.download_url = f'https://{self.about["mnode_host_ip"]}/logs/1/bundle'
+        
         
     def _about(self):
         """ Get assets /mnode/#/about/routes.v1.about.get
@@ -47,9 +49,9 @@ class ProgramData():
         """
         header = {"Accept":"*/*"}
         url = (f'{self.base_url}/mnode/1/about')
-        response = requests.get(url, headers=header, data={}, verify=False, timeout=60)
+        response = requests.get(url, headers=header, data={}, verify=False, timeout=self.timeout)
         if response is not None:
-            response_json = json.loads(response.text)
+            response_json = Common.test_json_loads(response.text)
             return response_json
         
     def _auth_mvip(self):
@@ -57,6 +59,14 @@ class ProgramData():
         return authmvip[2]
         
 class Common():
+    def test_json_loads(json_string):
+        try:
+            json_return = json.loads(json_string)
+            return json_return
+        except ValueError as error:
+            logmsg.debug(json_string)
+            logmsg.info(f'{error}\nSee /var/log/mnode-support-util.log for details')
+            
     def select_target_cluster(repo):
         """ List all storage clusters in inventory and select the target cluster
         """
@@ -87,11 +97,10 @@ class Common():
 
     def get_download_dir(repo):
         docker_ps = subprocess.getoutput("docker ps | grep mnode_logs-svc | awk '{print $1}'")
+        if "\n" in docker_ps:
+            return
         docker_inspect = subprocess.getoutput(f'docker inspect {docker_ps}')
-        try:
-            json_output = json.loads(docker_inspect)
-        except ValueError as error:
-            logmsg.info(error)
+        json_output = Common.test_json_loads(docker_inspect)
         for mount in json_output[0]['Mounts']:
             if mount['Type'] == 'volume' and 'NetApp-HCI-logs-service' in mount['Name']:
                 repo.download_dir = f'{mount["Source"]}/bundle/share'
@@ -145,7 +154,6 @@ class PDApi():
             if debug == True: 
                 logmsg.debug(f'Sending GET {url}')
             response = requests.get(url, headers=repo.header_read, data={}, verify=False)
-            #if response is not None:
             if response.status_code < 299:
                 if debug == True: 
                     logmsg.debug(f'{response.status_code}: {response.text}')
@@ -177,14 +185,10 @@ class PDApi():
         """
         GetToken(repo)
         try:
-            logmsg.debug(f'Sending POST {url} {json.dumps(payload)}')
+            logmsg.debug(f'Sending POST {url}')
             response = requests.post(url, headers=repo.header_write, data=json.dumps(payload), verify=False)
-            if response.status_code < 299:
-                logmsg.debug(f'{response.status_code}: {response.text}') 
-                return response
-            else:
-                logmsg.info(f'Failed return {response.status_code} See See /var/log/mnode-support-util.log for details.')
-                logmsg.debug(str(response.content))
+            logmsg.debug(response)
+            return response
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)
 
@@ -216,11 +220,8 @@ class PDApi():
         """
         response = PDApi._send_get(repo, url,  debug)
         if response is not None:
-            try:
-                response_json = json.loads(response.text)
-                return response_json
-            except:
-                logmsg.debug(f'Bad return: {response.status_code}\n\t{response.text}')
+            response_json = Common.test_json_loads(response.text)
+            return response_json
 
     def send_get_return_status(repo, url,  debug):
         """ send a GET return the status code 
@@ -234,7 +235,7 @@ class PDApi():
         """
         response = PDApi._send_put(repo, url,  payload)
         if response is not None:
-            response_json = json.loads(response.text)
+            response_json = Common.test_json_loads(response.text)
             return response_json
 
     def send_put_return_status(repo, url,  payload):
@@ -249,7 +250,7 @@ class PDApi():
         """
         response = PDApi._send_put(repo, url,  payload={})
         if response is not None:
-            response_json = json.loads(response.text)
+            response_json = Common.test_json_loads(response.text)
             return response_json
 
     def send_post_return_json(repo, url,  payload):
@@ -257,7 +258,7 @@ class PDApi():
         """
         response = PDApi._send_post(repo, url,  payload)
         if response is not None:
-            response_json = json.loads(response.text)
+            response_json = Common.test_json_loads(response.text)
             return response_json
 
     def send_post_return_status(repo, url,  payload):
@@ -279,7 +280,7 @@ class PDApi():
         """
         response = PDApi._send_delete(repo, url)
         if response is not None:
-            response_json = json.loads(response.text)
+            response_json = Common.test_json_loads(response.text)
             return response_json
 
     def check_cluster_creds(repo, mvip, host_name):
@@ -313,7 +314,7 @@ class PDApi():
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
-                response_json = json.loads(response.text)
+                response_json = Common.test_json_loads(response.text)
                 return response_json
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)   
@@ -328,7 +329,7 @@ class PDApi():
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
-                response_json = json.loads(response.text)
+                response_json = Common.test_json_loads(response.text)
                 return response_json
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)

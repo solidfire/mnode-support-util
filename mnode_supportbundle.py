@@ -58,7 +58,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:               
                 logmsg.info("Get mnode settings")
                 json_return = Settings.get_settings(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
@@ -83,7 +83,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:             
                 logmsg.info("Get auth configuration")  
                 json_return = mNodeHealthCheck.check_auth_config(repo, outfile)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
@@ -118,7 +118,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get inventory. This may take a while...")
                 json_return = Inventory.refresh_inventory(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
@@ -131,7 +131,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get services...")
                 json_return = Services.get_services(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
@@ -144,7 +144,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get clusters...")
                 json_return = Clusters.get_clusters(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
@@ -157,7 +157,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Check compute firmware upgrade...")
                 json_return = Inventory.get_compute_upgrades(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
@@ -171,7 +171,7 @@ class SupportBundle():
             with open(checkfile, 'w') as outfile:
                 logmsg.info("Check storage upgrades... This may take a while.")
                 json_return = Upgrades.get_upgrade(repo, active='true')
-                if json_return:
+                if json_return is not None:
                     logmsg.info("\tUpgrade(s) found...")
                     outfile.write(json.dumps(json_return))
                     for upgrade in json_return:
@@ -180,7 +180,7 @@ class SupportBundle():
                         with open(logfile, 'a') as logf:
                             url = f'{repo.base_url}/storage/1/upgrades/{upgrade["upgradeId"]}/log'
                             json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug) ## Often fails with RangeError: Maximum call stack exceeded
-                            if json_return:
+                            if json_return is not None:
                                 for line in json_return["mnode_storage"]["docker_logs"]:
                                     # strip out the over verbosity
                                     if "vars in" not in line:
@@ -197,7 +197,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get health checks...")
                 json_return = Healthcheck.get_healthcheck(repo)
-                if json_return:
+                if json_return is not None:
                     for health_check in json_return:
                         log.append(Healthcheck.get_healthcheck_by_id(repo, health_check["healthCheckId"]))
                 outfile.writelines(log)
@@ -212,7 +212,7 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get hardware...")
                 json_return = Hardware.get_hardware(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')    

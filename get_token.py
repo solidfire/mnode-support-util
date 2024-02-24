@@ -40,11 +40,11 @@ class GetToken():
             logmsg.debug(f'Get Token: Sending {url}')
             current_time = time.time()
             try:
-                response = requests.post(url, headers={}, data=payload, verify=False, timeout=60)
+                response = requests.post(url, headers={}, data=payload, verify=False, timeout=repo.timeout)
                 logmsg.debug(response.status_code)
                 if response.status_code == 200:
                     token_return = json.loads(response.text)
-                    if token_return["expires_in"]:
+                    if "expires_in" in token_return.keys():
                         self.token = token_return["access_token"]
                         self.token_life = current_time
                         self.new_token = False

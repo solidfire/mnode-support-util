@@ -43,6 +43,7 @@ def get_args():
     cmd_args.add_argument('-vp', '--vcpw', help='Specify vcenter password or leave off to be prompted. Optional with addassets')
     cmd_args.add_argument('-sp', '--stpw', help='Specify storage cluster password or leave off to be prompted.')
     cmd_args.add_argument('-d', '--debug', help='Turn up the api call logging. Warning: This will fill logs rapidly.')
+    cmd_args.add_argument('--timeout', default=300)
     required_named = cmd_args.add_argument_group('required named arguments')
     required_named.add_argument('-su', '--stuser', required=True, help='Specify storage cluster user.')
     required_named.add_argument('-a', '--action', help=textwrap.dedent('''Specify action task. 
@@ -58,9 +59,8 @@ def get_args():
     rmasset: Remove one asset. 
     restore: Restore assets from backup json file. 
     refresh: Refresh inventory. 
-    storagebundle: Gather storage support bundle
     storagehealthcheck: Run a storage healthcheck
-    supportbundle: Gather mnode and docker support data. 
+    supportbundle: Gather mnode and/or storage support data. 
     updatems: Update Management Services. 
     updatepw: Update passwords by asset type. 
     updateonepw: Update one asset password'''))
@@ -71,9 +71,9 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     repo = ProgramData(args)
+    Common.get_download_dir(repo)
     # prompt for storage admin password if not provided 
     #
-    Common.get_download_dir(repo)
     logmsg.info(f'====\n\tDEBUG: {repo.download_dir}\n====\n')
     
     if not args.stpw:
@@ -142,7 +142,6 @@ if __name__ == "__main__":
     elif args.action == 'deletelogs':
         storage_id = Common.select_target_cluster(repo)
         delete = StorageBundle(storage_id)
-        delete.select_cluster_nodes(repo)
         delete.delete_existing_bundle(repo)
         
     # Element Upgrade
@@ -188,7 +187,7 @@ if __name__ == "__main__":
     elif args.action == 'listpackages':
         logmsg.info("\nNetApp HCI release notes: https://docs.netapp.com/us-en/hci/docs/rn_relatedrn.html")
         json_return = Package.list_packages(repo)
-        if json_return:
+        if json_return is not None:
             for package in json_return:
                 logmsg.info(f'\n{package["name"]:<20}{package["version"]}\n\t{package["CIFSUrl"]}\n\t{package["HTTPSUrl"]}\n\t{package["NFSUrl"]}')
                 
@@ -252,7 +251,7 @@ if __name__ == "__main__":
     #
     elif args.action == 'refresh':
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             AssetMgmt.list_assets(repo)
 
@@ -307,7 +306,7 @@ if __name__ == "__main__":
         asset_type = AssetMgmt.set_asset_type()
         AssetMgmt.update_passwd_by_type(repo, asset_type) 
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             
     # Update one asset password
@@ -317,7 +316,7 @@ if __name__ == "__main__":
         AssetMgmt.list_assets(repo, asset_type['asset_name'])
         AssetMgmt.update_passwd(repo, asset_type)
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             
     else:

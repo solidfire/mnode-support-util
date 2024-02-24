@@ -38,8 +38,8 @@ class mNodeHealthCheck():
         """
         print("\n===== Auth client configuration =====", file=outfile)
         url = f'https://{repo.auth_mvip}/auth/api/1/configuration'
-        json_return = requests.get(url, auth=HTTPBasicAuth(repo.mvip_user, repo.mvip_pw), verify=False, timeout=60)
-        if json_return:
+        json_return = requests.get(url, auth=HTTPBasicAuth(repo.mvip_user, repo.mvip_pw), verify=False, timeout=repo.timeout)
+        if json_return is not None:
             config_count = (len(json_return["apiClients"]) + len(json_return["apiResources"]))
             if config_count == 0:
                 print("\tThere is problem with the auth configuration\n\tSee Solution in KB\nhttps://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Element_Software/setup-mnode_script_or_Management_Services_update_fails_on_Element_mNode_12.2_with_configure_element_auth_error", file=outfile)
@@ -142,10 +142,10 @@ class mNodeHealthCheck():
         url = f'https://{repo.auth_mvip}/json-rpc/11.3?method=ListClusterInterfacePreferences'
         print("\n===== Checking cluster ListClusterInterfacePreferences =====", file=outfile)
         try:
-            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=60)
+            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=repo.timeout)
             if response.status_code == 200:
-                json_return = json.loads(response.text)
-                if json_return:
+                json_return = Common.test_json_loads(response.text)
+                if json_return is not None:
                     print(f'\t{json_return}', file=outfile)
                     print("\tTROUBLESHOOTING TIP: ClusterInterfacePreference must match the mnode_ip and if present, the FQDN must resolve mnode_ip ", file=outfile)
                 else:
@@ -176,10 +176,10 @@ class mNodeHealthCheck():
         url = f'https://{repo.auth_mvip}/json-rpc/11.3?method=GetConstants'
         print("\n===== Checking cluster Constants =====", file=outfile)
         try:
-            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=60)
+            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=repo.timeout)
             if response.status_code == 200:
-                json_return = json.loads(response.text)
-                if json_return:
+                json_return = Common.test_json_loads(response.text)
+                if json_return is not None:
                     for line in json_return["result"]:
                         for constant in constants_reccomended:
                             if line == constant:
@@ -200,14 +200,14 @@ class mNodeHealthCheck():
         print("\tssh to the node.\n\tdocker stop element_auth\n\tdocker start element_auth\n\tNOTE docker ps STATUS of Healthy does not mean element_auth is healthy.\n", file=outfile)
         url = (f'https://{repo.auth_mvip}/json-rpc/11.3?method=GetNetworkConfig&force=true')
         try:
-            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=60)
+            response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=repo.timeout)
             if response.status_code == 200:
-                json_return = json.loads(response.text)
-                if json_return["result"]["nodes"]:
+                json_return = Common.test_json_loads(response.text)
+                if "nodes" in json_return.keys():
                     for node in json_return["result"]["nodes"]:
                         mip = (node['result']['network']['Bond1G']['address'])
                         try:
-                            response = requests.get(f'https://{mip}/auth/about', data={}, verify=False, timeout=60)
+                            response = requests.get(f'https://{mip}/auth/about', data={}, verify=False, timeout=repo.timeout)
                             if response.status_code == 200:
                                 print(f'\tNode: {node["nodeID"]:<5} auth about: {response.text:<} ', file=outfile)
                         except requests.exceptions.RequestException as exception:
@@ -226,7 +226,7 @@ class mNodeHealthCheck():
         """ Print inventory and errors
         """
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             return json_return
         
 class ParseLogs():
@@ -316,8 +316,8 @@ def healthcheck_run_all(repo):
                     print(f'{line:<25}: {repo.about[line]:<25}', file=outfile)
                 logmsg.info("+ Executing check_auth_token")
                 mNodeHealthCheck.check_auth_token(repo, outfile)
-                logmsg.info("+ Executing checkauth_config")
-                mNodeHealthCheck.check_auth_config(repo, outfile)
+                #logmsg.info("+ Executing checkauth_config")
+                #mNodeHealthCheck.check_auth_config(repo, outfile)
                 logmsg.info("+ Executing get_auth_about")
                 mNodeHealthCheck.get_auth_about(repo, outfile)
                 logmsg.info("+ Executing sf_prefrence")
@@ -336,7 +336,6 @@ def healthcheck_run_all(repo):
                 #mNodeHealthCheck.service_logs(repo, outfile)
             with open(output_file, "r") as outfile:
                 content = outfile.read()
-                Common.cleanup_download_dir("mNodeHealthCheck")
                 Common.file_download(repo, content, filename)
         except FileNotFoundError:
             logmsg.info(f'Could not open {output_file}')

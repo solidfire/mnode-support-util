@@ -24,6 +24,9 @@ class ComputeHealthcheck():
         controllerlist = {}
         userinput = ""
 
+        if len(repo.assets[0]['controller']) == 0:
+            logmsg.info('No compute controllers (vCenter) found in Inventory')
+            exit()
         for controller in repo.assets[0]["controller"]:
             logmsg.info(f'Controller name: {controller["host_name"]} ')
             controllerlist[(controller["host_name"])] = controller["id"]
@@ -46,8 +49,7 @@ class ComputeHealthcheck():
         domainlist = {}
         logmsg.info("\nGenerating Domain list (Host clusters)...")
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-
-        if json_return: #or json_return['status'] != 400: #424 bad login
+        if json_return is not None: 
             if 'result' in json_return:
                 for result in json_return["result"]:
                     try:
@@ -71,7 +73,7 @@ class ComputeHealthcheck():
         payload = {"cluster": cluster_id,"nodes":[]}
         json_return = PDApi.send_post_return_json(repo, url, payload)
 
-        if json_return:
+        if json_return is not None:
             logmsg.info("Healthcheck running...")
             return json_return
         else:
@@ -91,10 +93,10 @@ class ComputeHealthcheck():
         url = f'{repo.base_url}/task-monitor/1/tasks/{healthcheck_start["taskId"]}'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         
-        if json_return:
+        if json_return is not None:
             while json_return["state"] == "inProgress":
                 json_return = PDApi.send_get_return_json(repo, url, 'no')
-                if json_return:
+                if json_return is not None:
                     if step != json_return["step"]:
                         step = json_return["step"]
                         logmsg.info(step)
