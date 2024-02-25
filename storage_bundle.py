@@ -106,11 +106,11 @@ class StorageBundle():
                     percent_complete = json_return["taskMonitor"]["percentComplete"]
                     logmsg.info(f'Percent complete: {json_return["taskMonitor"]["percentComplete"]}')
                 if json_return["state"] == "failed":
-                    logmsg.info(f'Log Collection {json_return["state"]} \n{json_return["summary"]}\n{json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
-                    return json_return["downloadLink"]
+                    download_url = json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])
+                    return download_url
                 if json_return['downloadLink'] is not None: 
-                    #logmsg.info(f'Storage log bundle creation complete: {json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])}')
-                    return json_return["downloadLink"]
+                    download_url = json_return["downloadLink"].replace("127.0.0.1", repo.about["mnode_host_ip"])
+                    return download_url
         # Set logging back to debug
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
@@ -133,11 +133,11 @@ class StorageBundle():
             payload = self._make_bundle_payload(repo)
             self.delete_existing_bundle(repo)
             self._start_bundle(repo, payload)
-            result = self._watch_bundle(repo)
-            if result is False:
+            download_url = self._watch_bundle(repo)
+            if download_url is False:
                 exit(1)
             else:
-                return result
+                return download_url
 
     def delete_existing_bundle(self, repo):
         """ iterate through the storage nodes and delete existing bundles

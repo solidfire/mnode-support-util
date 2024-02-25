@@ -113,9 +113,7 @@ class Common():
             try:
                 logmsg.debug(f'Copy {filename} to {download_file} ')
                 shutil.copyfile(filename, download_file)
-                if quite is False:
-                    logmsg.info(f'Download link: {download_url}')
-                    return True
+                return download_url
             except FileNotFoundError as error:
                 logmsg.debug(error)
         else:

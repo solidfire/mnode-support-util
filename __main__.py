@@ -276,18 +276,22 @@ if __name__ == "__main__":
             storage = 'Storage'
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
-            bundles.append(bundle.collect_bundle(repo).split('/')[-1])
+            download_url = bundle.collect_bundle(repo)
+            bundles.append(download_url.split('/')[-1])
         if userinput.lower() == 'm' or userinput.lower() == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
             bundle_name = mnode_bundle.full_bundle(repo)
-            Common.copy_file_to_download(repo, f'/tmp/{bundle_name}')
+            download_url = Common.copy_file_to_download(repo, f'/tmp/{bundle_name}')
             bundles.append(bundle_name)
         bundle_type = f'{mnode}{storage}'
         if len(bundles) == 2:
             download = Common.make_download_tar(repo, bundle_type, bundles)
             if download is not None:
                 logmsg.info(f'Download link: {repo.download_url}/{download}')
+        else:
+            logmsg.info(f'Download link: {download_url}')
+        
         
             
     # Update Management Services
