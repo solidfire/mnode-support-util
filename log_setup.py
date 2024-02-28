@@ -24,7 +24,7 @@ class Logging():
             print(f'Please re-run this utility with sudo. Current uid: {str(myuid)}')
             exit(1)
         logfile = '/var/log/mnode-support-util.log'
-        formatter = logging.Formatter('%(asctime)s [%(filename)s: %(lineno)d] [%(process)d] [%(levelname)s]: %(message)s','%m:%d:%Y %H:%M:%S')
+        formatter = logging.Formatter('%(asctime)s [%(filename)s: %(lineno)d] [%(process)d] [%(levelname)s]: %(message)s','%m-%d-%YT%H:%M:%S')
         logging.getLogger().handlers.clear()
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
