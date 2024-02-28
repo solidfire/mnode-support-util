@@ -180,7 +180,7 @@ class SupportBundle():
                         with open(logfile, 'a') as logf:
                             url = f'{repo.base_url}/storage/1/upgrades/{upgrade["upgradeId"]}/log'
                             json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug) ## sometimes fails with RangeError: Maximum call stack exceeded
-                            if json_return is not None:
+                            if json_return is not None and len(json_return['mnode_storage']['docker_logs']) > 0:
                                 for line in json_return["mnode_storage"]["docker_logs"]:
                                     # strip out the over verbosity
                                     if "vars in" not in line:

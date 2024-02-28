@@ -282,15 +282,19 @@ if __name__ == "__main__":
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
             bundle_name = mnode_bundle.full_bundle(repo)
+            logmsg.info(f'\tDEBUG bundle_name = {bundle_name} DEBUG')
             download_url = Common.copy_file_to_download(repo, f'/tmp/{bundle_name}')
+            logmsg.info(f'\tDEBUG download_url = {download_url} DEBUG')
             bundles.append(bundle_name)
         bundle_type = f'{mnode}{storage}'
         if len(bundles) == 2:
             download = Common.make_download_tar(repo, bundle_type, bundles)
             if download is not None:
                 logmsg.info(f'Download link: {repo.download_url}/{download}')
+                logmsg.info(f'Local bundle: /tmp/{download}')
         else:
             logmsg.info(f'Download link: {download_url}')
+            logmsg.info(f'Local bundle: /tmp/{bundle_name}')
         
         
             

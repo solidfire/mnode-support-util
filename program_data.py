@@ -109,6 +109,9 @@ class Common():
         base_filename = os.path.basename(filename)
         download_file = f'{repo.download_dir}/{base_filename}'
         download_url = f'{repo.download_url}/{base_filename}'
+        logmsg.info(f'\tDEBUG base_filename = {base_filename} DEBUG')
+        logmsg.info(f'\tDEBUG download_file = {download_file} DEBUG')
+        logmsg.info(f'\tDEBUG download_url = {download_url} DEBUG')
         if os.path.exists(repo.download_dir) == True:    
             try:
                 logmsg.debug(f'Copy {filename} to {download_file} ')
@@ -136,6 +139,7 @@ class Common():
         with tarfile.open(dest_tar_file, 'w:gz') as tar:
             for file in file_list:
                 tar.add(f'{repo.download_dir}/{file}', arcname=os.path.basename(f'{repo.download_dir}/{file}'))
+        shutil.copyfile(dest_tar_file, f'/tmp/{tar_file_name}')
         return tar_file_name
 
 class PDApi():
