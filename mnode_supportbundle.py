@@ -181,7 +181,7 @@ class SupportBundle():
                             url = f'{repo.base_url}/storage/1/upgrades/{upgrade["upgradeId"]}/log'
                             json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug) ## Can fail with RangeError: Maximum call stack exceeded
                             logmsg.debug(f'## CPE-633 ## {json_return}')
-                            if json_return is not None:
+                            if json_return is not None and len(json_return['mnode_storage']['docker_logs']) > 0:
                                 for line in json_return["mnode_storage"]["docker_logs"]:
                                     # strip out the over verbosity
                                     if "vars in" not in line:
@@ -429,8 +429,7 @@ class SupportBundle():
         logmsg.info("Creating support tar bundle. Please wait....")
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        tar_file = (f'mnode-support-bundle-{time_stamp}.tar.gz')
-        output_file = f'/tmp/{tar_file}'
+        output_file = f'/tmp/mnode-support-bundle-{time_stamp}.tar.gz'
         try:
             bundle = tarfile.open(output_file, "w:gz")
             for root, dirs, files in os.walk("/var/log"):
@@ -444,6 +443,6 @@ class SupportBundle():
         
         try:
             Common.cleanup_download_dir("mnode-support-bundle")
-            Common.copy_file_to_download(repo, output_file)
+            Common.copy_file_to_download(repo, output_file, quite=True)
         except:
             logmsg.info("Failed to copy bundle to download area.")

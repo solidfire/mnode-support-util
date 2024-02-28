@@ -50,7 +50,11 @@ class ElemUpgrade():
                     configoptions[option] = value
             configjson = configoptions
         else:
-            configjson = json.loads(configinput)
+            try:
+                configjson = json.loads(configinput)
+            except ValueError as error:
+                logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                return None
         return configjson
     
     def upgrade_option(self):

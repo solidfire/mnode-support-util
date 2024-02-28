@@ -61,7 +61,11 @@ class Package:
                 if response.status_code == 200 or response.status_code == 202:
                     logmsg.info('Upload successful')
                     logmsg.info(response.text)
-                    response_json = json.loads(response.text)
+                    try:
+                        response_json = json.loads(response.text)
+                    except ValueError as error:
+                        logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                        return None
                 else:
                     logmsg.info(f'Package upload fail with status {response.status_code}\n\t{response.text}')
             except requests.exceptions.RequestException as exception:

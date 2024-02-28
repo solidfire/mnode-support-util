@@ -1,8 +1,10 @@
+import datetime
 import getpass
 import json
 import os
 import requests
 import shutil
+import tarfile
 from get_token import GetToken
 from log_setup import Logging, MLog
 """
@@ -22,9 +24,10 @@ logmsg = Logging.logmsg()
 class ProgramData():
     def __init__(self, args):
         """ Very frequently used values """
-        self.util_version = "3.5.1484"
+        self.util_version = "3.5.633"
         self.base_url = "https://127.0.0.1"
         self.debug = False
+        self.download_dir = "/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share"
         self.header_read = {}
         self.header_write = {}
         self.log_dir = "/var/log/"
@@ -44,7 +47,11 @@ class ProgramData():
         url = (f'{self.base_url}/mnode/1/about')
         response = requests.get(url, headers=header, data={}, verify=False)
         if response is not None:
-            response_json = json.loads(response.text)
+            try:
+                response_json = json.loads(response.text)
+            except ValueError as error:
+                logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                return None
             return response_json
         
     def _auth_mvip(self):
@@ -71,7 +78,7 @@ class Common():
         return clusterlist[userinput]
     
     def file_download(repo, content, filename):
-        download_file = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{filename}'
+        download_file = f'{repo.download_dir}/{filename}'
         download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle/{filename}'
         try:
             with open(download_file, "w") as outfile:
@@ -82,7 +89,7 @@ class Common():
             
     def copy_file_to_download(repo, filename):
         base_filename = os.path.basename(filename)
-        download_file = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{base_filename}'
+        download_file = f'{repo.download_dir}/{base_filename}'
         download_url = f'https://{repo.about["mnode_host_ip"]}/logs/1/bundle/{base_filename}'
         try:
             logmsg.debug(f'Copy {filename} to {download_file} ')
@@ -91,13 +98,22 @@ class Common():
         except FileNotFoundError as error:
             logmsg.debug(error)
         
-    def cleanup_download_dir(prefix):
-        download_files = f'/var/lib/docker/volumes/NetApp-HCI-logs-service/_data/bundle/share/{prefix}*'
+    def cleanup_download_dir(repo):
+        download_files = os.listdir(repo.download_dir)
         try:
-            os.remove(download_files)
+            for file in download_files:
+                os.remove(f'{repo.download_dir}/{file}')
         except FileNotFoundError as error:
             logmsg.debug(error)
         
+        def make_download_tar(repo, bundle_type, file_list):
+            date_time = datetime.datetime.now()
+            time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
+            tar_file_name = f'{repo.download_dir}/{bundle_type}-{time_stamp}.tar.gz'
+            with tarfile.open(tar_file_name, 'w:gz') as tar:
+                for file in file_list:
+                    tar.add(f'{repo.download_dir}/{file}', arcname=os.path.basename(f'{repo.download_dir}/{file}'))
+            return tar_file_name
         
 
 class PDApi():
@@ -209,7 +225,11 @@ class PDApi():
         """
         response = PDApi._send_put(repo, url,  payload={})
         if response is not None:
-            response_json = json.loads(response.text)
+            try:
+                response_json = json.loads(response.text)
+            except ValueError as error:
+                logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                return None
             return response_json
 
     def send_post_return_json(repo, url,  payload):
@@ -217,7 +237,11 @@ class PDApi():
         """
         response = PDApi._send_post(repo, url,  payload)
         if response is not None:
-            response_json = json.loads(response.text)
+            try:
+                response_json = json.loads(response.text)
+            except ValueError as error:
+                logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                return None
             return response_json
 
     def send_post_return_status(repo, url,  payload):
@@ -239,7 +263,11 @@ class PDApi():
         """
         response = PDApi._send_delete(repo, url)
         if response is not None:
-            response_json = json.loads(response.text)
+            try:
+                response_json = json.loads(response.text)
+            except ValueError as error:
+                logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                return None
             return response_json
 
     def check_cluster_creds(repo, mvip, host_name):
@@ -273,7 +301,11 @@ class PDApi():
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
-                response_json = json.loads(response.text)
+                try:
+                    response_json = json.loads(response.text)
+                except ValueError as error:
+                    logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                    return None
                 return response_json
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)   
@@ -288,7 +320,11 @@ class PDApi():
             if response.status_code > 299 and response.status_code != 409:
                 MLog.log_failed_return(response.status_code, response.text)
             else:
-                response_json = json.loads(response.text)
+                try:
+                    response_json = json.loads(response.text)
+                except ValueError as error:
+                    logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                    return None
                 return response_json
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)

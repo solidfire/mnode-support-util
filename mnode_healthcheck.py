@@ -144,7 +144,11 @@ class mNodeHealthCheck():
         try:
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
             if response.status_code == 200:
-                json_return = json.loads(response.text)
+                try:
+                    json_return = json.loads(response.text)
+                except ValueError as error:
+                    logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                    return None
                 if json_return is not None:
                     print(f'\t{json_return}', file=outfile)
                     print("\tTROUBLESHOOTING TIP: ClusterInterfacePreference must match the mnode_ip and if present, the FQDN must resolve mnode_ip ", file=outfile)
@@ -178,7 +182,11 @@ class mNodeHealthCheck():
         try:
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
             if response.status_code == 200:
-                json_return = json.loads(response.text)
+                try:
+                    json_return = json.loads(response.text)
+                except ValueError as error:
+                    logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                    return None
                 if json_return is not None:
                     for line in json_return["result"]:
                         for constant in constants_reccomended:
@@ -202,7 +210,11 @@ class mNodeHealthCheck():
         try:
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False)
             if response.status_code == 200:
-                json_return = json.loads(response.text)
+                try:
+                    json_return = json.loads(response.text)
+                except ValueError as error:
+                    logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                    return None
                 if json_return["result"]["nodes"]:
                     for node in json_return["result"]["nodes"]:
                         mip = (node['result']['network']['Bond1G']['address'])

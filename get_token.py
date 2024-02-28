@@ -43,7 +43,11 @@ class GetToken():
                 response = requests.post(url, headers={}, data=payload, verify=False)
                 logmsg.debug(response.status_code)
                 if response.status_code == 200:
-                    token_return = json.loads(response.text)
+                    try:
+                        token_return = json.loads(response.text)
+                    except ValueError as error:
+                            logmsg.debug(f'Bad return: {error}\n\t{response.status_code}\n\t{response.text}')
+                            return None
                     if token_return["expires_in"]:
                         self.token = token_return["access_token"]
                         self.token_life = current_time
