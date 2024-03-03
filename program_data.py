@@ -28,10 +28,11 @@ class ProgramData():
         self.util_version = "3.5.1485"
         self.base_url = "https://127.0.0.1"
         self.debug = False
-        self.download_dir = ""
+        self.download_dir = "/data/bundle/share"
         self.header_read = {}
         self.header_write = {}
         self.log_dir = "/var/log/"
+        self.logs_svc_container = ""
         self.support_dir = "/var/log/mnode-support/"
         self.mvip_user = args.stuser
         self.mvip_pw = args.stpw
@@ -95,52 +96,41 @@ class Common():
         except FileNotFoundError as error:
             logmsg.debug(error) 
 
-    def get_download_dir(repo):
-        docker_ps = subprocess.getoutput("docker ps | grep mnode_logs-svc | awk '{print $1}'")
-        if "\n" in docker_ps:
-            return
-        docker_inspect = subprocess.getoutput(f'docker inspect {docker_ps}')
-        json_output = Common.test_json_loads(docker_inspect)
-        for mount in json_output[0]['Mounts']:
-            if mount['Type'] == 'volume' and 'NetApp-HCI-logs-service' in mount['Name']:
-                repo.download_dir = f'{mount["Source"]}/bundle/share'
-            
-    def copy_file_to_download(repo, filename, quite=False):
+    def copy_file_to_download(repo, filename):
+        try:
+            output = subprocess.getoutput(f'docker cp {filename} {repo.logs_svc_container}:{repo.download_dir}')
+            logmsg.debug(f'copy_file_to_download: docker cp {output}')
+        except subprocess.CalledProcessError as error:
+            logmsg.info(f'subprocess error: {error}')
+
+    def copy_file_from_download(repo, filename):
         base_filename = os.path.basename(filename)
-        download_file = f'{repo.download_dir}/{base_filename}'
-        download_url = f'{repo.download_url}/{base_filename}'
-        logmsg.info(f'\tDEBUG base_filename = {base_filename} DEBUG')
-        logmsg.info(f'\tDEBUG download_file = {download_file} DEBUG')
-        logmsg.info(f'\tDEBUG download_url = {download_url} DEBUG')
-        if os.path.exists(repo.download_dir) == True:    
-            try:
-                logmsg.debug(f'Copy {filename} to {download_file} ')
-                shutil.copyfile(filename, download_file)
-                return download_url
-            except FileNotFoundError as error:
-                logmsg.debug(error)
-        else:
-            logmsg.info(f'{repo.download_dir} does not exist')
-            return False
+        try:
+            output = subprocess.getoutput(f'docker cp {repo.logs_svc_container}:{repo.download_dir}/{base_filename} /tmp')
+            logmsg.debug(f'copy_file_from_download: docker cp {output}')
+        except subprocess.CalledProcessError as error:
+            logmsg.info(f'subprocess error: {error}')
         
     def cleanup_download_dir(repo):
         try:
-            download_files = os.listdir(repo.download_dir)
-            for file in download_files:
-                os.remove(f'{repo.download_dir}/{file}')
-        except FileNotFoundError as error:
-            logmsg.debug(error)
+            output = subprocess.getoutput(f'docker exec {repo.logs_svc_container} rm -rf {repo.download_dir}/*')
+            logmsg.debug(f'cleanup_download_dir: docker exec rm {output}')
+        except subprocess.CalledProcessError as error:
+            logmsg.info(f'subprocess error: {error}')
 
     def make_download_tar(repo, bundle_type, file_list):
         date_time = datetime.datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        tar_file_name = f'{bundle_type}-{time_stamp}.tar.gz'
+        tar_file_name = f'{bundle_type}-{time_stamp}.tar'
         dest_tar_file = f'{repo.download_dir}/{tar_file_name}'
-        with tarfile.open(dest_tar_file, 'w:gz') as tar:
-            for file in file_list:
-                tar.add(f'{repo.download_dir}/{file}', arcname=os.path.basename(f'{repo.download_dir}/{file}'))
-        shutil.copyfile(dest_tar_file, f'/tmp/{tar_file_name}')
-        return tar_file_name
+        try:
+            output = subprocess.getoutput(f'docker exec {repo.logs_svc_container} tar cf {dest_tar_file} {repo.download_dir}/{file_list[0]} {repo.download_dir}/{file_list[1]}')
+            if 'tar: removing leading' in output:
+                return tar_file_name
+            else:
+                logmsg.info(f'tar failed: {output}')
+        except subprocess.CalledProcessError as error:
+            logmsg.info(f'subprocess error: {error}')
 
 class PDApi():
     """ routine api calls 
@@ -158,7 +148,7 @@ class PDApi():
             response = requests.get(url, headers=repo.header_read, data={}, verify=False)
             if response.status_code < 299:
                 if debug == True: 
-                    logmsg.debug(f'{response.status_code}: {response.text}')
+                    logmsg.debug(f'{response.status_code}:') # {response.text}')
                 return response
             else:
                 logmsg.info(f'Failed return {response.status_code} See See /var/log/mnode-support-util.log for details.')

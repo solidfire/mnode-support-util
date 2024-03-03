@@ -1,6 +1,7 @@
 import argparse
 import getpass
 import json
+import subprocess
 import textwrap
 import time
 from asset_tasks import AssetMgmt
@@ -71,10 +72,9 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     repo = ProgramData(args)
-    Common.get_download_dir(repo)
     # prompt for storage admin password if not provided 
     #
-    logmsg.info(f'====\n\tDEBUG: {repo.download_dir}\n====\n')
+    #logmsg.info(f'====\n\tDEBUG: {repo.download_dir}\n====\n')
     
     if not args.stpw:
         try:
@@ -269,6 +269,7 @@ if __name__ == "__main__":
         mnode = ""
         storage = ""
         bundles = []
+        repo.logs_svc_container = subprocess.getoutput("docker ps | grep logs-svc | awk '{print $1}'")
         logmsg.info("Start support bundle...")
         Common.cleanup_download_dir(repo)
         userinput = input("\nSelect the type of bundle (m)node, (s)torage, (b)oth: ")
@@ -277,23 +278,25 @@ if __name__ == "__main__":
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
             download_url = bundle.collect_bundle(repo)
-            bundles.append(download_url.split('/')[-1])
+            bundle_name = download_url.split('/')[-1]
+            bundles.append(bundle_name)
         if userinput.lower() == 'm' or userinput.lower() == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
             bundle_name = mnode_bundle.full_bundle(repo)
-            logmsg.info(f'\tDEBUG bundle_name = {bundle_name} DEBUG')
-            download_url = Common.copy_file_to_download(repo, f'/tmp/{bundle_name}')
-            logmsg.info(f'\tDEBUG download_url = {download_url} DEBUG')
             bundles.append(bundle_name)
+            Common.copy_file_to_download(repo, f'/tmp/{bundle_name}')
+            download_url = f'{repo.download_url}/{bundle_name}'
         bundle_type = f'{mnode}{storage}'
         if len(bundles) == 2:
             download = Common.make_download_tar(repo, bundle_type, bundles)
             if download is not None:
                 logmsg.info(f'Download link: {repo.download_url}/{download}')
+                Common.copy_file_from_download(repo, download)
                 logmsg.info(f'Local bundle: /tmp/{download}')
         else:
             logmsg.info(f'Download link: {download_url}')
+            Common.copy_file_from_download(repo, bundle_name)
             logmsg.info(f'Local bundle: /tmp/{bundle_name}')
         
         

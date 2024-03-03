@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import socket
+import subprocess
 import tarfile
 from api_hardware import Hardware
 from api_inventory import Inventory
@@ -37,7 +38,7 @@ class SupportBundle():
                     os.remove(os.path.join(repo.support_dir, f))
             except OSError as exception:
                 logmsg.debug(exception)
-    
+
     def _about(self, repo):
         """ mnode about
         """
