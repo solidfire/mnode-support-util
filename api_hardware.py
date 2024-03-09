@@ -24,16 +24,16 @@ requests.packages.urllib3.disable_warnings()
 class Hardware():
     def get_hardware(repo):
         """  get all BMC assets """
-        url = f'{repo.base_url}/mnode/1/assets{repo.parent_id}/hardware-nodes'
+        url = f'{repo.base_url}/mnode/1/assets/{repo.parent_id}/hardware-nodes'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
+        if json_return is not None:
             return json_return
 
     def get_hardware_by_id(repo, hardware_id):
         """ get BMC info by asset id """
         url = f'{repo.base_url}/hardware/2/nodes/{hardware_id}'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
+        if json_return is not None:
             return json_return
 
     def get_hardware_logs(repo, hardware_id):

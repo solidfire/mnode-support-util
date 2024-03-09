@@ -30,7 +30,7 @@ def about(repo):
     """
     url = ('{}/mnode/1/about'.format(repo.base_url))
     json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-    if json_return:
+    if json_return is not None:
         return json_return
     
 class Assets():
@@ -46,7 +46,7 @@ class Assets():
         """
         url = f'{repo.base_url}/mnode/1/assets'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
+        if json_return is not None:
             repo.assets = json_return
 
     def addConfig(repo):
@@ -60,7 +60,7 @@ class Assets():
     def get_asset_by_type(repo, url):
         """  get a list of assets by type """
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
+        if json_return is not None:
             return json_return
 
     def post_asset(repo, url, payload):
@@ -98,7 +98,7 @@ class Services():
         
         url = f'{repo.base_url}/mnode/services?status=all&helper=true'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
+        if json_return is not None:
             return json_return
 
     def put_deploy(repo):
@@ -125,7 +125,7 @@ class Settings():
         
         url = f'{repo.base_url}/mnode/settings'
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        if json_return:
+        if json_return is not None:
             return json_return
 
     def put_settings(repo):
@@ -139,5 +139,5 @@ class Settings():
             json_input.close()
             payload = {"mnode_fqdn": json_data["mnode_fqdn"],  "proxy_ssh_port": json_data["proxy_port"], "proxy_username": json_data["proxy_username"],"proxy_port": json_data["proxy_port"],"use_proxy": json_data["use_proxy"],"proxy_ip_or_hostname": json_data["proxy_ip_or_hostname"]}
             json_return = PDApi.send_put_return_json(repo, url, payload)
-            if json_return:
+            if json_return is not None:
                 logmsg.info(f'Applying settings\n {json_return}')

@@ -27,19 +27,19 @@ class Inventory():
       logmsg.info("Refreshing inventory and checking for errors. Please wait. This may take a while")
       url = f'{repo.base_url}/inventory/1/installations/{repo.parent_id}?refresh=true'
       json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-      if json_return:
+      if json_return is not None:
         return json_return
 
     def get_compute_upgrades(repo):
       """ return compute upgrade json """
       url = f'{repo.base_url}/inventory/1/installations/{repo.parent_id}/compute/upgrades?refresh=false'
       json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-      if json_return:
+      if json_return is not None:
         return json_return
 
     def get_storage_upgrades(repo):
       """ return storage upgrade json """
       url = f'{repo.base_url}/inventory/1/installations/{repo.parent_id}/storage/upgrades?refresh=false'
       json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-      if json_return:
+      if json_return is not None:
         return json_return

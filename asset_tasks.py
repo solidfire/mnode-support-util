@@ -142,7 +142,7 @@ class AssetMgmt():
                     payload = {"config":{}, "host_name": add_asset["host_name"], "ip": add_asset["ip"], "username": args.stuser, "password": args.stpw}
                 Assets.post_asset(repo, url, payload)
         try:                
-            if 'collector' in repo.json_data[0]['config']:
+            if 'collector' in repo.json_data.keys():
                 Assets.addConfig(repo)
         except NameError as error:
             pass
@@ -153,7 +153,7 @@ class AssetMgmt():
         errors = ["Error getting compute info", "Error getting storage info"]
         for item in item_types:
             jitem = json_return[item]
-            if jitem["errors"]:
+            if "errors" in jitem.keys():
                 logmsg.info("\nInventory errors found...")
                 for error in jitem["errors"]:
                     logmsg.info(error["message"])
@@ -177,7 +177,7 @@ class AssetMgmt():
             url = f'{repo.base_url}/mnode/1/assets/{repo.parent_id}/{asset_type["asset_type"]}/{asset["id"]}'
             logmsg.info(f'Updating asset:{asset["ip"]:<} {asset["id"]:<15}')
             json_return = PDApi.send_put_return_json(repo, url, payload)
-            if json_return:
+            if json_return is not None:
                 logmsg.info(f'\tSuccessfuly updated {json_return["ip"]} {asset["id"]}')
 
     def update_passwd(repo, asset_type):

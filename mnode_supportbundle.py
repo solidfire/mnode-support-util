@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import socket
+import subprocess
 import tarfile
 from api_hardware import Hardware
 from api_inventory import Inventory
@@ -37,8 +38,8 @@ class SupportBundle():
                     os.remove(os.path.join(repo.support_dir, f))
             except OSError as exception:
                 logmsg.debug(exception)
-    
-    def about(self, repo):
+
+    def _about(self, repo):
         """ mnode about
         """
         filename = f'{repo.support_dir}support-mnode-about.json'
@@ -50,7 +51,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
     
-    def settings(self, repo):    
+    def _settings(self, repo):    
         """ mnode settings
         """
         filename = f'{repo.support_dir}support-mnode-settings.json'
@@ -58,12 +59,12 @@ class SupportBundle():
             with open(filename, 'w') as outfile:               
                 logmsg.info("Get mnode settings")
                 json_return = Settings.get_settings(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
         
-    def token(self, repo):
+    def _token(self, repo):
         """ get auth token
         """
         filename = f'{repo.support_dir}support-auth-token'
@@ -75,7 +76,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
         
-    def auth_config(self, repo):
+    def _auth_config(self, repo):
         """ get cluster auth config
         """
         filename = f'{repo.support_dir}support-auth-configuration'
@@ -83,12 +84,12 @@ class SupportBundle():
             with open(filename, 'w') as outfile:             
                 logmsg.info("Get auth configuration")  
                 json_return = mNodeHealthCheck.check_auth_config(repo, outfile)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
         
-    def auth_cluster(self, repo):
+    def _auth_cluster(self, repo):
         """ get auth cluster
         """
         filename = f'{repo.support_dir}support-auth-cluster'
@@ -99,7 +100,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
         
-    def assets(self, repo):
+    def _assets(self, repo):
         """ get assets
         """
         filename = f'{repo.support_dir}support-get-assets.json'
@@ -110,7 +111,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
     
-    def inventory(self, repo):
+    def _inventory(self, repo):
         """ get inventory
         """
         filename = f'{repo.support_dir}support-get-inventory.json'
@@ -118,12 +119,12 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get inventory. This may take a while...")
                 json_return = Inventory.refresh_inventory(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def services(self, repo):
+    def _services(self, repo):
         """ get services
         """
         filename = f'{repo.support_dir}support-get-services.json'
@@ -131,12 +132,12 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get services...")
                 json_return = Services.get_services(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
         
-    def clusters(self, repo):
+    def _clusters(self, repo):
         """ get clusters
         """
         filename = f'{repo.support_dir}support-get-clusters.json'
@@ -144,12 +145,12 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get clusters...")
                 json_return = Clusters.get_clusters(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
         
-    def compute_upgrade(self, repo):
+    def _compute_upgrade(self, repo):
         """ check for previous compute fw upgrade
         """
         filename = f'{repo.support_dir}support-check-compute-upgrade.json'
@@ -157,12 +158,12 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Check compute firmware upgrade...")
                 json_return = Inventory.get_compute_upgrades(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
         
-    def storage_upgrade(self, repo):
+    def _storage_upgrade(self, repo):
         """ check for previous storage upgrade
         """
         checkfile = f'{repo.support_dir}support-check-storage-upgrade.json'
@@ -171,7 +172,7 @@ class SupportBundle():
             with open(checkfile, 'w') as outfile:
                 logmsg.info("Check storage upgrades... This may take a while.")
                 json_return = Upgrades.get_upgrade(repo, active='true')
-                if json_return:
+                if json_return is not None:
                     logmsg.info("\tUpgrade(s) found...")
                     outfile.write(json.dumps(json_return))
                     for upgrade in json_return:
@@ -179,8 +180,8 @@ class SupportBundle():
                         logfile = (f'{repo.support_dir}support-storage-upgrade-{upgrade["upgradeId"]}.log')
                         with open(logfile, 'a') as logf:
                             url = f'{repo.base_url}/storage/1/upgrades/{upgrade["upgradeId"]}/log'
-                            json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug) ## Often fails with RangeError: Maximum call stack exceeded
-                            if json_return:
+                            json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug) ## sometimes fails with RangeError: Maximum call stack exceeded
+                            if json_return is not None and len(json_return['mnode_storage']['docker_logs']) > 0:
                                 for line in json_return["mnode_storage"]["docker_logs"]:
                                     # strip out the over verbosity
                                     if "vars in" not in line:
@@ -188,7 +189,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {checkfile}')
 
-    def storage_healthcheck(self, repo):
+    def _storage_healthcheck(self, repo):
         """ get previous storage healthcheck
         """
         filename = f'{repo.support_dir}support-storagehealth-check.json'
@@ -197,14 +198,14 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get health checks...")
                 json_return = Healthcheck.get_healthcheck(repo)
-                if json_return:
+                if json_return is not None:
                     for health_check in json_return:
                         log.append(Healthcheck.get_healthcheck_by_id(repo, health_check["healthCheckId"]))
                 outfile.writelines(log)
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def bmc_info(self, repo):
+    def _bmc_info(self, repo):
         """ get bmc info
         """
         filename = f'{repo.support_dir}support-hardware.json'
@@ -212,12 +213,12 @@ class SupportBundle():
             with open(filename, 'w') as outfile:
                 logmsg.info("Get hardware...")
                 json_return = Hardware.get_hardware(repo)
-                if json_return:
+                if json_return is not None:
                     outfile.write(json.dumps(json_return))
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')    
 
-    def bmc_logs(self, repo):
+    def _bmc_logs(self, repo):
         """ get bmc logs
         """
         filename = f'{repo.support_dir}support-hardware-logs.json'
@@ -232,7 +233,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')   
 
-    def docker_ps(self, repo):
+    def _docker_ps(self, repo):
         """ get docker ps
         """
         filename = f'{repo.support_dir}support-docker-ps'
@@ -245,7 +246,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def docker_container_inspect(self, repo):
+    def _docker_container_inspect(self, repo):
         """ get docker inspect
         """
         filename = f'{repo.support_dir}support-docker-container-inspect.json'
@@ -259,7 +260,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def docker_service(self, repo):
+    def _docker_service(self, repo):
         """ get docker service list
         """
         filename = f'{repo.support_dir}support-docker-service'
@@ -272,7 +273,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def docker_stats(self, repo):
+    def _docker_stats(self, repo):
         """ get docker stats
         """
         filename = f'{repo.support_dir}support-docker-stats'
@@ -285,7 +286,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def docker_volume(self, repo):
+    def _docker_volume(self, repo):
         """ get docker volume list
         """
         filename = f'{repo.support_dir}support-docker-vols'
@@ -298,7 +299,7 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
-    def docker_logs(self, repo):
+    def _docker_logs(self, repo):
         """ Get docker logs
         """
         logmsg.info("Get service logs...")
@@ -312,32 +313,34 @@ class SupportBundle():
                         outfile.write(f'{line}\n')
             except FileNotFoundError:
                 logmsg.info(f'Could not open {filename}')
-        
+
+    def _docker_network(self, repo):
         """ get docker network
         """
         filename = f'{repo.support_dir}support-docker-network'
         try:
             with open(filename, 'w') as outfile:
-                logmsg.info("\nGet docker network...")
+                logmsg.info("Get docker network...")
                 cmd_return = Docker.docker_network(repo)
                 out = "\n".join(cmd_return)
                 outfile.write(f'\nDocker network\n{out}')
         except FileNotFoundError:
             logmsg.info(f'Could not open {filename}')
 
+    def _docker_network_inspect(self, repo):
         """ get network inspect
         """
         filename = f'{repo.support_dir}support-docker-network-inspect'
         try:
             with open(filename, 'w') as outfile:
-                logmsg.info("\nGet docker network inspect")
+                logmsg.info("Get docker network inspect...")
                 cmd_return = Docker.docker_network_inspect(repo)
                 out = "\n".join(cmd_return)
                 outfile.write(out)
         except FileNotFoundError as error:
             logmsg.info(f'Could not open {filename}')
             
-    def system_commands(self, repo):
+    def _system_commands(self, repo):
         """ system commands
         """
         commands = ["/usr/bin/free -h", "/bin/df -h", "/bin/cat /etc/lsb-release", "/bin/ifconfig", "/bin/netstat -an", "/usr/bin/ntpq -p", ("/usr/sbin/ntpdate -q " + repo.auth_mvip), "/bin/lsblk"]
@@ -362,7 +365,7 @@ class SupportBundle():
                     response = f'ERROR: nslookup {server}'
                 outfile.write(f'\n{server} {str(response)} ')
 
-    def bmc_port_check(self, repo):
+    def _bmc_port_check(self, repo):
         """ bmc port check
         """
         filename = f'{repo.support_dir}support-portscan'
@@ -401,7 +404,7 @@ class SupportBundle():
                     outfile.write(f'\nPort 443 scan failed for {bmc["ip"]}')
                     outfile.write(f'\nReturn code {str(response_139)}')
 
-    def local_files(self, repo):
+    def _local_files(self, repo):
         """ gather local files
         """
         filename = f'{repo.support_dir}support-localfiles'
@@ -420,27 +423,52 @@ class SupportBundle():
         except FileNotFoundError:
             logmsg.info(f'VCP log files not found. Perhaps customer is not using the VCP')
         
-    def make_tar(self, repo):
+    def _make_tar(self, repo):
         """ create tar
         """
-        logmsg.info("Creating support tar bundle. Please wait....")
+        logmsg.info("Creating mnode support tar bundle. Please wait....")
         date_time = datetime.now()
         time_stamp = date_time.strftime("%d-%b-%Y-%H.%M.%S")
-        tar_file = (f'mnode-support-bundle-{time_stamp}.tar.gz')
+        tar_file = f'mnode-support-bundle-{time_stamp}.tar.gz'
         output_file = f'/tmp/{tar_file}'
         try:
             bundle = tarfile.open(output_file, "w:gz")
             for root, dirs, files in os.walk("/var/log"):
                 for file in files:
                     bundle.add(os.path.join(root, file))
-            logmsg.info(f'\nDone. Bundle name: {output_file}')
             bundle.close()
-            #logmsg.info(f'Please send {output_file} to NetApp support')
         except:
             logmsg.info("Failed to create tar bundle.")
-        
+        return tar_file
+
+    def full_bundle(self, repo):
         try:
-            Common.cleanup_download_dir("mnode-support-bundle")
-            Common.copy_file_to_download(repo, output_file)
+            self._about(repo)
+            self._assets(repo)
+            self._inventory(repo)
+            self._settings(repo)
+            self._services(repo)
+            self._token(repo)
+            self._auth_cluster(repo)
+            self._auth_cluster(repo)
+            self._clusters(repo)
+            self._storage_healthcheck(repo)
+            self._storage_upgrade(repo)
+            self._compute_upgrade(repo)
+            self._bmc_port_check(repo)
+            self._bmc_logs(repo)
+            self._bmc_info(repo)
+            self._docker_ps(repo)
+            self._docker_container_inspect(repo)
+            self._docker_stats(repo)
+            self._docker_service(repo)
+            self._docker_volume(repo)
+            self._docker_logs(repo)
+            self._docker_network(repo)
+            self._docker_network_inspect(repo)
+            self._local_files(repo)
+            self._system_commands(repo)
+            tar_file = self._make_tar(repo)
         except:
-            logmsg.info("Failed to copy bundle to download area.")
+            return False
+        return tar_file

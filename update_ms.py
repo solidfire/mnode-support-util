@@ -54,7 +54,7 @@ class UpdateMS():
         url = f'{repo.base_url}/mnode/1/services/deploy'
         logmsg.info("Deploying new MS packages and services. Please wait....")
         json_return = PDApi.send_put_return_json_nopayload(repo, url)
-        if json_return:
+        if json_return is not None:
             logmsg.debug(f'{json_return["message"]}')
         else:
             logmsg.info("Monitor progress with docker ps.")

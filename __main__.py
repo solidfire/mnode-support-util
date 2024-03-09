@@ -1,6 +1,7 @@
 import argparse
 import getpass
 import json
+import subprocess
 import textwrap
 import time
 from asset_tasks import AssetMgmt
@@ -43,6 +44,7 @@ def get_args():
     cmd_args.add_argument('-vp', '--vcpw', help='Specify vcenter password or leave off to be prompted. Optional with addassets')
     cmd_args.add_argument('-sp', '--stpw', help='Specify storage cluster password or leave off to be prompted.')
     cmd_args.add_argument('-d', '--debug', help='Turn up the api call logging. Warning: This will fill logs rapidly.')
+    cmd_args.add_argument('--timeout', default=300)
     required_named = cmd_args.add_argument_group('required named arguments')
     required_named.add_argument('-su', '--stuser', required=True, help='Specify storage cluster user.')
     required_named.add_argument('-a', '--action', help=textwrap.dedent('''Specify action task. 
@@ -58,9 +60,8 @@ def get_args():
     rmasset: Remove one asset. 
     restore: Restore assets from backup json file. 
     refresh: Refresh inventory. 
-    storagebundle: Gather storage support bundle
     storagehealthcheck: Run a storage healthcheck
-    supportbundle: Gather mnode and docker support data. 
+    supportbundle: Gather mnode and/or storage support data. 
     updatems: Update Management Services. 
     updatepw: Update passwords by asset type. 
     updateonepw: Update one asset password'''))
@@ -73,6 +74,8 @@ if __name__ == "__main__":
     repo = ProgramData(args)
     # prompt for storage admin password if not provided 
     #
+    #logmsg.info(f'====\n\tDEBUG: {repo.download_dir}\n====\n')
+    
     if not args.stpw:
         try:
             args.stpw = getpass.getpass(prompt=f'storage {args.stuser} password: ')
@@ -139,7 +142,6 @@ if __name__ == "__main__":
     elif args.action == 'deletelogs':
         storage_id = Common.select_target_cluster(repo)
         delete = StorageBundle(storage_id)
-        delete.select_cluster_nodes(repo)
         delete.delete_existing_bundle(repo)
         
     # Element Upgrade
@@ -185,7 +187,7 @@ if __name__ == "__main__":
     elif args.action == 'listpackages':
         logmsg.info("\nNetApp HCI release notes: https://docs.netapp.com/us-en/hci/docs/rn_relatedrn.html")
         json_return = Package.list_packages(repo)
-        if json_return:
+        if json_return is not None:
             for package in json_return:
                 logmsg.info(f'\n{package["name"]:<20}{package["version"]}\n\t{package["CIFSUrl"]}\n\t{package["HTTPSUrl"]}\n\t{package["NFSUrl"]}')
                 
@@ -249,24 +251,10 @@ if __name__ == "__main__":
     #
     elif args.action == 'refresh':
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             AssetMgmt.list_assets(repo)
-            
-    # storage support bundle
-    #
-    elif args.action == 'storagebundle':
-        storage_id = Common.select_target_cluster(repo)
-        bundle = StorageBundle(storage_id)
-               
-        if bundle.check_running_bundle(repo) == 'inProgress':
-            bundle.watch_bundle(repo)
-        else:
-            payload = bundle.make_bundle_payload(repo)
-            bundle.delete_existing_bundle(repo)
-            bundle.start_bundle(repo, payload)
-            bundle.watch_bundle(repo) 
-            
+
     # storage healthcheck
     #
     elif args.action == 'storagehealthcheck':
@@ -275,37 +263,44 @@ if __name__ == "__main__":
         if healthcheck_start:
             StorageHealthcheck.print_healthcheck_status(repo, healthcheck_start)
             
-    # mnode support bundle 
+    # mnode and storage support bundle 
     #
     elif args.action == 'supportbundle':
+        mnode = ""
+        storage = ""
+        bundles = []
+        repo.logs_svc_container = subprocess.getoutput("docker ps | grep logs-svc | awk '{print $1}'")
         logmsg.info("Start support bundle...")
-        bundle = SupportBundle(repo)
-        bundle.about(repo)
-        bundle.assets(repo)
-        bundle.inventory(repo)
-        bundle.settings(repo)
-        bundle.services(repo)
-        bundle.token(repo)
-        bundle.auth_cluster(repo)
-        bundle.auth_cluster(repo)
-        bundle.clusters(repo)
-        bundle.storage_healthcheck(repo)
-        bundle.storage_upgrade(repo)
-        bundle.compute_upgrade(repo)
-        bundle.bmc_port_check(repo)
-        bundle.bmc_logs(repo)
-        bundle.bmc_info(repo)
-        bundle.docker_ps(repo)
-        bundle.docker_container_inspect(repo)
-        bundle.docker_stats(repo)
-        bundle.docker_service(repo)
-        bundle.docker_volume(repo)
-        bundle.docker_logs(repo)
-        bundle.local_files(repo)
-        bundle.system_commands(repo)
-        bundle.local_files(repo)
-        bundle.make_tar(repo)
+        Common.cleanup_download_dir(repo)
+        userinput = input("\nSelect the type of bundle (m)node, (s)torage, (b)oth: ")
+        if userinput.lower() == 's' or userinput.lower() == 'b':
+            storage = 'Storage'
+            storage_id = Common.select_target_cluster(repo)
+            bundle = StorageBundle(storage_id)
+            download_url = bundle.collect_bundle(repo)
+            bundle_name = download_url.split('/')[-1]
+            bundles.append(bundle_name)
+        if userinput.lower() == 'm' or userinput.lower() == 'b':
+            mnode = 'mNode'
+            mnode_bundle = SupportBundle(repo)    
+            bundle_name = mnode_bundle.full_bundle(repo)
+            bundles.append(bundle_name)
+            Common.copy_file_to_download(repo, f'/tmp/{bundle_name}')
+            download_url = f'{repo.download_url}/{bundle_name}'
+        bundle_type = f'{mnode}{storage}'
+        if len(bundles) == 2:
+            download = Common.make_download_tar(repo, bundle_type, bundles)
+            if download is not None:
+                logmsg.info(f'Download link: {repo.download_url}/{download}')
+                Common.copy_file_from_download(repo, download)
+                logmsg.info(f'Local bundle: /tmp/{download}')
+        else:
+            logmsg.info(f'Download link: {download_url}')
+            Common.copy_file_from_download(repo, bundle_name)
+            logmsg.info(f'Local bundle: /tmp/{bundle_name}')
         
+        
+            
     # Update Management Services
     #
     elif args.action == 'updatems':
@@ -322,7 +317,7 @@ if __name__ == "__main__":
         asset_type = AssetMgmt.set_asset_type()
         AssetMgmt.update_passwd_by_type(repo, asset_type) 
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             
     # Update one asset password
@@ -332,7 +327,7 @@ if __name__ == "__main__":
         AssetMgmt.list_assets(repo, asset_type['asset_name'])
         AssetMgmt.update_passwd(repo, asset_type)
         json_return = Inventory.refresh_inventory(repo)
-        if json_return:
+        if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
             
     else:
