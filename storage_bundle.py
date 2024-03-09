@@ -75,7 +75,9 @@ class StorageBundle():
 
         for value in self.selected_nodes:
             storage_node_list.append(f'{value["uuid"]}')
-        payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "storageNodeIds":storage_node_list}
+        #payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "storageNodeIds":storage_node_list}
+        payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "extraArgs": "--exclude zk_data_dump", "storageNodeIds":storage_node_list}
+        # '{\n  "detail": "An error occurred preventing the requested log collection.  "message": "{\'extraArgs\': [\'Unknown field.\']}" "status": 400,\n  "title": "Bad Request",
         return payload 
 
     def _start_bundle(self, repo, payload):
