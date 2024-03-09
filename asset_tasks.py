@@ -142,7 +142,7 @@ class AssetMgmt():
                     payload = {"config":{}, "host_name": add_asset["host_name"], "ip": add_asset["ip"], "username": args.stuser, "password": args.stpw}
                 Assets.post_asset(repo, url, payload)
         try:                
-            if 'collector' in repo.json_data.keys():
+            if 'collector' in repo.json_data:
                 Assets.addConfig(repo)
         except NameError as error:
             pass
