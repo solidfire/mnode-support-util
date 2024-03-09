@@ -1,5 +1,5 @@
 zip mnode-support-util.zip *py
-echo '#!/usr/bin/env python' | cat - mnode-support-util.zip > mnode-support-util
+echo '#!/usr/bin/python3.6m' | cat - mnode-support-util.zip > mnode-support-util
 chmod 755 mnode-support-util
 rm mnode-support-util.zip
 chown admin:admin *
