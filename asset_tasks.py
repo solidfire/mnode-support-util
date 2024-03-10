@@ -24,8 +24,7 @@ class AssetMgmt():
         return_type = {}
         
         if not asset_type:
-            logmsg.info("What type of asset to work on?\nc = compute\ns = storage\nb = BMC\nv = vCenter\n")
-            userinput = str.lower(input("> "))
+            userinput = str.lower(input("What type of asset to work on? (c)ompute (s)torage (B)MC (v)Center: "))
         else:
             userinput = asset_type
         if userinput == 'c': 

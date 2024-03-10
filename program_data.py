@@ -25,7 +25,7 @@ logmsg = Logging.logmsg()
 class ProgramData():
     def __init__(self, args):
         """ Very frequently used values """
-        self.util_version = "3.5.1485"
+        self.util_version = "3.5.1523"
         self.base_url = "https://127.0.0.1"
         self.debug = False
         self.download_dir = "/data/bundle/share"
@@ -179,7 +179,7 @@ class PDApi():
         try:
             logmsg.debug(f'Sending POST {url}')
             response = requests.post(url, headers=repo.header_write, data=json.dumps(payload), verify=False)
-            logmsg.debug(response)
+            logmsg.debug(f'{response.status_code} {response.text}')
             return response
         except requests.exceptions.RequestException as exception:
             MLog.log_exception(exception)
