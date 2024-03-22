@@ -54,6 +54,9 @@ class AssetMgmt():
     def list_assets(repo, asset_type=""):
         """ One liner list of assets by type or all 
         """
+        # Refresh the repo asset list
+        Assets(repo)
+        
         asset_list = []
         if not asset_type:
             asset_list = ['compute', 'hardware', 'controller', 'storage']
