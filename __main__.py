@@ -212,22 +212,34 @@ if __name__ == "__main__":
     # Upload Element Upgrade or firmware Image
     #
     elif args.action == 'packageupload':
+        current_packages = Package.list_packages(repo)
+        new_packages = current_packages
         percent_complete = 0
         if not args.updatefile:
             logmsg.info("Please use --updatefile and specify the full path to the package file")
+            exit()
         json_return = Package.upload_element_image(repo, args.updatefile)
-        logmsg.info('Refreshing packages.... Please wait')
         while percent_complete != 100:
-            time.sleep(30)
             url = f'{repo.base_url}/task-monitor/1/tasks/{json_return["taskId"]}'
             task_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-            if task_return['percentComplete'] == 100:
+            if task_return is None:
+                break
+            elif task_return['percentComplete'] == 100:
                 percent_complete = 100
                 print(task_return['step'])
-        current_packages = Package.list_packages(repo)
+            time.sleep(10)
+        logmsg.info('Processing package.... Please wait')
+        percent_complete = 0
+        timeout = time.time() + 60*3
+        while time.time() > timeout or percent_complete != 100:
+            new_packages = Package.list_packages(repo)
+            time.sleep(5)
+            for package in new_packages:
+                if json_return['version'] == package['version']:
+                    percent_complete = 100
         logmsg.info('\nAvailable packages;')
-        for package in current_packages:
-            logmsg.info(f'name: {package["name"]:<20} version: {package["version"]:<20} id: {package["id"]}')
+        for package in new_packages:
+            logmsg.info(f'name: {package["name"]:<30} version: {package["version"]:<30} id: {package["id"]}')
 
     # Remove one asset and refresh the inventory
     #
