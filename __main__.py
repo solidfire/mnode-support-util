@@ -4,6 +4,7 @@ import json
 import subprocess
 import textwrap
 import time
+from add_assets import AddAsset
 from asset_tasks import AssetMgmt
 from api_mnode import Assets
 from api_inventory import Inventory
@@ -48,6 +49,7 @@ def get_args():
     required_named = cmd_args.add_argument_group('required named arguments')
     required_named.add_argument('-su', '--stuser', required=True, help='Specify storage cluster user.')
     required_named.add_argument('-a', '--action', help=textwrap.dedent('''Specify action task. 
+    addasset: Add 1 or more assets to inventory.
     backup: Creates a backup json file of current assets.
     cleanup: Removes all current assets. Or remove assets by type. 
     computehealthcheck: Run a compute healthcheck
@@ -72,10 +74,9 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     repo = ProgramData(args)
+
     # prompt for storage admin password if not provided 
     #
-    #logmsg.info(f'====\n\tDEBUG: {repo.download_dir}\n====\n')
-    
     if not args.stpw:
         try:
             args.stpw = getpass.getpass(prompt=f'storage {args.stuser} password: ')
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     GetToken(repo)
     assets = Assets(repo)
     logmsg.debug("=== Start mnode-support-util ===")
-    
+
     # Display basic info
     #
     logmsg.info(f'+ mNode ip: {repo.about["mnode_host_ip"]}\n+ MS version: {repo.about["mnode_bundle_version"]}\n+ Authorative cluster: {repo.auth_mvip}\n+ mnode-support-util version: {repo.util_version}\n\n')
@@ -104,9 +105,26 @@ if __name__ == "__main__":
     if args.debug:
         print("DEBUG SELECTED: The /var/log/mnode-support-util.log will grow rapidly and cycle.\n\tAll mnode-support-util.logs may be needed for troubleshooting")
     
+    # Add assets to inventory
+    #
+    if args.action == 'addasset':
+        userinput = ""
+        while userinput.lower() != 'n':
+            asset_type = AssetMgmt.set_asset_type()
+            add = AddAsset()
+            add.get_asset_info(asset_type)
+            confirm = add.confirm()
+            if confirm is True:
+                add.add_asset(asset_type, repo)
+            userinput = input("Add another asset? (y/n): ")
+        json_return = Inventory.refresh_inventory(repo)
+        if json_return is not None:
+            AssetMgmt.check_inventory_errors(json_return)
+            AssetMgmt.list_assets(repo)
+        
     # Get the current asset inventory and back it up
     #
-    if args.action == 'backup':
+    elif args.action == 'backup':
         try:
             AssetMgmt.backup_assets(repo.assets)
             Common.file_download(repo, json.dumps(repo.assets), "AssetBackup.json")
