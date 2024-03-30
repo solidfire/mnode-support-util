@@ -59,7 +59,6 @@ class Package:
                 logmsg.info(f'Loading {updatefile} into the package repository. This will take a few minutes')
                 response = session.post(url, headers=header, data=f, verify=False, timeout=repo.timeout) 
                 if response.status_code == 200 or response.status_code == 202:
-                    logmsg.info('Upload successful')
                     logmsg.info(response.text)
                     response_json = Common.test_json_loads(response.text)
                 else:
