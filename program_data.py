@@ -25,7 +25,7 @@ logmsg = Logging.logmsg()
 class ProgramData():
     def __init__(self, args):
         """ Very frequently used values """
-        self.util_version = "3.5.1523"
+        self.util_version = "3.5.1533"
         self.base_url = "https://127.0.0.1"
         self.debug = False
         self.download_dir = "/data/bundle/share"
@@ -81,7 +81,7 @@ class Common():
                 logmsg.info(f'+ {cluster["ip"]}')
                 clusterlist[(cluster["ip"])] = cluster["id"]
         while True:
-            userinput = input("Enter the target cluster from the list: ")
+            userinput = input("Enter the target cluster from the list: ").rstrip()
             if userinput in clusterlist:
                 break
         return clusterlist[userinput]
@@ -288,7 +288,7 @@ class PDApi():
             if response.status_code == 401:
                 while response.status_code == 401:
                     logmsg.info(f'The provided credentials failed on cluster {host_name}')
-                    stuser = input(f'Enter admin userid for cluster {host_name} : ')
+                    stuser = input(f'Enter admin userid for cluster {host_name} : ').rstrip()
                     stpw = getpass.getpass(prompt="Enter admin password: ")
                     response = requests.post(url, auth=(stuser, stpw), data=payload, verify=False)
             return response.status_code, stuser, stpw

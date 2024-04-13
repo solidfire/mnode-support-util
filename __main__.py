@@ -116,7 +116,7 @@ if __name__ == "__main__":
             confirm = add.confirm()
             if confirm is True:
                 add.add_asset(asset_type, repo)
-            userinput = input("Add another asset? (y/n): ")
+            userinput = input("Add another asset? (y/n): ").rstrip()
         json_return = Inventory.refresh_inventory(repo)
         if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     #
     elif args.action == 'cleanup':
         remove_types = ['c', 'b', 'v', 's']
-        userinput = input("\nARE YOU SURE YOU WANT TO DELETE ALL ASSETS?[y/n] ")
+        userinput = input("\nARE YOU SURE YOU WANT TO DELETE ALL ASSETS?[y/n] ").rstrip()
         if userinput.lower() == 'n':
             exit(0)
         else:
@@ -185,7 +185,7 @@ if __name__ == "__main__":
             elif upgrade_option == 'r':
                 upgrade.upgrade_action(repo, "resume")
             elif upgrade_option == 'a':
-                stopandthink = input("ARE YOU CERTAIN YOU WANT TO ABORT THE CURRENT UPGRADE? y/n: ")
+                stopandthink = input("ARE YOU CERTAIN YOU WANT TO ABORT THE CURRENT UPGRADE? y/n: ").rstrip()
                 if stopandthink == 'n':
                     exit(0)
                 upgrade.upgrade_action(repo, "abort")
@@ -244,17 +244,22 @@ if __name__ == "__main__":
     # Remove one asset and refresh the inventory
     #
     elif args.action == 'rmasset':
+        done = False
         try:
             asset_type = AssetMgmt.set_asset_type()
         except:
             logmsg.info("Failed to set asset type")
             exit(1)
-        try:
-            AssetMgmt.list_assets(repo, asset_type['asset_name'])
-            userinput = input("\nEnter the assetID of the asset to remove: ")
-            Assets.delete_asset(repo, asset_type, userinput)
-        except:
-            logmsg.info("Failed to remove asset(s)")
+        while done is False:
+            try:
+                AssetMgmt.list_assets(repo, asset_type['asset_name'])
+                userinput = input("\nEnter the assetID of the asset to remove: ").rstrip()
+                Assets.delete_asset(repo, asset_type, userinput)
+                userinput = input("\nRemove another asset? (y/n) ")
+                if userinput.lower() == 'n':
+                    done = True
+            except:
+                logmsg.info("Failed to remove asset(s)")
         Inventory.refresh_inventory(repo)
         AssetMgmt.list_assets(repo)
         
@@ -302,14 +307,26 @@ if __name__ == "__main__":
         repo.logs_svc_container = subprocess.getoutput("docker ps | grep logs-svc | awk '{print $1}'")
         logmsg.info("Start support bundle...")
         Common.cleanup_download_dir(repo)
-        userinput = input("\nSelect the type of bundle (m)node, (s)torage, (b)oth: ")
+        userinput = input("\nSelect the type of bundle (m)node, (s)torage, (b)oth: ").rstrip()
         if userinput.lower() == 's' or userinput.lower() == 'b':
             storage = 'Storage'
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
-            download_url = bundle.collect_bundle(repo)
-            bundle_name = download_url.split('/')[-1]
-            bundles.append(bundle_name)
+            json_return = bundle.check_running_bundle(repo)
+            if json_return['state'] == 'completed':
+                download_url = bundle.collect_bundle(repo)
+                bundle_name = download_url.split('/')[-1]
+                bundles.append(bundle_name)
+            elif json_return['state'] == 'inProgress':
+                logmsg.info('A log collection is already in progress. Please wait or cancel the collection')
+                download_url = bundle._watch_bundle(repo)
+                logmsg.info('Now you can start a new log collection')
+                download_url = bundle.collect_bundle(repo)
+                bundle_name = download_url.split('/')[-1]
+                bundles.append(bundle_name)
+            else:
+                logmsg.info("Cannot start a new log collection. See /var/log/mnode-support-util.log for details")
+                logmsg.debug(json.dumps(json_return))
         if userinput.lower() == 'm' or userinput.lower() == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    

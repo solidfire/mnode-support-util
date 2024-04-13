@@ -33,7 +33,7 @@ class ComputeHealthcheck():
 
         if len(repo.assets[0]["controller"]) > 1:
             while userinput not in controllerlist:
-                userinput = input("\nEnter the controller name: ")            
+                userinput = input("\nEnter the controller name: ").rstrip()
             controller_id = controllerlist[userinput]
         else:
             controller_id = repo.assets[0]["controller"][0]["id"]
@@ -62,7 +62,7 @@ class ComputeHealthcheck():
                 exit(1)
 
         while userinput not in domainlist:
-                userinput = input("\nEnter the domain name: ")
+                userinput = input("\nEnter the domain name: ").rstrip()
                 cluster_id = domainlist[userinput]
 
         return cluster_id
