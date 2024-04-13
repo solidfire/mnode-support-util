@@ -24,7 +24,7 @@ class AssetMgmt():
         return_type = {}
         
         if not asset_type:
-            userinput = str.lower(input("What type of asset to work on? (c)ompute (s)torage (B)MC (v)Center: "))
+            userinput = str.lower(input("What type of asset to work on? (c)ompute (s)torage (B)MC (v)Center: ")).rstrip()
         else:
             userinput = asset_type
         if userinput == 'c': 
@@ -172,7 +172,7 @@ class AssetMgmt():
             newpassword_verify = getpass.getpass(prompt="Enter new password to verify: ")
             if newpassword != newpassword_verify:
                 logmsg.info("Passwords do not match")
-        input(f'Press Enter to continue updating {asset_type["asset_name"]} assets')
+        input(f'Press Enter to continue updating {asset_type["asset_name"]} assets').rstrip()
         
         for asset in repo.assets[0][asset_type["asset_name"]]:
             payload = {"config":{}, "password": newpassword}
@@ -186,7 +186,7 @@ class AssetMgmt():
         """ update one asset password """
         newpassword = ""
         newpassword_verify = "passwd"
-        asset_id = input("Enter the asset id: ")
+        asset_id = input("Enter the asset id: ").rstrip()
         while newpassword != newpassword_verify:
             newpassword = getpass.getpass(prompt="Enter new password: ")
             newpassword_verify = getpass.getpass(prompt="Enter new password to verify: ")

@@ -24,11 +24,11 @@ class AddAsset():
         self.hardware_tag = None
         
     def get_asset_info(self, asset_type):
-        self.asset_info["host_name"] = input("Host name: ")
-        self.asset_info["ip"] = input("IPv4 address: ")
+        self.asset_info["host_name"] = input("Host name: ").rstrip()
+        self.asset_info["ip"] = input("IPv4 address: ").rstrip()
         if asset_type['asset_name'] == "hardware" or asset_type['asset_name'] == "compute":
-            self.hardware_tag = input("Hardware tag or substitue with host name: ")
-        self.asset_info["username"]= input("User name: " )
+            self.hardware_tag = input("Hardware tag or substitue with host name: ").rstrip()
+        self.asset_info["username"]= input("User name: " ).rstrip()
         while self.asset_info["password"] != self.password_verify:
             self.asset_info["password"] = getpass.getpass(prompt="Password: ")
             self.password_verify = getpass.getpass(prompt="Password to verify: ")
@@ -45,7 +45,7 @@ class AddAsset():
         if self.hardware_tag is not None:
             printable["hardware_tag"] = self.hardware_tag
         logmsg.info(json.dumps(printable, indent=4))
-        confirm = input("\nIs the above correct (y/n)? ")
+        confirm = input("\nIs the above correct (y/n)? ").rstrip()
         if confirm.lower == 'n':
             return False
         else:

@@ -49,7 +49,7 @@ class StorageBundle():
             }
             self.nodelist.append(tmp_dict)
             logmsg.info(f'+ nodeID: {str(node["ListAllNodes"]["nodeID"])}\tMIP: {node["ListAllNodes"]["mip"]}')
-        userinput = input("Enter the target node IDs separated by space: ")
+        userinput = input("Enter the target node IDs separated by space: ").rstrip()
         
         for id in userinput.split(sep=" "):
             for node in self.nodelist:
@@ -63,21 +63,19 @@ class StorageBundle():
     def _make_bundle_payload(self, repo):
         self._select_cluster_nodes(repo)
         storage_node_list = []
-        crash_dumps = input("Gather crash dumps? (y/n): ")
+        crash_dumps = input("Gather crash dumps? (y/n): ").rstrip()
         if crash_dumps.lower() == 'y':
             crash_dumps = True
         else:
             crash_dumps = False
 
-        log_hours = input("Enter the number of hours of log history to gather: ")
+        log_hours = input("Enter the number of hours of log history to gather: ").rstrip()
         time_now = datetime.now()
         log_history = str(time_now - timedelta(hours=int(log_hours)))
 
         for value in self.selected_nodes:
             storage_node_list.append(f'{value["uuid"]}')
         payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "storageNodeIds":storage_node_list}
-        #payload = {"storageLogs":True, "modifiedSince": log_history, "storageCrashDumps": crash_dumps, "extraArgs": "--exclude zk_data_dump", "storageNodeIds":storage_node_list}
-        # '{\n  "detail": "An error occurred preventing the requested log collection.  "message": "{\'extraArgs\': [\'Unknown field.\']}" "status": 400,\n  "title": "Bad Request",
         return payload 
 
     def _start_bundle(self, repo, payload):
@@ -85,6 +83,7 @@ class StorageBundle():
         """
         url = f'{repo.base_url}/logs/1/bundle'
         logmsg.info("Starting log collection")
+        logmsg.debug(f'{url}: {payload}')
         json_return = PDApi.send_post_return_json(repo, url, payload)
         if json_return is not None:
             logmsg.info(f'Recieved 201: Collection task id {json_return["taskId"]}')
@@ -116,36 +115,35 @@ class StorageBundle():
         # Set logging back to debug
         logging.getLogger("urllib3").setLevel(logging.DEBUG)
 
-    def _check_running_bundle(self, repo):
+    def check_running_bundle(self, repo):
         """ Check for a bundle already in progress
         """
         url = f'{repo.base_url}/logs/1/bundle'
         logmsg.info("Checking for existing log collection task")
-        text_return = PDApi.send_get_return_text(repo, url, debug=repo.debug)
-        if "inProgress" in text_return:
-            logmsg.info("A log collection is in progress. Cancel the collection or wait for it to complete before starting a new one.")
-            return "inProgress"
-        else:
-            return "Completed"
+        json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
+        if json_return['state'] == "inProgress":
+            logmsg.info(f'\t{json_return["taskMonitor"]["percentComplete"]}% {json_return["taskMonitor"]["step"]}')
+        elif json_return['state'] == 'deleted':
+            logmsg.info(f'\tPrevious collection: {json_return["summary"]}')
+        elif json_return['state'] == 'completed':
+            logmsg.info('\tPrevious collection completed')
+        return json_return
 
-    def collect_bundle(self, repo)                :
-        if self._check_running_bundle(repo) == 'inProgress':
-                self._watch_bundle(repo)
+    def collect_bundle(self, repo):
+        payload = self._make_bundle_payload(repo)
+        self.delete_existing_bundle(repo)
+        self._start_bundle(repo, payload)
+        download_url = self._watch_bundle(repo)
+        if download_url is False:
+            exit(1)
         else:
-            payload = self._make_bundle_payload(repo)
-            self.delete_existing_bundle(repo)
-            self._start_bundle(repo, payload)
-            download_url = self._watch_bundle(repo)
-            if download_url is False:
-                exit(1)
-            else:
-                return download_url
+            return download_url
 
     def delete_existing_bundle(self, repo):
         """ iterate through the storage nodes and delete existing bundles
         """
         #self._select_cluster_nodes(repo)
-        userinput = input("Would you like to delete existing storage node log bundles? (y/n) ")
+        userinput = input("Would you like to delete existing storage node log bundles? (y/n) ").rstrip()
         if userinput.lower() == 'y':
             payload = "{\n\t\"method\": \"DeleteAllSupportBundles\",\n\"params\": {},\n\"id\": 1\n}" 
             for node in self.selected_nodes:

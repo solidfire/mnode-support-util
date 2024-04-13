@@ -34,16 +34,16 @@ class ElemUpgrade():
         configoptions = {}
         logmsg.info("\nSee the following KB for config samples.")
         logmsg.info("https://kb.netapp.com/Advice_and_Troubleshooting/Hybrid_Cloud_Infrastructure/NetApp_HCI/Potential_issues_and_workarounds_when_running_storage_upgrades_using_NetApp_Hybrid_Cloud_Control")
-        configinput = input("\nEnter exact json or press enter to be prompted: ")
+        configinput = input("\nEnter exact json or press enter to be prompted: ").rstrip()
         if configinput == "":
             logmsg.info("Enter option names and values. Enter q when done")
             while option != "":
-                userinput = input("Enter the option name: ")
+                userinput = input("Enter the option name: ").rstrip()
                 if userinput.lower() == 'q':
                     break
                 else:
                     option = userinput
-                value = input("Enter the option value: ")
+                value = input("Enter the option value: ").rstrip()
                 if ',' in value:
                     configoptions[option] = value.split(',')
                 else:
@@ -59,7 +59,7 @@ class ElemUpgrade():
         userinput = ""
         options = ['s','v','p','r','a','q']
         while userinput not in options:
-            userinput = input("\nUpgrade options: Start, View, Pause, Resume, Abort, Quit: s/v/p/r/a/q: ")
+            userinput = input("\nUpgrade options: Start, View, Pause, Resume, Abort, Quit: s/v/p/r/a/q: ").rstrip()
         return userinput
 
     def select_target_cluster(self, repo):
@@ -80,7 +80,7 @@ class ElemUpgrade():
                     pkglist[package["filename"]] = package["packageId"]
                     logmsg.info(f'\t{package["filename"]}')
             while userinput not in pkglist:
-                userinput = input("\nEnter the target package from the list: ")
+                userinput = input("\nEnter the target package from the list: ").rstrip()
                 upgrade_package = pkglist[userinput]
             logmsg.info(f'Selected package {upgrade_package}')
             return upgrade_package
@@ -95,7 +95,7 @@ class ElemUpgrade():
         url = (repo.base_url + "/storage/1/upgrades")
         userinput = ""
         while userinput != 'y' and userinput != 'n':
-            userinput = input("Do you have any config options to add? (y/n) ")
+            userinput = input("Do you have any config options to add? (y/n) ").rstrip()
         
         if userinput == 'y':
             configjson = self._config_options()
@@ -123,7 +123,7 @@ class ElemUpgrade():
             logmsg.info('Running upgrades\n')
             for upgrade in json_return:
                 logmsg.info(f'Upgrade ID: {upgrade["upgradeId"]}\n\tState: {upgrade["state"]}\n\tStarted: {upgrade["dateCreated"]}\n\tStatus: {upgrade["status"]["message"]}\n\tAvailable actions: {upgrade["status"]["availableActions"]}\n')
-            userinput = input("Enter the upgrade ID to work with or press Enter for new upgrade: ")
+            userinput = input("Enter the upgrade ID to work with or press Enter for new upgrade: ").rstrip()
             self.upgrade_id = userinput
         else:
             logmsg.info("No running upgrades detected")
@@ -177,7 +177,7 @@ class ElemUpgrade():
         url = f'{repo.base_url}/storage/1/upgrades/{self.upgrade_id}'
         payload = { "config": {},"action":action }
         if action == 'resume':
-            userinput = str.lower(input("Do you have any config options to add? (y/n) "))
+            userinput = str.lower(input("Do you have any config options to add? (y/n) ").rstrip())
             if userinput == 'y':
                 configjson = self._config_options()
                 payload = { "config": configjson, "action":action }
