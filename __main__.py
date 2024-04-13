@@ -313,7 +313,7 @@ if __name__ == "__main__":
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
             json_return = bundle.check_running_bundle(repo)
-            if json_return['state'] == 'completed':
+            if json_return['state'] == 'completed' or json_return['state'] == 'deleted':
                 download_url = bundle.collect_bundle(repo)
                 bundle_name = download_url.split('/')[-1]
                 bundles.append(bundle_name)
@@ -321,6 +321,11 @@ if __name__ == "__main__":
                 logmsg.info('A log collection is already in progress. Please wait or cancel the collection')
                 download_url = bundle._watch_bundle(repo)
                 logmsg.info('Now you can start a new log collection')
+                download_url = bundle.collect_bundle(repo)
+                bundle_name = download_url.split('/')[-1]
+                bundles.append(bundle_name)
+            elif json_return['state'] == 'failed':
+                logmsg.info(f'\tPrevious bundle {json_return["state"]}')
                 download_url = bundle.collect_bundle(repo)
                 bundle_name = download_url.split('/')[-1]
                 bundles.append(bundle_name)

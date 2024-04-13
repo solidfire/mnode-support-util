@@ -123,8 +123,12 @@ class StorageBundle():
         json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         if json_return['state'] == "inProgress":
             logmsg.info(f'\t{json_return["taskMonitor"]["percentComplete"]}% {json_return["taskMonitor"]["step"]}')
-        elif json_return['state'] == 'deleted':
+        elif json_return['state'] == 'deleted' or json_return['state'] == 'canceled':
             logmsg.info(f'\tPrevious collection: {json_return["summary"]}')
+            # Run the DELETE just in case the return is: Log collection expired and was deleted by the system.
+            url = f'{repo.base_url}/logs/1/bundle'
+            PDApi.send_delete_return_status(repo, url)
+            json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
         elif json_return['state'] == 'completed':
             logmsg.info('\tPrevious collection completed')
         return json_return
