@@ -37,6 +37,7 @@ class ProgramData():
         self.mvip_user = args.stuser
         self.mvip_pw = args.stpw
         self.parent_id = ""
+        self.skiprefresh = args.skiprefresh
         self.token_life = 0
         self.timeout = args.timeout
         self.about = self._about()

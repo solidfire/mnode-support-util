@@ -22,7 +22,7 @@ from program_data import PDApi, Common
 logmsg = Logging.logmsg()
 
 class ElemUpgrade():
-    def __init__(self):
+    def __init__(self, time_out):
         upgrade_id = ""
         upgrade_target = ""
 

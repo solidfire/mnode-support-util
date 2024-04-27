@@ -12,7 +12,7 @@ logmsg = Logging.logmsg()
 requests.packages.urllib3.disable_warnings()
 
 class AddAsset():
-    def __init__(self):
+    def __init__(self, time_out):
         logmsg.debug("Enter add asset")
         self.password_verify = "none"
         self.asset_info = {
