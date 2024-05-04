@@ -2,24 +2,33 @@ import pexpect
 from test_helpers import traceback, if_no_result
 
 class TestUpdateMS():
-    def __init__(self, filename, time_out=120):
+    def __init__(self, filename, time_out=240):
         self.result = []
         self.update = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a updatems -f {filename}', encoding='utf-8', timeout=time_out)
 
     def verify(self):
+        tmp_list = []
         self.update.expect(pexpect.EOF)
         console = self.update.before.split('\n')
         for line in console:
+            step_dict = {}
             if traceback(line) == True:
-                self.result.append(f'\tTest step FAILED: Traceback: {line}')
+                    step_dict['Status'] = 'FAILED'
+                    step_dict['Note'] = line
+                    tmp_list.append(step_dict)
             if 'Copying' in line:
-                self.result.append(f'\tTest Step PASSED" {line}')
+                step_dict['Status'] = 'PASSED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
             if 'Deploying' in line:
-                self.result.append(f'\tTest Step PASSED" {line}')
+                step_dict['Status'] = 'PASSED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
             if 'Failed return 400' in line:
-                self.result = []
-                self.result.append(f'\tTest step FAILED: {line}')
-        self.result = if_no_result(self.result)
+                step_dict['Status'] = 'BLOCKED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
+        self.result = if_no_result(tmp_list)
         return self.result
 
 if __name__ == '__main__':

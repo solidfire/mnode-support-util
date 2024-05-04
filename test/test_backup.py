@@ -10,7 +10,7 @@ class TestBackup():
         self.backup_file = ""
         self.contents = ""
         
-        self.backup = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a backup', encoding='utf-8', timeout=time_out)
+        self.backup = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a backup --skiprefresh', encoding='utf-8', timeout=time_out)
         
     def get_contents(self):
         # Useful for other validations
@@ -18,22 +18,32 @@ class TestBackup():
         return self.contents
 
     def verify(self):
+        tmp_list = []
         self.backup.expect(pexpect.EOF)
         console = self.backup.before.split('\n')
         for line in console:
+            step_dict = {}
             if traceback(line) == True:
-                self.result.append(f'\tTest step FAILED: Traceback: {line}')
+                step_dict['Status'] = 'FAILED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
             if 'Created backup file' in line:
                 self.backup_file = line.split('Created backup file ')[1].rstrip()
                 report_stat = os.stat(self.backup_file)
-                self.result.append(f'\tTest step PASSED: Created {self.backup_file}\n\t\tSize = {report_stat.st_size}')
-        self.contents = pexpect.run(f'/bin/cat {self.backup_file}').decode()
+                step_dict['Status'] = 'PASSED'
+                step_dict['Note'] = f'Created {self.backup_file} Size = {report_stat.st_size}'
+                tmp_list.append(step_dict)
+        self.contents = self.get_contents()
         try:
             json.loads(self.contents)
-            self.result.append(f'\tTest step PASSED: Verified valid json: {self.backup_file}')
+            step_dict['Status'] = 'PASSED'
+            step_dict['Note'] = 'Verified valid json'
+            tmp_list.append(step_dict)
         except ValueError as error:
-            self.result.append(f'\tTest step FAILED: Failed to verify json: {self.backup_file}')
-        self.result = if_no_result(self.result)
+            step_dict['Status'] = 'FAILED'
+            step_dict['Note'] = 'Failed to verify valid json'
+            tmp_list.append(step_dict)
+        self.result = if_no_result(tmp_list)
         return self.result
             
 if __name__ == '__main__':

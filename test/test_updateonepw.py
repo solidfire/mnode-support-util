@@ -7,6 +7,7 @@ class TestUpdateOnepw():
         self.updatepw = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a updateonepw --skiprefresh', encoding='utf-8', timeout=time_out)
 
     def verify(self):
+        tmp_list = []
         self.updatepw.expect('.*What type of asset to work on.*')
         self.updatepw.sendline('c')
         self.updatepw.expect('.*assetID.*parentID.*')
@@ -20,11 +21,16 @@ class TestUpdateOnepw():
         self.updatepw.expect(pexpect.EOF)
         console = self.updatepw.before.split('\n')
         for line in console:
+            step_dict = {}
             if traceback(line) == True:
-                self.result.append(f'\tTest step FAILED: Traceback: {line}')
+                step_dict['Status'] = 'FAILED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
             if 'Successfully updated asset' in line:
-                self.result.append(f'\tTest Step PASSED: {line}')
-        self.result = if_no_result(self.result)
+                step_dict['Status'] = 'PASSED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
+        self.result = if_no_result(tmp_list)
         return self.result
 
 if __name__ == '__main__':

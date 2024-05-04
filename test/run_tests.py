@@ -1,3 +1,6 @@
+import datetime
+import json
+import pickle
 from test_help import TestHelp
 from test_addasset import TestAddAsset
 from test_backup import TestBackup
@@ -16,125 +19,71 @@ from test_updatems import TestUpdateMS
 from test_updatepw import TestUpdatepw
 from test_updateonepw import TestUpdateOnepw
 
-def print_lines(result):
-    for line in result:
-        print(line)
-
 def test_result(result):
     stats = ['FAILED', 'BLOCKED', 'PASSED']
     for line in result:
         for stat in stats:
             if stat in line: 
                 print(f'End Test: {stat}')
-        
-# Help test -h/--help
-print('Start Test: help')
-test_help = TestHelp()
-result = test_help.verify()
-print_lines(result)
 
-# test -a/--action addasset
-print('Start Test: addasset')
-add = TestAddAsset()
-compute_result = add.test_compute()
-print_lines(compute_result)
+def curtime():
+    now = datetime.datetime.now()
+    ts = datetime.datetime.timestamp(now)
+    return str(datetime.datetime.fromtimestamp(ts))
 
-bmc_result = add.test_bmc()
-print_lines(bmc_result)
+def build_result(test_name, results, start, stop):
+    tmp_dict = {}
+    step_dict = {}
 
-stor_result = add.test_storage()
-print_lines(stor_result)
+    tmp_dict['Test'] = test_name
+    tmp_dict['timeStarted'] = start
+    tmp_dict['timeCompleted'] = stop
+    tmp_dict['Steps'] = []
+    for step in results:
+        for key in step:
+            tmp_dict[key] = step[key]
+        if len(step_dict) > 0:
+            tmp_dict['Steps'].append(step_dict)
+    return tmp_dict
+            
+run_results = []
+timestamp = curtime()
+tests = [TestHelp, TestCleanup, TestRestore, 
+         TestRefresh, TestStorHealthcheck,
+         TestSupportBundle, TestAddAsset, TestBackup, 
+         TestUpdatepw, TestUpdateOnepw,
+         TestDeletelogs, TestMnodeHealthcheck,
+         TestListAssets, TestPackageUpload, TestListpkgs, 
+         TestRmasset, TestUpdateMS]
 
-vc_result = add.test_vc()
-print_lines(vc_result)
+## CHANGEME 
+TestRestore_file = '/var/log/AssetBackup-02-May-2024-18.24.10.json'
+TestDeletelogs_cluster = 'CPE_PB4_Adam'
+TestPackageUpload_file = '/home/admin/compute-firmware-2.64.0-12.3.82.tar.gz'
+TestUpdateMS_file = '/home/admin/mnode2_2.25.8.tar.gz'
+## ========
+test_run_output = f'msu-test-run-{timestamp.replace(" ", "T")}.txt'
+summary_run_output = f'msu-test-summary-{timestamp.replace(" ", "T")}.json'
+for test in tests:
+    print(f'{test} in progress')
+    with  open(test_run_output, 'a') as out_file:
+        test_case = str(test).split('.')[1][:-2]
+        print(f'{test_case}', file=out_file)
+        start = curtime()
+        if test_case == 'TestRestore':
+            run_test = test(TestRestore_file)
+        elif test_case == 'TestDeletelogs':
+            run_test = test(TestDeletelogs_cluster)
+        elif test_case == 'TestPackageUpload':
+            run_test = test(TestPackageUpload_file)
+        elif test_case == 'TestUpdateMS':
+            run_test = test(TestUpdateMS_file)
+        else:
+            run_test = test()
+        run_verify = run_test.verify()
+        stop = curtime()
+        run_results.append(build_result(test_case, run_verify, start, stop))
+        print(f'{run_verify}\n\n', file=out_file)
 
-# test -a/--action backup
-print('Start test: backup')
-test_backup = TestBackup()
-result = test_backup.verify()
-print_lines(result)
-
-# test -a/--action cleanup
-print('Start Test: cleanup')
-cleanup = TestCleanup()
-result = cleanup.confirm()
-print_lines(result)
-
-# test -a/--action restore
-print('Start Test: restore')
-restore = TestRestore('/var/log/AssetBackup-18-Apr-2024-18.42.21.json')
-result = restore.verify()
-print_lines(result)
-
-# test -a/--action deletelogs
-print('Start Test: deletelogs')
-delete_logs = TestDeletelogs()
-result = delete_logs.verify('CPE_PB4_Adam')
-print_lines(result)
-
-# test -a/--action healthcheck
-print('Start Test: mnode healthcheck')
-healthcheck = TestMnodeHealthcheck()
-result = healthcheck.verify()
-print_lines(result)
-
-# test -a/--action listassets
-print('Start Test: listassets')
-listassets = TestListAssets()
-result = listassets.verify()
-print_lines(result)
-
-# test -a/--action listpackages
-print('Start Test: listpackages')
-listpkgs = TestListpkgs()
-result = listpkgs.verify()
-print_lines(result)
-
-# test -a/--action packageupload
-print('Start Test: packageupload THIS IS A LONG RUNNING TEST')
-upload = TestPackageUpload('/home/admin/storage-firmware-2.178.0.tar.gz')
-result = upload.verify()
-print_lines(result)
-
-# test -a/--action rmasset
-print('Start Test: rmasset')
-rmasset = TestRmasset()
-result = rmasset.verify()
-print_lines(result)
-
-# test -a/--action refresh
-print('Start Test: refresh THIS IS A LONG RUNNING TEST')
-refresh = TestRefresh()
-result = refresh.verify()
-
-# test -a/--action storagehealthcheck
-print('Start Test: storagehealthcheck')
-storhck = TestStorHealthcheck()
-result = storhck.verify()
-print_lines(result)
-
-# test -a/--action supportbundle
-print('Start Test: supportbundle')
-bundle = TestSupportBundle()
-result = bundle.verify()
-print_lines(result)
-
-# test -a/--action updatems
-print('Start Test: updatems')
-update = TestUpdateMS('/home/admin/mnode2_2.25.3.tar.gz', 180)
-result = update.verify()
-print_lines(result)
-
-# test -a/--action updatepw
-print('Start Test: updatepw')
-update = TestUpdatepw()
-result = update.verify()
-print_lines(result)
-
-# test -a/--action updateonepw
-print('Start Test: updateonepw')
-update = TestUpdateOnepw()
-result = update.verify()
-print_lines(result)
-# test -a/--action 
-# print('Start Test: ')
+with open(summary_run_output, 'w') as file:
+    json.dump(run_results, file)

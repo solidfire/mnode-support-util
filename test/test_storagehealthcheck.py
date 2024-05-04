@@ -6,30 +6,42 @@ from test_helpers import traceback, if_no_result, get_cluster
 class TestStorHealthcheck():
     def __init__(self, time_out=120):
         self.result = []
-        self.storhck = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a storagehealthcheck', encoding='utf-8', timeout=time_out)
+        self.storhck = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a storagehealthcheck --skiprefresh', encoding='utf-8', timeout=time_out)
 
     def verify(self):
+        tmp_list = []
         self.storhck.expect('Available.*list.*')
         cluster = get_cluster(self.storhck.after)
         self.storhck.sendline(cluster)
         self.storhck.expect(pexpect.EOF)
         console = self.storhck.before.split('\n')
         for line in console:
+            step_dict = {}
             if traceback(line) == True:
-                self.result.append(f'\tTest step FAILED: Traceback: {line}')
-            if 'All checks completed successfully' in line:
-                self.result.append(f'\tTest Step PASSED: {line}')
-            if 'Report written' in line:
+                step_dict['Status'] = 'FAILED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
+            elif 'All checks completed successfully' in line:
+                step_dict['Status'] = 'PASSED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
+            elif 'Report written' in line:
                 report_file = line.split()[6]
                 report_stat = os.stat(report_file)
-                self.result.append(f'\tTest Step PASSED: {report_file}\n\tSize = {report_stat.st_size}')
+                step_dict['Status'] = 'PASSED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
                 contents = pexpect.run(f'/bin/cat {report_file}').decode()
                 try:
                     json.loads(contents)
-                    self.result.append(f'\tTest step PASSED: Verified valid json')
+                    step_dict['Status'] = 'PASSED'
+                    step_dict['Note'] = line
+                    tmp_list.append(step_dict)
                 except ValueError as error:
-                    self.result.append(f'\tTest step FAILED: Failed to verify json:')
-        self.result = if_no_result(self.result)
+                    step_dict['Status'] = 'FAILED'
+                    step_dict['Note'] = error
+                    tmp_list.append(step_dict)
+        self.result = if_no_result(tmp_list)
         return self.result
 
 if __name__ == '__main__':

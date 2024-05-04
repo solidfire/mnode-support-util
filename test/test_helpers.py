@@ -6,8 +6,11 @@ def traceback(line):
     return result
 
 def if_no_result(result):
+    tmp_dict = {}
     if len(result) == 0:
-            result.append('\tTest step BLOCKED: No valid return. See /var/log/mnode-support-util.log')
+        tmp_dict['Status'] = 'BLOCKED'
+        tmp_dict['Note'] = 'No valid return. See /var/log/mnode-support-util.log'
+        result.append(tmp_dict)
     return result
 
 def get_cluster(result):

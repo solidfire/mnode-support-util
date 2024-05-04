@@ -5,9 +5,10 @@ from test_helpers import traceback, if_no_result
 class TestMnodeHealthcheck():
     def __init__(self, time_out=120):
         self.result = []
-        self.healthcheck = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a healthcheck', encoding='utf-8', timeout=time_out)
+        self.healthcheck = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a healthcheck --skiprefresh', encoding='utf-8', timeout=time_out)
 
     def verify(self):
+        tmp_list = []
         expected = [
             'Writing healthcheck to'
             'check_auth_token',
@@ -22,18 +23,23 @@ class TestMnodeHealthcheck():
         self.healthcheck.expect(pexpect.EOF)
         console = self.healthcheck.before.split('\n')
         for line in console:
+            step_dict = {}
             if traceback(line) == True:
-                self.result.append(f'\tTest step FAILED: Traceback: {line}')
+                step_dict['Status'] = 'FAILED'
+                step_dict['Note'] = line
+                tmp_list.append(step_dict)
             if 'Writing healthcheck to' in line:
                 reportfile = line.split('to ')[1].rstrip()
                 report_stat = os.stat(f'/var/log/{reportfile}')
-                self.result.append(f'\tTest step PASSED: Report file created.\n\t\tName: /var/log/{reportfile}\n\t\tSize = {report_stat.st_size}')
+                step_dict['Status'] = 'PASSED'
+                step_dict['Note'] = f'Report file created. Name: /var/log/{reportfile} Size = {report_stat.st_size}'
+                tmp_list.append(step_dict)
             for exp in expected:
                 if exp in line:
-                    self.result.append(f'\tTest step PASSED: {line}')
-                    
-        if len(self.result) == 0:
-            self.result.append('\tTest step BLOCKED: No valid return. See /var/log/mnode-support-util.log')
+                    step_dict['Status'] = 'PASSED'
+                    step_dict['Note'] = line
+                    tmp_list.append(step_dict)
+        self.result = if_no_result(tmp_list)
         return self.result
 
 if __name__ == '__main__':
