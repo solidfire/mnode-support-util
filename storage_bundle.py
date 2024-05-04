@@ -146,7 +146,7 @@ class StorageBundle():
     def delete_existing_bundle(self, repo):
         """ iterate through the storage nodes and delete existing bundles
         """
-        #self._select_cluster_nodes(repo)
+        self._select_cluster_nodes(repo)
         userinput = input("Would you like to delete existing storage node log bundles? (y/n) ").rstrip()
         if userinput.lower() == 'y':
             payload = "{\n\t\"method\": \"DeleteAllSupportBundles\",\n\"params\": {},\n\"id\": 1\n}" 

@@ -67,7 +67,7 @@ class AssetMgmt():
             logmsg.info(f'{item} assets')
             for asset in repo.assets[0][item]:
                 if asset["host_name"]:
-                    logmsg.info(f'\t{asset["host_name"]:<15} assetID: {asset["id"]:<20} parentID: {asset["parent"]:<}')
+                    logmsg.info(f'\t{asset["host_name"]:<15} IP: {asset["ip"]:<20} assetID: {asset["id"]:<20} parentID: {asset["parent"]:<}')
                 else:
                     logmsg.info(f'\t{asset["ip"]:<15} assetID: {asset["id"]:<20} parentID: {asset["parent"]:<}')
 
@@ -155,7 +155,7 @@ class AssetMgmt():
         errors = ["Error getting compute info", "Error getting storage info"]
         for item in item_types:
             jitem = json_return[item]
-            if "errors" in jitem.keys():
+            if len(jitem['errors']) > 0:
                 logmsg.info("\nInventory errors found...")
                 for error in jitem["errors"]:
                     logmsg.info(error["message"])
