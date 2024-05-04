@@ -12,7 +12,7 @@ class TestRefresh():
             self.refresh.expect(pexpect.EOF)
             console = self.refresh.before.split('\n')
             for line in console:
-                step_dict = {}
+                step_dict = traceback(line)
                 if 'Refresh completed' in line:
                     step_dict['Status'] = 'PASSED'
                     step_dict['Note'] = line

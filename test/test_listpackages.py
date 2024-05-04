@@ -12,14 +12,11 @@ class TestListpkgs():
         self.listpkgs.expect(pexpect.EOF)
         console = self.listpkgs.before.split('\n')
         for line in console:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
+            step_dict = traceback(line)
             if 'compute-firmware' in line or 'solidfire-rtfi' in line or 'solidfire-platform' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
             for exp in expected:
                 if exp in line:

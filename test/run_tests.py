@@ -40,10 +40,10 @@ def build_result(test_name, results, start, stop):
     tmp_dict['timeCompleted'] = stop
     tmp_dict['Steps'] = []
     for step in results:
-        for key in step:
-            tmp_dict[key] = step[key]
-        if len(step_dict) > 0:
-            tmp_dict['Steps'].append(step_dict)
+        tmp_dict['Steps'].append(step)
+        #for key in step:
+        #    step_dict[key] = step[key]
+        #    tmp_dict['Steps'].append(step_dict)
     return tmp_dict
             
 run_results = []

@@ -1,9 +1,15 @@
 
+#def traceback(line):
+#    result = False
+#    if 'raceback' in line:
+#        result = True
+#    return result
 def traceback(line):
-    result = False
+    tmp_dict = {}
     if 'raceback' in line:
-        result = True
-    return result
+        tmp_dict['Status'] = 'BLOCKED'
+        tmp_dict['Note'] = line
+    return tmp_dict
 
 def if_no_result(result):
     tmp_dict = {}
@@ -17,3 +23,4 @@ def get_cluster(result):
     console = result.split('\n')
     cluster = console[1].split('+ ')[1].rstrip()
     return cluster
+

@@ -1,5 +1,5 @@
 import pexpect
-from test_helpers import if_no_result
+from test_helpers import traceback, if_no_result
 
 class TestCleanup():
     def __init__(self, time_out=120):
@@ -13,14 +13,14 @@ class TestCleanup():
         self.cleanup.expect(pexpect.EOF)
         console = self.cleanup.before.split('\n')
         for line in console:
-            step_dict = {}
+            step_dict = traceback(line)
             if 'Created backup file' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
             elif 'Successfully deleted' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.result = if_no_result(tmp_list)
         return self.result

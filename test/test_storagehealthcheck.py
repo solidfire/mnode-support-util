@@ -16,26 +16,21 @@ class TestStorHealthcheck():
         self.storhck.expect(pexpect.EOF)
         console = self.storhck.before.split('\n')
         for line in console:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
-            elif 'All checks completed successfully' in line:
+            step_dict = traceback(line)
+            if 'All checks completed successfully' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
                 tmp_list.append(step_dict)
-            elif 'Report written' in line:
+            if 'Report written' in line:
                 report_file = line.split()[6]
                 report_stat = os.stat(report_file)
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
                 contents = pexpect.run(f'/bin/cat {report_file}').decode()
                 try:
                     json.loads(contents)
                     step_dict['Status'] = 'PASSED'
-                    step_dict['Note'] = line
+                    step_dict['Note'] = 'Report file is valid json'
                     tmp_list.append(step_dict)
                 except ValueError as error:
                     step_dict['Status'] = 'FAILED'

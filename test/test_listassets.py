@@ -11,14 +11,11 @@ class TestListAssets():
         self.listassets.expect(pexpect.EOF)
         console = self.listassets.before.split('\n')
         for line in console:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
+            step_dict = traceback(line)
             if 'assetID' in line and 'parentID' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.result = if_no_result(tmp_list)
         return self.result

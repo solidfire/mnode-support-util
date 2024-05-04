@@ -1,5 +1,5 @@
 import pexpect
-from test_helpers import if_no_result
+from test_helpers import traceback, if_no_result
 
 # /var/log/AssetBackup-18-Apr-2024-18.42.21.json
 class TestRestore():
@@ -13,18 +13,17 @@ class TestRestore():
         self.test = self.restore.expect(pexpect.EOF)
         console = self.restore.before.split('\n')
         for line in console:
-            step_dict = {}
+            step_dict = traceback(line)
             if 'Successfully added' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
             elif '409' in line:
                 step_dict['Status'] = 'BLOCKED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
             elif '400' in console or '401' in console or '424' in line:
                 step_dict['Status'] = 'FAILED'
                 step_dict['Note'] = line
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.result = if_no_result(tmp_list)
         return self.result

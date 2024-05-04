@@ -12,14 +12,11 @@ class TestPackageUpload():
         self.packageupload.expect(pexpect.EOF)
         console = self.packageupload.before.split('\n')
         for line in console:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
+            step_dict = traceback(line)
             if 'The package upload completed successfully' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
             for code in fail_codes:
                 if code in line:
@@ -30,7 +27,7 @@ class TestPackageUpload():
         return self.result
 
 if __name__ == '__main__':
-    upload = TestPackageUpload('/home/admin/storage-firmware-2.178.0.tar.gz')
+    upload = TestPackageUpload('/home/admin/compute-firmware-2.64.0-12.3.82.tar.gz')
     result = upload.verify()
     for line in result:
         print(line)

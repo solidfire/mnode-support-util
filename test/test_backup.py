@@ -22,16 +22,13 @@ class TestBackup():
         self.backup.expect(pexpect.EOF)
         console = self.backup.before.split('\n')
         for line in console:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
+            step_dict = traceback(line)
             if 'Created backup file' in line:
                 self.backup_file = line.split('Created backup file ')[1].rstrip()
                 report_stat = os.stat(self.backup_file)
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = f'Created {self.backup_file} Size = {report_stat.st_size}'
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.contents = self.get_contents()
         try:

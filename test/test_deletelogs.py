@@ -1,5 +1,5 @@
 import pexpect
-from test_helpers import if_no_result
+from test_helpers import traceback, if_no_result
 
 class TestDeletelogs():
     def __init__(self, cluster, time_out=120):
@@ -18,10 +18,11 @@ class TestDeletelogs():
         self.deletelogs.expect(pexpect.EOF)
         console = self.deletelogs.before.split('\n')
         for line in console:
-            step_dict = {}
+            step_dict = traceback(line)
             if 'Success' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.result = if_no_result(tmp_list)
         return self.result

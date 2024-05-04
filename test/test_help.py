@@ -1,4 +1,5 @@
 import subprocess
+from test_helpers import traceback
 
 class TestHelp():
     def __init__(self, time_out=120):
@@ -59,7 +60,7 @@ required named arguments:
         self.output = subprocess.getoutput('sudo ./mnode-support-util -h')
 
     def verify(self):
-        step_dict = {}
+        step_dict = traceback(self.output)
         if len(self.output) >= len(self.expected):
             step_dict['Status'] = 'PASSED'
             step_dict['Note'] = 'Help displayed as expected'

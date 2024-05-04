@@ -17,24 +17,19 @@ class TestSupportBundle():
         self.bundle.expect(pexpect.EOF)
         console = self.bundle.before.split('\n')
         for line in console:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
+            step_dict = traceback(line)
             if 'Creating mnode support tar bundle' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
             if 'Download link' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
             if 'Local bundle' in line:
                 local_bundle = line.split('Local bundle: ')[1].rstrip()
                 bundle_stat = os.stat(local_bundle)
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = f'{line} Size = {bundle_stat.st_size}'
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.result = if_no_result(tmp_list)
         return self.result

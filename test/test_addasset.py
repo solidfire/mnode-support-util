@@ -17,22 +17,17 @@ class TestAddAsset():
         self.addasset.expect(['.*Adding asset.*Add another asset.*'])
         after = self.addasset.after.split('\n')
         for line in after:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
+            step_dict = traceback(line)
             if 'Successfully added' in line:
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
             if '409' in line:
                 step_dict['Status'] = 'BLOCKED'
                 step_dict['Note'] = line
-                tmp_list.append(step_dict)
             if '400' in line or '401' in line or '424' in line:
                 step_dict['Status'] = 'FAILED'
                 step_dict['Note'] = 'Failed to add asset. See /var/log/mnode-support-util.log'
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.result = if_no_result(tmp_list)
         self.addasset.sendline(add_another)

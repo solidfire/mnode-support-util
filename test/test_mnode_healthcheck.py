@@ -23,16 +23,13 @@ class TestMnodeHealthcheck():
         self.healthcheck.expect(pexpect.EOF)
         console = self.healthcheck.before.split('\n')
         for line in console:
-            step_dict = {}
-            if traceback(line) == True:
-                step_dict['Status'] = 'FAILED'
-                step_dict['Note'] = line
-                tmp_list.append(step_dict)
+            step_dict = traceback(line)
             if 'Writing healthcheck to' in line:
                 reportfile = line.split('to ')[1].rstrip()
                 report_stat = os.stat(f'/var/log/{reportfile}')
                 step_dict['Status'] = 'PASSED'
                 step_dict['Note'] = f'Report file created. Name: /var/log/{reportfile} Size = {report_stat.st_size}'
+            if len(step_dict) > 0:
                 tmp_list.append(step_dict)
             for exp in expected:
                 if exp in line:
