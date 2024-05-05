@@ -1,9 +1,10 @@
-import subprocess
-from test_helpers import traceback
+import pexpect
+from test_helpers import traceback, logexpect
 
 class TestHelp():
-    def __init__(self, time_out=120):
+    def __init__(self, logfile, time_out=120):
         self.result = []
+        self.log = logfile
         self.expected = """usage: mnode-support-util [-h] [-j JSON] [-f UPDATEFILE] [-cu COMPUTEUSER]
                           [-cp COMPUTEPW] [-bu BMCUSER] [-bp BMCPW]
                           [-vu VCUSER] [-vp VCPW] [-sp STPW] [-d DEBUG]
@@ -57,11 +58,13 @@ required named arguments:
                             updatems: Update Management Services.
                             updatepw: Update passwords by asset type.
                             updateonepw: Update one asset password"""
-        self.output = subprocess.getoutput('sudo ./mnode-support-util -h')
+        #self.output = subprocess.getoutput('sudo ./mnode-support-util -h')
+        self.expect = pexpect.run('sudo ./mnode-support-util -h').decode()
+        logexpect(self.expect, self.log)
 
     def verify(self):
-        step_dict = traceback(self.output)
-        if len(self.output) >= len(self.expected):
+        step_dict = traceback(self.expect)
+        if len(self.expect) >= len(self.expected):
             step_dict['Status'] = 'PASSED'
             step_dict['Note'] = 'Help displayed as expected'
         else:

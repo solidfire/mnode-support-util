@@ -1,17 +1,19 @@
 import pexpect
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 # /var/log/AssetBackup-18-Apr-2024-18.42.21.json
 class TestRestore():
-    def __init__(self, backup_file, time_out=120):
+    def __init__(self, backup_file, logfile, time_out=120):
         self.result = []
-        self.restore = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a restore -j {backup_file} -cu root -cp solidfire -bu root -bp solidfire -vu administrator\@vsphere.local -vp solidfire --skiprefresh', encoding='utf-8', timeout=time_out)
-        
+        self.log = logfile
+        self.expect = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a restore -j {backup_file} -cu root -cp solidfire -bu root -bp solidfire -vu administrator\@vsphere.local -vp solidfire --skiprefresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
 
     def verify(self):
         tmp_list = []
-        self.test = self.restore.expect(pexpect.EOF)
-        console = self.restore.before.split('\n')
+        self.expect.expect(pexpect.EOF)
+        logexpect(self.expect, self.log)
+        console = self.expect.before.split('\n')
         for line in console:
             step_dict = traceback(line)
             if 'Successfully added' in line:

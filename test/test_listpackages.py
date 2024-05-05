@@ -1,16 +1,19 @@
 import pexpect
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 class TestListpkgs():
-    def __init__(self, time_out=120):
+    def __init__(self, logfile, time_out=120):
         self.result = []
-        self.listpkgs = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a listpackages --skiprefresh', encoding='utf-8', timeout=time_out)
+        self.log = logfile
+        self.expect = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a listpackages --skiprefresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
 
     def verify(self):
         tmp_list = []
         expected = ['smb', 'https', 'nfs']
-        self.listpkgs.expect(pexpect.EOF)
-        console = self.listpkgs.before.split('\n')
+        self.expect.expect(pexpect.EOF)
+        logexpect(self.expect, self.log)
+        console = self.expect.before.split('\n')
         for line in console:
             step_dict = traceback(line)
             if 'compute-firmware' in line or 'solidfire-rtfi' in line or 'solidfire-platform' in line:

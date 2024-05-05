@@ -1,15 +1,18 @@
 import pexpect
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 class TestUpdateMS():
-    def __init__(self, filename, time_out=240):
+    def __init__(self, filename, logfile, time_out=240):
         self.result = []
-        self.update = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a updatems -f {filename}', encoding='utf-8', timeout=time_out)
+        self.log = logfile
+        self.expect = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a updatems -f {filename}', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
 
     def verify(self):
         tmp_list = []
-        self.update.expect(pexpect.EOF)
-        console = self.update.before.split('\n')
+        self.expect.expect(pexpect.EOF)
+        logexpect(self.expect, self.log)
+        console = self.expect.before.split('\n')
         for line in console:
             step_dict = traceback(line)
             if 'Copying' in line:

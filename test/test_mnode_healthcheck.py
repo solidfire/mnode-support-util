@@ -1,11 +1,13 @@
 import pexpect
 import os
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 class TestMnodeHealthcheck():
-    def __init__(self, time_out=120):
+    def __init__(self, logfile, time_out=120):
         self.result = []
-        self.healthcheck = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a healthcheck --skiprefresh', encoding='utf-8', timeout=time_out)
+        self.log = logfile
+        self.expect = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a healthcheck --skiprefresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
 
     def verify(self):
         tmp_list = []
@@ -20,8 +22,9 @@ class TestMnodeHealthcheck():
             'docker_log',
             'trident_log'
         ]
-        self.healthcheck.expect(pexpect.EOF)
-        console = self.healthcheck.before.split('\n')
+        self.expect.expect(pexpect.EOF)
+        logexpect(self.expect, self.log)
+        console = self.expect.before.split('\n')
         for line in console:
             step_dict = traceback(line)
             if 'Writing healthcheck to' in line:

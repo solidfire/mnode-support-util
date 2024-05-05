@@ -1,16 +1,19 @@
 import pexpect
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 class TestRefresh():
-    def __init__(self, time_out=120):
+    def __init__(self, logfile, time_out=120):
         self.result = []
-        self.refresh = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a refresh', encoding='utf-8', timeout=time_out)
-
+        self.log = logfile
+        self.expect = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a refresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
+        
     def verify(self):
         tmp_list = []
         try:
-            self.refresh.expect(pexpect.EOF)
-            console = self.refresh.before.split('\n')
+            self.expect.expect(pexpect.EOF)
+            logexpect(self.expect, self.log)
+            console = self.expect.before.split('\n')
             for line in console:
                 step_dict = traceback(line)
                 if 'Refresh completed' in line:
