@@ -1,21 +1,26 @@
 import json
 import pexpect
 from test_backup import TestBackup
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 class TestAddAsset():
-    def __init__(self, time_out=120):
+    def __init__(self, logfile, time_out=120):
         self.result = []
-        self.addasset = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a addasset --skiprefresh', encoding='utf-8', timeout=time_out)
+        self.log = logfile
+        self.expect = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a addasset --skiprefresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
         
     def _asset_type(self, asset_type):
-        self.addasset.expect('.*What type of asset to work on.*')
-        self.addasset.sendline(asset_type)
+        self.expect.expect('.*What type of asset to work on.*')
+        logexpect(self.expect, self.log)
+        self.expect.sendline(asset_type)
+        logexpect(self.expect, self.log)
         
     def _asset_added(self, add_another):
         tmp_list = []
-        self.addasset.expect(['.*Adding asset.*Add another asset.*'])
-        after = self.addasset.after.split('\n')
+        self.expect.expect(['.*Adding asset.*Add another asset.*'])
+        logexpect(self.expect, self.log)
+        after = self.expect.after.split('\n')
         for line in after:
             step_dict = traceback(line)
             if 'Successfully added' in line:
@@ -30,35 +35,49 @@ class TestAddAsset():
             if len(step_dict) > 0:
                 tmp_list.append(step_dict)
         self.result = if_no_result(tmp_list)
-        self.addasset.sendline(add_another)
+        self.expect.sendline(add_another)
         return self.result
         
     def _host_name(self, host_name):
-        self.addasset.expect('Host name:')
-        self.addasset.sendline(host_name)
+        self.expect.expect('Host name:')
+        logexpect(self.expect, self.log)
+        self.expect.sendline(host_name)
+        logexpect(self.expect, self.log)
     
     def _ip(self, ipv4):
-        self.addasset.expect('IPv4 address:')
-        self.addasset.sendline(ipv4)
+        self.expect.expect('IPv4 address:')
+        logexpect(self.expect, self.log)
+        self.expect.sendline(ipv4)
+        logexpect(self.expect, self.log)
 
     def _hw_tag(self, hw_tag):
-        self.addasset.expect('Hardware tag or substitue with host name:')
-        self.addasset.sendline(hw_tag)
+        self.expect.expect('Hardware tag or substitue with host name:')
+        logexpect(self.expect, self.log)
+        self.expect.sendline(hw_tag)
+        logexpect(self.expect, self.log)
 
     def _user(self, user_name):
-        self.addasset.expect('User name:')
-        self.addasset.sendline(user_name)
+        self.expect.expect('User name:')
+        logexpect(self.expect, self.log)
+        self.expect.sendline(user_name)
+        logexpect(self.expect, self.log)
 
     def _passwd(self, password):
-        self.addasset.expect('Password:')
-        self.addasset.sendline(password)
+        self.expect.expect('Password:')
+        logexpect(self.expect, self.log)
+        self.expect.sendline(password)
+        logexpect(self.expect, self.log)
 
-        self.addasset.expect('Password to verify:')
-        self.addasset.sendline(password)
+        self.expect.expect('Password to verify:')
+        logexpect(self.expect, self.log)
+        self.expect.sendline(password)
+        logexpect(self.expect, self.log)
 
     def _confirm(self):
-        self.addasset.expect('.*Is the above correct.*')
-        self.addasset.sendline('y')
+        self.expect.expect('.*Is the above correct.*')
+        logexpect(self.expect, self.log)
+        self.expect.sendline('y')
+        logexpect(self.expect, self.log)
 
     def test_compute(self):
         self._asset_type('c')
@@ -105,15 +124,14 @@ class TestAddAsset():
     def verify(self):
         tmp_list = []
         tmp_dict = {}
-        add = TestAddAsset()
         tmp_dict['compute'] = []
-        tmp_dict['compute'].append(add.test_compute())
+        tmp_dict['compute'].append(self.test_compute())
         tmp_dict['BMC'] = []
-        tmp_dict['BMC'].append(add.test_bmc())
+        tmp_dict['BMC'].append(self.test_bmc())
         tmp_dict['storage'] = []
-        tmp_dict['storage'].append(add.test_storage())
+        tmp_dict['storage'].append(self.test_storage())
         tmp_dict['vCenter'] = []
-        tmp_dict['vCenter'].append(add.test_vc())
+        tmp_dict['vCenter'].append(self.test_vc())
         tmp_list.append(tmp_dict)
         return tmp_list
 

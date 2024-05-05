@@ -1,17 +1,22 @@
 import pexpect
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 class TestCleanup():
-    def __init__(self, time_out=120):
+    def __init__(self, logfile, time_out=120):
         self.result = []
-        self.cleanup = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a cleanup --skiprefresh', encoding='utf-8', timeout=time_out)
+        self.log = logfile
+        self.expect = pexpect.spawn('sudo ./mnode-support-util -su admin -sp admin -a cleanup --skiprefresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
         
     def verify(self):
         tmp_list = []
-        self.cleanup.expect('.*ARE YOU SURE YOU WANT TO DELETE ALL ASSETS.*')
-        self.cleanup.sendline('y')
-        self.cleanup.expect(pexpect.EOF)
-        console = self.cleanup.before.split('\n')
+        self.expect.expect('.*ARE YOU SURE YOU WANT TO DELETE ALL ASSETS.*')
+        logexpect(self.expect, self.log)
+        self.expect.sendline('y')
+        logexpect(self.expect, self.log)
+        self.expect.expect(pexpect.EOF)
+        logexpect(self.expect, self.log)
+        console = self.expect.before.split('\n')
         for line in console:
             step_dict = traceback(line)
             if 'Created backup file' in line:

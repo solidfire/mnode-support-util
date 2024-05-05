@@ -62,28 +62,27 @@ TestDeletelogs_cluster = 'CPE_PB4_Adam'
 TestPackageUpload_file = '/home/admin/compute-firmware-2.64.0-12.3.82.tar.gz'
 TestUpdateMS_file = '/home/admin/mnode2_2.25.8.tar.gz'
 ## ========
-test_run_output = f'msu-test-run-{timestamp.replace(" ", "T")}.txt'
+
+test_run_output = f'msu-test-debug-{timestamp.replace(" ", "T")}.json'
 summary_run_output = f'msu-test-summary-{timestamp.replace(" ", "T")}.json'
 for test in tests:
     print(f'{test} in progress')
     with  open(test_run_output, 'a') as out_file:
         test_case = str(test).split('.')[1][:-2]
-        print(f'{test_case}', file=out_file)
         start = curtime()
         if test_case == 'TestRestore':
-            run_test = test(TestRestore_file)
+            run_test = test(TestRestore_file, out_file)
         elif test_case == 'TestDeletelogs':
-            run_test = test(TestDeletelogs_cluster)
+            run_test = test(TestDeletelogs_cluster, out_file)
         elif test_case == 'TestPackageUpload':
-            run_test = test(TestPackageUpload_file)
+            run_test = test(TestPackageUpload_file, out_file)
         elif test_case == 'TestUpdateMS':
-            run_test = test(TestUpdateMS_file)
+            run_test = test(TestUpdateMS_file, out_file)
         else:
-            run_test = test()
+            run_test = test(out_file)
         run_verify = run_test.verify()
         stop = curtime()
         run_results.append(build_result(test_case, run_verify, start, stop))
-        print(f'{run_verify}\n\n', file=out_file)
 
 with open(summary_run_output, 'w') as file:
     json.dump(run_results, file)

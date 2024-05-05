@@ -1,20 +1,25 @@
 import json
 import os
 import pexpect
-from test_helpers import traceback, if_no_result, get_cluster
+from test_helpers import traceback, if_no_result, get_cluster, logexpect
 
 class TestStorHealthcheck():
-    def __init__(self, time_out=120):
+    def __init__(self, logfile, time_out=120):
         self.result = []
-        self.storhck = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a storagehealthcheck --skiprefresh', encoding='utf-8', timeout=time_out)
+        self.log = logfile
+        self.expect = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a storagehealthcheck --skiprefresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
 
     def verify(self):
         tmp_list = []
-        self.storhck.expect('Available.*list.*')
-        cluster = get_cluster(self.storhck.after)
-        self.storhck.sendline(cluster)
-        self.storhck.expect(pexpect.EOF)
-        console = self.storhck.before.split('\n')
+        self.expect.expect('Available.*list.*')
+        logexpect(self.expect, self.log)
+        cluster = get_cluster(self.expect.after)
+        self.expect.sendline(cluster)
+        logexpect(self.expect, self.log)
+        self.expect.expect(pexpect.EOF)
+        logexpect(self.expect, self.log)
+        console = self.expect.before.split('\n')
         for line in console:
             step_dict = traceback(line)
             if 'All checks completed successfully' in line:

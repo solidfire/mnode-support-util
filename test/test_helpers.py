@@ -1,4 +1,4 @@
-
+import json
 #def traceback(line):
 #    result = False
 #    if 'raceback' in line:
@@ -24,3 +24,19 @@ def get_cluster(result):
     cluster = console[1].split('+ ')[1].rstrip()
     return cluster
 
+def logexpect(expect, log):
+    if isinstance(expect, str):
+        logmsg = {
+            "output": expect
+        }
+    else:
+        logmsg = {
+            "name": str(expect.name),
+            "stderr": str(expect.stderr.newlines),
+            "stdin": str(expect.stdin.newlines),
+            "stdout": str(expect.stdout.newlines),
+            "timeout": str(expect.timeout),
+            "before": str(expect.before),
+            "after": str(expect.after)
+            } 
+    print(json.dumps(logmsg), file=log)

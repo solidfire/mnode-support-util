@@ -1,16 +1,19 @@
 import pexpect
-from test_helpers import traceback, if_no_result
+from test_helpers import traceback, if_no_result, logexpect
 
 class TestPackageUpload():
-    def __init__(self, package, time_out=240):
+    def __init__(self, package, logfile, time_out=240):
         self.result = []
-        self.packageupload = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a packageupload -f {package} --skiprefresh', encoding='utf-8', timeout=time_out)
+        self.log = logfile
+        self.expect = pexpect.spawn(f'sudo ./mnode-support-util -su admin -sp admin -a packageupload -f {package} --skiprefresh', encoding='utf-8', timeout=time_out)
+        logexpect(self.expect, self.log)
 
     def verify(self):
         tmp_list = []
         fail_codes = ['401', '404', '406', '424', '502', '503', '507']
-        self.packageupload.expect(pexpect.EOF)
-        console = self.packageupload.before.split('\n')
+        self.expect.expect(pexpect.EOF)
+        logexpect(self.expect, self.log)
+        console = self.expect.before.split('\n')
         for line in console:
             step_dict = traceback(line)
             if 'The package upload completed successfully' in line:
