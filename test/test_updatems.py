@@ -34,4 +34,3 @@ if __name__ == '__main__':
     result = update.verify()
     for line in result:
         print(line)
-#'+ mNode ip: 10.194.72.4\r\n+ MS version: 2.23.64\r\n+ Authorative cluster: 10.115.176.150\r\n+ mnode-support-util version: 3.5.1533\r\n\r\n\r\nCurrent mnode version: 2.23.64\r\nCopying /home/admin/mnode2_2.24.40.tar.gz to /sf/etc/mnode/bundle/\r\nExtracting /sf/etc/mnode/bundle/mnode2_2.24.40.tar.gz\r\nDeploying new MS packages and services. Please wait....\r\n'
