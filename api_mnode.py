@@ -68,9 +68,11 @@ class Assets():
         logmsg.info(f'Adding asset id: {payload["ip"]}')
         response = PDApi.send_post_return_status(repo, url, payload)
         if response == 201:
-                logmsg.info('\tSuccessfully added')
-        if response == 409: 
-                logmsg.info('\tStatus: 409 Already in inventory Skipping.')
+            logmsg.info(f'\tSuccessfully added: {payload["ip"]}')
+        elif response == 409: 
+            logmsg.info(f'\tStatus: 409 Already in inventory Skipping {payload["ip"]}.')
+        else:
+            logmsg.info(f'Failed return: {response}')
 
     def delete_asset(repo, asset_type, asset_id):
         """  delete an asset """

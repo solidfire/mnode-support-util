@@ -46,6 +46,7 @@ def get_args():
     cmd_args.add_argument('-sp', '--stpw', help='Specify storage cluster password or leave off to be prompted.')
     cmd_args.add_argument('-d', '--debug', help='Turn up the api call logging. Warning: This will fill logs rapidly.')
     cmd_args.add_argument('--timeout', default=300)
+    cmd_args.add_argument('--skiprefresh', action='store_true')
     required_named = cmd_args.add_argument_group('required named arguments')
     required_named.add_argument('-su', '--stuser', required=True, help='Specify storage cluster user.')
     required_named.add_argument('-a', '--action', help=textwrap.dedent('''Specify action task. 
@@ -116,11 +117,13 @@ if __name__ == "__main__":
             confirm = add.confirm()
             if confirm is True:
                 add.add_asset(asset_type, repo)
+            else:
+                confirm = add.confirm()
             userinput = input("Add another asset? (y/n): ").rstrip()
         json_return = Inventory.refresh_inventory(repo)
         if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
-            AssetMgmt.list_assets(repo)
+        AssetMgmt.list_assets(repo)
         
     # Get the current asset inventory and back it up
     #
@@ -245,12 +248,13 @@ if __name__ == "__main__":
     #
     elif args.action == 'rmasset':
         done = False
-        try:
-            asset_type = AssetMgmt.set_asset_type()
-        except:
-            logmsg.info("Failed to set asset type")
-            exit(1)
         while done is False:
+            try:
+                asset_type = AssetMgmt.set_asset_type()
+            except:
+                logmsg.info("Failed to set asset type")
+                exit(1)
+        ##while done is False:
             try:
                 AssetMgmt.list_assets(repo, asset_type['asset_name'])
                 userinput = input("\nEnter the assetID of the asset to remove: ").rstrip()
@@ -278,7 +282,7 @@ if __name__ == "__main__":
         else:
             logmsg.info(f'\nAdding assets from json file {args.json}')
             AssetMgmt.restore(repo, args)
-            Inventory.refresh_inventory(repo)
+            #AK#Inventory.refresh_inventory(repo)
             AssetMgmt.list_assets(repo)
         
     
@@ -381,6 +385,6 @@ if __name__ == "__main__":
         json_return = Inventory.refresh_inventory(repo)
         if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
-            
+
     else:
         logmsg.info(f'Unrecognized action {args.action}')

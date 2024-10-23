@@ -25,7 +25,7 @@ logmsg = Logging.logmsg()
 class ProgramData():
     def __init__(self, args):
         """ Very frequently used values """
-        self.util_version = "3.5.1533"
+        self.util_version = "3.5.1536B"
         self.base_url = "https://127.0.0.1"
         self.debug = False
         self.download_dir = "/data/bundle/share"
@@ -37,6 +37,7 @@ class ProgramData():
         self.mvip_user = args.stuser
         self.mvip_pw = args.stpw
         self.parent_id = ""
+        self.skiprefresh = args.skiprefresh
         self.token_life = 0
         self.timeout = args.timeout
         self.about = self._about()

@@ -1,0 +1,132 @@
+admin@mn-akmnode1-esxi-12 ~/SUST-1533 $ python test/run_tests.py
+Start Test: help
+        Test step FAILED: Help not displayed as expected
+End Test: FAILED
+Start Test: addasset
+        Test step: Add compute
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.1.
+End Test: BLOCKED
+        Test step: Add BMC
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.1.
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.3.
+End Test: BLOCKED
+End Test: BLOCKED
+        Test step: Add storage
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.1.
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.3.
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.2.
+End Test: BLOCKED
+End Test: BLOCKED
+End Test: BLOCKED
+        Test step: Add vCenter
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.1.
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.3.
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.2.
+        Test step BLOCKED:      Status: 409 Already in inventory Skipping 10.1.1.4.
+End Test: BLOCKED
+End Test: BLOCKED
+End Test: BLOCKED
+End Test: BLOCKED
+Start test: backup
+        Test step PASSED: Created /var/log/AssetBackup-20-Apr-2024-13.18.45.json
+                Size = 3642
+        Test step PASSED: Verified valid json: /var/log/AssetBackup-20-Apr-2024-13.18.45.json
+End Test: PASSED
+End Test: PASSED
+Start Test: cleanup
+        Removing asset id: 9cbc79eb-dfe2-4da1-81f7-d57417ebb35d
+                Test step PASSED:       Successfully deleted asset
+        Removing asset id: b26a2602-664f-41ea-8f29-ebdee311d7fe
+                Test step PASSED:       Successfully deleted asset
+        Removing asset id: 56271ac9-f69d-4010-a0d1-6fae85add224
+                Test step PASSED:       Successfully deleted asset
+        Removing asset id: d07b8e1f-e047-443e-8bd9-5fdd7ad13b87
+                Test step PASSED:       Successfully deleted asset
+        Removing asset id: efc0f513-f30c-4309-b553-1011cbac6b62
+                Test step PASSED:       Successfully deleted asset
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+Start Test: restore
+        Test step PASSED:       Successfully added: 10.1.1.2
+        Test step PASSED:       Successfully added: 10.115.176.150
+        Test step PASSED:       Successfully added: 10.1.1.1
+        Test step PASSED:       Successfully added: 10.1.1.3
+        Test step PASSED:       Successfully added: 10.1.1.4
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+Start Test: deletelogs
+        Test step PASSED:       Node ID: 1 = Success, deleted everything under /tmp/supportbundles and /sf/supportbundles
+        Test step PASSED:       Node ID: 2 = Success, deleted everything under /tmp/supportbundles and /sf/supportbundles
+        Test step PASSED:       Node ID: 3 = Success, deleted everything under /tmp/supportbundles and /sf/supportbundles
+        Test step PASSED:       Node ID: 4 = Success, deleted everything under /tmp/supportbundles and /sf/supportbundles
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+Start Test: mnode healthcheck
+        Test step PASSED: Report file created.
+                Name: /var/log/mNodeHealthCheck-20-Apr-2024-13.18.57.log
+                Size = 6194
+        Test step PASSED: + Executing get_auth_about
+        Test step PASSED: + Executing sf_prefrence
+        Test step PASSED: + Executing sf_const
+        Test step PASSED: + Executing check_time_sync
+        Test step PASSED: + Executing service_uptime
+        Test step PASSED: + Executing docker_log
+        Test step PASSED: + Executing trident_log
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+Start Test: listassets
+        Test step PASSED:       test-compute    assetID: db5980fb-0163-4e33-8e89-fbe1583fdc4d parentID: 99ddf582-bca1-4040-8525-6a9cc7d8aeb5
+        Test step PASSED:       test-bmc        assetID: ada61ce3-c059-430d-972a-29be27938b47 parentID: 99ddf582-bca1-4040-8525-6a9cc7d8aeb5
+        Test step PASSED:       test-vc         assetID: a0ce073d-b10e-4fb3-aac8-190b5a150f96 parentID: 99ddf582-bca1-4040-8525-6a9cc7d8aeb5
+        Test step PASSED:       test-storage    assetID: 25368f5b-f83f-4537-8a4a-2a91d6e7fb69 parentID: 99ddf582-bca1-4040-8525-6a9cc7d8aeb5
+        Test step PASSED:       CPE_PB4_Adam    assetID: c56d3342-1e2e-4213-bea2-6d450b416b27 parentID: 99ddf582-bca1-4040-8525-6a9cc7d8aeb5
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+Start Test: listpackages
+        Test step PASSED: NetApp HCI release notes: https://docs.netapp.com/us-en/hci/docs/rn_relatedrn.html
+        Test step PASSED: compute-firmware    2.164.0-12.8.2
+        Test step PASSED:       smb://10.194.72.4/ps_local_repository/96b6e5f4-ace9-5e1d-b2f7-a3b6f677f8e4/compute-firmware-2.164.0-12.8.2.iso
+        Test step PASSED:       smb://10.194.72.4/ps_local_repository/96b6e5f4-ace9-5e1d-b2f7-a3b6f677f8e4/compute-firmware-2.164.0-12.8.2.iso
+        Test step PASSED:       https://10.194.72.4/package-repository/ps_local_repository/96b6e5f4-ace9-5e1d-b2f7-a3b6f677f8e4/compute-firmware-2.164.0-12.8.2.iso
+        Test step PASSED:       https://10.194.72.4/package-repository/ps_local_repository/96b6e5f4-ace9-5e1d-b2f7-a3b6f677f8e4/compute-firmware-2.164.0-12.8.2.iso
+        Test step PASSED:       nfs://10.194.72.4/ps_local_repository/96b6e5f4-ace9-5e1d-b2f7-a3b6f677f8e4/compute-firmware-2.164.0-12.8.2.iso
+        Test step PASSED:       nfs://10.194.72.4/ps_local_repository/96b6e5f4-ace9-5e1d-b2f7-a3b6f677f8e4/compute-firmware-2.164.0-12.8.2.iso
+        Test step PASSED: solidfire-rtfi      12.7.0.380
+        Test step PASSED:       smb://10.194.72.4/ps_local_repository/00e1dcf7-e607-50c1-9643-b260ae8a4852/solidfire-rtfi-magnesium-patch7-12.7.0.380.iso
+        Test step PASSED:       smb://10.194.72.4/ps_local_repository/00e1dcf7-e607-50c1-9643-b260ae8a4852/solidfire-rtfi-magnesium-patch7-12.7.0.380.iso
+        Test step PASSED:       https://10.194.72.4/package-repository/ps_local_repository/00e1dcf7-e607-50c1-9643-b260ae8a4852/solidfire-rtfi-magnesium-patch7-12.7.0.380.iso
+        Test step PASSED:       https://10.194.72.4/package-repository/ps_local_repository/00e1dcf7-e607-50c1-9643-b260ae8a4852/solidfire-rtfi-magnesium-patch7-12.7.0.380.iso
+        Test step PASSED:       nfs://10.194.72.4/ps_local_repository/00e1dcf7-e607-50c1-9643-b260ae8a4852/solidfire-rtfi-magnesium-patch7-12.7.0.380.iso
+        Test step PASSED:       nfs://10.194.72.4/ps_local_repository/00e1dcf7-e607-50c1-9643-b260ae8a4852/solidfire-rtfi-magnesium-patch7-12.7.0.380.iso
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED
+End Test: PASSED

@@ -51,13 +51,13 @@ class StorageBundle():
             logmsg.info(f'+ nodeID: {str(node["ListAllNodes"]["nodeID"])}\tMIP: {node["ListAllNodes"]["mip"]}')
         userinput = input("Enter the target node IDs separated by space: ").rstrip()
         
-        for id in userinput.split(sep=" "):
+        for idd in userinput.split(sep=" "):
             for node in self.nodelist:
-                if int(id) == node['nodeID']:
+                if int(idd) == node['nodeID']:
                     try:
                         self.selected_nodes.append(node)
                     except:
-                        logmsg.info(f'Not a valid nodeID: {id}')
+                        logmsg.info(f'Not a valid nodeID: {idd}')
                         exit(1)
     
     def _make_bundle_payload(self, repo):
@@ -146,7 +146,8 @@ class StorageBundle():
     def delete_existing_bundle(self, repo):
         """ iterate through the storage nodes and delete existing bundles
         """
-        #self._select_cluster_nodes(repo)
+        if len(self.nodelist) < 1:
+            self._select_cluster_nodes(repo)
         userinput = input("Would you like to delete existing storage node log bundles? (y/n) ").rstrip()
         if userinput.lower() == 'y':
             payload = "{\n\t\"method\": \"DeleteAllSupportBundles\",\n\"params\": {},\n\"id\": 1\n}" 
