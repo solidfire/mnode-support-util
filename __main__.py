@@ -22,9 +22,11 @@ from storage_healthcheck import StorageHealthcheck
 from element_upgrade import ElemUpgrade
 from update_ms import UpdateMS
 """
+
  NetApp / SolidFire
  CPE 
  mnode support utility
+
 """
 
 
@@ -186,7 +188,7 @@ if __name__ == "__main__":
                 with open(missing_blocks_file, 'w') as file:
                     for line in missing_blocks:
                         file.write(line)
-                logmsg.info(f'Send {missing_blocks_file} to the customer. Run Locate Missing Blocks in the Cluster steps')
+                logmsg.info(f'Use {missing_blocks_file} to run Locate Missing Blocks in the Cluster steps')
         elif userinput.lower() == 'c':
             recovery_file = BlockRecovery.build_recovery(args)
             userinput = input('\nContinue with recovery steps? (y/n/q) ')
@@ -200,7 +202,7 @@ if __name__ == "__main__":
         elif userinput.lower() == 'q':
             exit(0)
         exit(0)
-
+        
     # Remove all assets to clean up the asset db and refresh the inventory
     #
     elif args.action == 'cleanup':
