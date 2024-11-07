@@ -25,7 +25,7 @@ logmsg = Logging.logmsg()
 class ProgramData():
     def __init__(self, args):
         """ Very frequently used values """
-        self.util_version = "3.5.1536B"
+        self.util_version = "4.0"
         self.base_url = "https://127.0.0.1"
         self.debug = False
         self.download_dir = "/data/bundle/share"
@@ -33,11 +33,14 @@ class ProgramData():
         self.header_write = {}
         self.log_dir = "/var/log/"
         self.logs_svc_container = ""
-        self.support_dir = "/var/log/mnode-support/"
+        self.local_bundle = ""
         self.mvip_user = args.stuser
         self.mvip_pw = args.stpw
         self.parent_id = ""
-        self.skiprefresh = args.skiprefresh
+        self.support_dir = "/var/log/mnode-support/"
+        self.target_cluster = ""
+        self.target_cluster_admin = ""
+        self.target_cluster_passwd = ""
         self.token_life = 0
         self.timeout = args.timeout
         self.about = self._about()

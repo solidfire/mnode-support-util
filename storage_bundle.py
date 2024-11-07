@@ -51,13 +51,13 @@ class StorageBundle():
             logmsg.info(f'+ nodeID: {str(node["ListAllNodes"]["nodeID"])}\tMIP: {node["ListAllNodes"]["mip"]}')
         userinput = input("Enter the target node IDs separated by space: ").rstrip()
         
-        for idd in userinput.split(sep=" "):
+        for id in userinput.split(sep=" "):
             for node in self.nodelist:
-                if int(idd) == node['nodeID']:
+                if int(id) == node['nodeID']:
                     try:
                         self.selected_nodes.append(node)
                     except:
-                        logmsg.info(f'Not a valid nodeID: {idd}')
+                        logmsg.info(f'Not a valid nodeID: {id}')
                         exit(1)
     
     def _make_bundle_payload(self, repo):
@@ -129,7 +129,7 @@ class StorageBundle():
             url = f'{repo.base_url}/logs/1/bundle'
             PDApi.send_delete_return_status(repo, url)
             json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        elif json_return['state'] == 'completed':
+        elif json_return['state'] == 'completed' or json_return['state'] == 'failed':
             logmsg.info('\tPrevious collection completed')
         return json_return
 
@@ -146,8 +146,7 @@ class StorageBundle():
     def delete_existing_bundle(self, repo):
         """ iterate through the storage nodes and delete existing bundles
         """
-        if len(self.nodelist) < 1:
-            self._select_cluster_nodes(repo)
+        #self._select_cluster_nodes(repo)
         userinput = input("Would you like to delete existing storage node log bundles? (y/n) ").rstrip()
         if userinput.lower() == 'y':
             payload = "{\n\t\"method\": \"DeleteAllSupportBundles\",\n\"params\": {},\n\"id\": 1\n}" 
