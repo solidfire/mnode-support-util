@@ -3,6 +3,6 @@
 #chmod 755 mnode-support-util
 #rm mnode-support-util.zip
 #chown admin:admin *
-python3 -m zipapp . -o /tmp/mnode_support_util -p '/usr/bin/env python3'
-chmod 755 /tmp/mnode_support_util
-cp /tmp/mnode_support_util .
+python3 -m zipapp . -o /tmp/mnode-support-util -p '/usr/bin/env python3'
+chmod 755 /tmp/mnode-support-util
+cp /tmp/mnode-support-util .

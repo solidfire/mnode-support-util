@@ -24,13 +24,11 @@ requests.packages.urllib3.disable_warnings()
 class Inventory():
     def refresh_inventory(repo):
       """ refresh the current inventory """
-      if repo.skiprefresh == False:
-        logmsg.info("Refreshing inventory and checking for errors. Please wait. This may take a while")
-        url = f'{repo.base_url}/inventory/1/installations/{repo.parent_id}?refresh=true'
-        json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
-        logmsg.info("Refresh completed")
-        if json_return is not None:
-          return json_return
+      logmsg.info("Refreshing inventory and checking for errors. Please wait. This may take a while")
+      url = f'{repo.base_url}/inventory/1/installations/{repo.parent_id}?refresh=true'
+      json_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
+      if json_return is not None:
+        return json_return
 
     def get_compute_upgrades(repo):
       """ return compute upgrade json """

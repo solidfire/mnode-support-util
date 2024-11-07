@@ -1,6 +1,7 @@
 import argparse
 import getpass
 import json
+import os
 import subprocess
 import textwrap
 import time
@@ -9,6 +10,7 @@ from asset_tasks import AssetMgmt
 from api_mnode import Assets
 from api_inventory import Inventory
 from api_package_service import Package
+from block_recovery import BlockRecovery
 from compute_healthcheck import ComputeHealthcheck
 from get_token import GetToken
 from mnode_healthcheck import healthcheck_run_all
@@ -20,11 +22,9 @@ from storage_healthcheck import StorageHealthcheck
 from element_upgrade import ElemUpgrade
 from update_ms import UpdateMS
 """
-
  NetApp / SolidFire
  CPE 
  mnode support utility
-
 """
 
 
@@ -36,7 +36,7 @@ logmsg = Logging.logmsg()
 def get_args():
     cmd_args = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     cmd_args.add_argument('-j', '--json', help='Specify json asset file. Required with addassets')
-    cmd_args.add_argument('-f', '--updatefile', help='Specify package file. Required with updatems and packageupload')
+    cmd_args.add_argument('-f', '--file', help='Specify a file path. Required with updatems, packageupload and blockrecovery')
     cmd_args.add_argument('-cu', '--computeuser', help='Specify compute user. Optional with addassets')
     cmd_args.add_argument('-cp', '--computepw', help='Specify compute password or leave off to be prompted. Optional with addassets')
     cmd_args.add_argument('-bu', '--bmcuser', help='Specify BMC user. Optional with addassets')
@@ -44,14 +44,15 @@ def get_args():
     cmd_args.add_argument('-vu', '--vcuser', help='Specify vcenter user. Optional with addassets')
     cmd_args.add_argument('-vp', '--vcpw', help='Specify vcenter password or leave off to be prompted. Optional with addassets')
     cmd_args.add_argument('-sp', '--stpw', help='Specify storage cluster password or leave off to be prompted.')
-    cmd_args.add_argument('-d', '--debug', help='Turn up the api call logging. Warning: This will fill logs rapidly.')
+    cmd_args.add_argument('-D', '--debug', help='Turn up the api call logging. Warning: This will fill logs rapidly.')
+    cmd_args.add_argument('-d', '--directory', help='Specify a directory. Used for block recovery')
     cmd_args.add_argument('--timeout', default=300)
-    cmd_args.add_argument('--skiprefresh', action='store_true')
     required_named = cmd_args.add_argument_group('required named arguments')
     required_named.add_argument('-su', '--stuser', required=True, help='Specify storage cluster user.')
     required_named.add_argument('-a', '--action', help=textwrap.dedent('''Specify action task. 
     addasset: Add 1 or more assets to inventory.
     backup: Creates a backup json file of current assets.
+    blockrecovery: Find and fix missing blocks.
     cleanup: Removes all current assets. Or remove assets by type. 
     computehealthcheck: Run a compute healthcheck
     deletelogs: Delete storage node log bundles
@@ -117,13 +118,11 @@ if __name__ == "__main__":
             confirm = add.confirm()
             if confirm is True:
                 add.add_asset(asset_type, repo)
-            else:
-                confirm = add.confirm()
             userinput = input("Add another asset? (y/n): ").rstrip()
         json_return = Inventory.refresh_inventory(repo)
         if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
-        AssetMgmt.list_assets(repo)
+            AssetMgmt.list_assets(repo)
         
     # Get the current asset inventory and back it up
     #
@@ -134,6 +133,73 @@ if __name__ == "__main__":
         except:
             logmsg.info("Could not backup assets")
 
+    # Block recovery 
+    #
+    elif args.action == 'blockrecovery':
+        repo.target_cluster         = repo.auth_mvip
+        repo.target_cluster_admin   = repo.mvip_user
+        repo.target_cluster_passwd  = repo.mvip_pw
+        if args.directory is None:
+            print('Specify a destination -d/--directory to unpack bundles and process data')
+            exit(0)
+        else:
+            logmsg.info("""
+    *************************************************************
+    BLOCK RECOVERY SHOULD ONLY BE ATTEMPTED WITH A CPE ESCALATION
+    https://confluence.ngage.netapp.com/pages/viewpage.action?pageId=849511842
+    *************************************************************
+    """)
+            if not os.path.exists(args.directory):
+                os.makedirs(args.directory)
+        logmsg.info(f'Default target cluster MVIP = {repo.auth_mvip}')
+        userinput = input("Select a different cluster? (y/n) ")
+        if userinput.lower() == 'y':
+            target_cluster = Common.select_target_cluster(repo)
+            for cluster in repo.assets[0]['storage']:
+                if target_cluster == cluster['id']:
+                    repo.target_cluster = cluster['ip']
+            repo.target_cluster_admin = input("Enter the cluster administrator userid: ")
+            repo.target_cluster_passwd = "x"
+            cluster_passwd_verify = "y"
+            while repo.target_cluster_passwd != cluster_passwd_verify:
+                repo.target_cluster_passwd = getpass.getpass(prompt="Enter password: ")
+                cluster_passwd_verify = getpass.getpass(prompt="Re-Enter password to verify: ")
+                if repo.target_cluster_passwd != cluster_passwd_verify:
+                    logmsg.info("Passwords do not match")
+        userinput = input('\nSelect action: \n\t(s)tart bscheck. \n\t(g)ather support bundles. \n\t(p)arse bundles. \n\t(c)reate recovery file. \n\t(r)ecover blocks. \n\t(q)uit\n\t=> ')
+        if userinput.lower() == 's':
+            BlockRecovery.start_bscheck(repo)
+            exit(0)
+        elif userinput.lower() == 'g':
+            repo.logs_svc_container = subprocess.getoutput("docker ps | grep logs-svc | awk '{print $1}'")
+            BlockRecovery.gather_bundles(repo)
+            exit(0)
+        elif userinput.lower() == 'p':
+            if args.file is None:
+                logmsg.info('Please specify -f/--file path to local bundle')
+                exit(0)
+            else:
+                BlockRecovery.unpack(args.directory, args.file)
+                missing_blocks = BlockRecovery.parse_missing_blocks(args.directory)
+                logmsg.debug(missing_blocks) 
+                missing_blocks_file = f'{args.directory}/missing_block_ids.txt'
+                with open(missing_blocks_file, 'w') as file:
+                    for line in missing_blocks:
+                        file.write(line)
+                logmsg.info(f'Send {missing_blocks_file} to the customer. Run Locate Missing Blocks in the Cluster steps')
+        elif userinput.lower() == 'c':
+            recovery_file = BlockRecovery.build_recovery(args)
+            userinput = input('\nContinue with recovery steps? (y/n/q) ')
+            if userinput.lower() == 'y':
+                BlockRecovery.recover(repo, recovery_file)
+            else:
+                exit(0)
+        elif userinput.lower() == 'r':
+            recovery_file = args.file
+            BlockRecovery.recover(repo, recovery_file)
+        elif userinput.lower() == 'q':
+            exit(0)
+        exit(0)
 
     # Remove all assets to clean up the asset db and refresh the inventory
     #
@@ -248,13 +314,12 @@ if __name__ == "__main__":
     #
     elif args.action == 'rmasset':
         done = False
+        try:
+            asset_type = AssetMgmt.set_asset_type()
+        except:
+            logmsg.info("Failed to set asset type")
+            exit(1)
         while done is False:
-            try:
-                asset_type = AssetMgmt.set_asset_type()
-            except:
-                logmsg.info("Failed to set asset type")
-                exit(1)
-        ##while done is False:
             try:
                 AssetMgmt.list_assets(repo, asset_type['asset_name'])
                 userinput = input("\nEnter the assetID of the asset to remove: ").rstrip()
@@ -282,7 +347,7 @@ if __name__ == "__main__":
         else:
             logmsg.info(f'\nAdding assets from json file {args.json}')
             AssetMgmt.restore(repo, args)
-            #AK#Inventory.refresh_inventory(repo)
+            Inventory.refresh_inventory(repo)
             AssetMgmt.list_assets(repo)
         
     
@@ -385,6 +450,6 @@ if __name__ == "__main__":
         json_return = Inventory.refresh_inventory(repo)
         if json_return is not None:
             AssetMgmt.check_inventory_errors(json_return)
-
+            
     else:
         logmsg.info(f'Unrecognized action {args.action}')

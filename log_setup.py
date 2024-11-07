@@ -30,7 +30,7 @@ class Logging():
         logger.setLevel(logging.DEBUG)
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
-        rotate_handler = logging.handlers.RotatingFileHandler(logfile, maxBytes=5000000, backupCount=2, encoding=None, delay=0)
+        rotate_handler = logging.handlers.RotatingFileHandler(logfile, maxBytes=209715200, backupCount=2, encoding=None, delay=0)
         rotate_handler.setFormatter(formatter)
         logger.addHandler(console)
         logger.addHandler(rotate_handler)
