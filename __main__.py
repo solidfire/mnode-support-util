@@ -197,8 +197,12 @@ if __name__ == "__main__":
             else:
                 exit(0)
         elif userinput.lower() == 'r':
-            recovery_file = args.file
-            BlockRecovery.recover(repo, recovery_file)
+            if args.file is not None:
+                recovery_file = args.file
+                BlockRecovery.recover(repo, recovery_file)
+            else:
+                logmsg.info('Specify a -f/--file recovery-[timestamp].blocks')
+                exit(0)
         elif userinput.lower() == 'q':
             exit(0)
         exit(0)
