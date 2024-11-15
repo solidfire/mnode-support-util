@@ -152,7 +152,7 @@ class StorageBundle():
             payload = "{\n\t\"method\": \"DeleteAllSupportBundles\",\n\"params\": {},\n\"id\": 1\n}" 
             for node in self.selected_nodes:
                 creds = PDApi.check_cluster_creds(repo, node['mip'], node['name'])
-                url = f'https://{node["mip"]}:442/json-rpc/10.0/'
+                url = f'https://{node["mip"]}:442/json-rpc/12.0/'
                 json_return = PDApi.mip_send_post_return_status(url, payload, creds)
                 if json_return is not None:
                     logmsg.info(f'\tNode ID: {node["nodeID"]} = {json_return["result"]["details"]["output"]}')
