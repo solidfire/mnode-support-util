@@ -190,7 +190,7 @@ if __name__ == "__main__":
                     storage_id = cluster['id']
 
             nodes_info = Helper.get_cluster_nodes(storage_id, repo)
-            logmsg.info('Deleteing existing bundles. See /var/log/mnode-support-util.log for details')
+            logmsg.info(' Deleting existing bundles. See /var/log/mnode-support-util.log for details')
             for node_id in nodes_info:
                 response = Bundle.delete_existing_bundle(repo, nodes_info[node_id]['ip'])
                 logmsg.debug(response.text)
@@ -227,7 +227,7 @@ if __name__ == "__main__":
         
         elif userinput.lower() == 'c':
             recovery_file = BlockRecovery.build_recovery(args.directory)
-            userinput = input('\nContinue with recovery steps? (y/n/q) ')
+            userinput = input('\nContinue with recovery steps? (y/n) ')
             if userinput.lower() == 'y':
                 BlockRecovery.recover(repo, recovery_file)
             else:

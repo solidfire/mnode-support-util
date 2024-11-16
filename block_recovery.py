@@ -17,14 +17,7 @@ from storage_bundle import StorageBundle
 # get the logging started up
 logmsg = Logging.logmsg()
 
-class ApiCall():
-    def check_json(text):
-        try:
-            json_return = json.loads(text)
-            return json_return
-        except ValueError as error:
-            print(f'An error occured: {error}')
-            
+class ApiCall():            
     def send_get(repo, url, payload):
         header = {
         'Content-Type': 'application/json',
@@ -132,7 +125,7 @@ class BlockRecovery():
                     logmsg.info(f'Executing {url}{block}')
                     addblock = f'{url}{block}'
                     response = requests.post(addblock, auth = HTTPBasicAuth(repo.target_cluster_admin, repo.target_cluster_passwd), verify=False)
-                    json_response = Helper.test_json_loads(response.text)
+                    json_response = Helper.check_json(response.text)
                     logmsg.info(json.dumps(json_response, indent=4))
                 except requests.exceptions.RequestException as error:
                     logmsg.debug(error)
@@ -148,7 +141,7 @@ class BlockRecovery():
         try:
             logmsg.info(f'Executing {url}')
             response = requests.get(url, headers=headers, data=payload, auth = HTTPBasicAuth(repo.target_cluster_admin, repo.target_cluster_passwd), verify=False)
-            json_response = Helper.test_json_loads(response.text)
+            json_response = Helper.check_json(response.text)
             logmsg.info(json.dumps(json_response, indent=4))
         except requests.exceptions.RequestException as error:
             logmsg.debug(error)
@@ -160,7 +153,7 @@ class BlockRecovery():
         try:
             logmsg.info(f'Executing {url}')
             response = requests.get(url, headers=headers, data=payload, auth = HTTPBasicAuth(repo.target_cluster_admin, repo.target_cluster_passwd), verify=False)
-            json_response = Helper.test_json_loads(response.text)
+            json_response = Helper.check_json(response.text)
             logmsg.info(json.dumps(json_response, indent=4))
         except requests.exceptions.RequestException as error:
             logmsg.debug(error)
@@ -191,7 +184,7 @@ class Bundle():
             "id": 1
         })
         response = ApiCall.send_post(repo, url, payload)
-        json_response = ApiCall.check_json(response.text)
+        json_response = Helper.check_json(response.text)
         if 'error' in json_response:
             logmsg.info(json_response['error']['message'])
         else:
@@ -209,6 +202,13 @@ class Bundle():
         logmsg.info(f'\tDownload complete: ')
 
 class Helper():
+    def check_json(text):
+        try:
+            json_return = json.loads(text)
+            return json_return
+        except ValueError as error:
+            print(f'An error occured: {error}')
+
     def find_files(directory, match_pattern):
         '''
         Recursively find all required log files
@@ -273,7 +273,7 @@ class Helper():
         time.sleep(5) # It needs a few seconds to finish untar-ing before the next step
 
     def unpack_data(directory):
-        bs_logs = Helper.find_files(directory, 'bs_disk_data*tar.gz')
+        bs_logs = Helper.find_files(directory, '*bs*data*tar.gz')
         for bs_log in bs_logs:
             basename = os.path.basename(bs_log)
             extract_path = directory + '/' + basename.split('.tar.gz')[0]
