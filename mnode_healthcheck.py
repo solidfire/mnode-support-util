@@ -139,7 +139,7 @@ class mNodeHealthCheck():
     def sf_prefrence(repo, outfile):
         """ Display the bound mNode
         """
-        url = f'https://{repo.auth_mvip}/json-rpc/11.3?method=ListClusterInterfacePreferences'
+        url = f'https://{repo.auth_mvip}/json-rpc/12.3?method=ListClusterInterfacePreferences'
         print("\n===== Checking cluster ListClusterInterfacePreferences =====", file=outfile)
         try:
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=repo.timeout)
@@ -150,7 +150,7 @@ class mNodeHealthCheck():
                     print("\tTROUBLESHOOTING TIP: ClusterInterfacePreference must match the mnode_ip and if present, the FQDN must resolve mnode_ip ", file=outfile)
                 else:
                     print("\tNo mnode Interface Preference found. It may have been removed.\n\t", file=outfile)
-                    print("\tCreate with: https://<MVIP>/json-rpc/11.3?method=CreateClusterInterfacePreference&name=mnode_ip&value=[mnodeip]", file=outfile)
+                    print("\tCreate with: https://<MVIP>/json-rpc/12.3?method=CreateClusterInterfacePreference&name=mnode_ip&value=[mnodeip]", file=outfile)
             else:
                 print(f'Failed return {response.status_code} See /var/log/mnode-support-util.log for details', file=outfile)
                 logmsg.debug(f'{response.status_code}: {response.text}')
@@ -173,7 +173,7 @@ class mNodeHealthCheck():
             "laAuthContainer":"5",
             "lcAuthContainer": "0"
         }
-        url = f'https://{repo.auth_mvip}/json-rpc/11.3?method=GetConstants'
+        url = f'https://{repo.auth_mvip}/json-rpc/12.3?method=GetConstants'
         print("\n===== Checking cluster Constants =====", file=outfile)
         try:
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=repo.timeout)
@@ -198,7 +198,7 @@ class mNodeHealthCheck():
         print("\n===== Getting cluster nodes auth about =====", file=outfile)
         print("\tTROUBLESHOOTING TIP(s): If any values do not match other nodes, stop and start the auth container. Recheck https://[mip]/auth/about", file=outfile)
         print("\tssh to the node.\n\tdocker stop element_auth\n\tdocker start element_auth\n\tNOTE docker ps STATUS of Healthy does not mean element_auth is healthy.\n", file=outfile)
-        url = (f'https://{repo.auth_mvip}/json-rpc/11.3?method=GetNetworkConfig&force=true')
+        url = (f'https://{repo.auth_mvip}/json-rpc/12.3?method=GetNetworkConfig&force=true')
         try:
             response = requests.get(url,auth=(repo.mvip_user, repo.mvip_pw), data={}, verify=False, timeout=repo.timeout)
             if response.status_code == 200:

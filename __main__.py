@@ -4,13 +4,14 @@ import json
 import os
 import subprocess
 import textwrap
+import threading
 import time
 from add_assets import AddAsset
 from asset_tasks import AssetMgmt
 from api_mnode import Assets
 from api_inventory import Inventory
 from api_package_service import Package
-from block_recovery import BlockRecovery
+from block_recovery import ApiCall, BlockRecovery, Bundle, Helper
 from compute_healthcheck import ComputeHealthcheck
 from get_token import GetToken
 from mnode_healthcheck import healthcheck_run_all
@@ -141,61 +142,97 @@ if __name__ == "__main__":
         repo.target_cluster         = repo.auth_mvip
         repo.target_cluster_admin   = repo.mvip_user
         repo.target_cluster_passwd  = repo.mvip_pw
+
         if args.directory is None:
             print('Specify a destination -d/--directory to unpack bundles and process data')
             exit(0)
         else:
-            logmsg.info("""
+            if not os.path.exists(args.directory):
+                os.makedirs(args.directory)
+
+        logmsg.info("""
     *************************************************************
     BLOCK RECOVERY SHOULD ONLY BE ATTEMPTED WITH A CPE ESCALATION
     https://confluence.ngage.netapp.com/pages/viewpage.action?pageId=849511842
     *************************************************************
     """)
-            if not os.path.exists(args.directory):
-                os.makedirs(args.directory)
+        
         logmsg.info(f'Default target cluster MVIP = {repo.auth_mvip}')
         userinput = input("Select a different cluster? (y/n) ")
         if userinput.lower() == 'y':
             target_cluster = Common.select_target_cluster(repo)
+            
             for cluster in repo.assets[0]['storage']:
                 if target_cluster == cluster['id']:
                     repo.target_cluster = cluster['ip']
             repo.target_cluster_admin = input("Enter the cluster administrator userid: ")
             repo.target_cluster_passwd = "x"
             cluster_passwd_verify = "y"
+
             while repo.target_cluster_passwd != cluster_passwd_verify:
                 repo.target_cluster_passwd = getpass.getpass(prompt="Enter password: ")
                 cluster_passwd_verify = getpass.getpass(prompt="Re-Enter password to verify: ")
                 if repo.target_cluster_passwd != cluster_passwd_verify:
                     logmsg.info("Passwords do not match")
-        userinput = input('\nSelect action: \n\t(s)tart bscheck. \n\t(g)ather support bundles. \n\t(p)arse bundles. \n\t(c)reate recovery file. \n\t(r)ecover blocks. \n\t(q)uit\n\t=> ')
+        
+        userinput = input('\nSelect action: \n\t(s)tart lite bscheck. \n\t(g)ather and parse support bundles. \n\t(c)reate recovery file. \n\t(r)ecover blocks. \n\t(q)uit\n\t=> ')
+        
         if userinput.lower() == 's':
             BlockRecovery.start_bscheck(repo)
             exit(0)
+        
         elif userinput.lower() == 'g':
             repo.logs_svc_container = subprocess.getoutput("docker ps | grep logs-svc | awk '{print $1}'")
-            BlockRecovery.gather_bundles(repo)
-            exit(0)
-        elif userinput.lower() == 'p':
-            if args.file is None:
-                logmsg.info('Please specify -f/--file path to local bundle')
-                exit(0)
-            else:
-                BlockRecovery.unpack(args.directory, args.file)
-                missing_blocks = BlockRecovery.parse_missing_blocks(args.directory)
+            bundle = Bundle()
+
+            for cluster in repo.assets[0]['storage']:
+                if cluster['ip'] == repo.target_cluster:
+                    storage_id = cluster['id']
+
+            nodes_info = Helper.get_cluster_nodes(storage_id, repo)
+            logmsg.info(' Deleting existing bundles. See /var/log/mnode-support-util.log for details')
+            for node_id in nodes_info:
+                response = Bundle.delete_existing_bundle(repo, nodes_info[node_id]['ip'])
+                logmsg.debug(response.text)
+
+            logmsg.info('Gathering node bundles. Please wait....')
+            for node_id in nodes_info:
+                logmsg.info(f'\tGathering bundle from {nodes_info[node_id]["name"]}')
+                bundle_thread = threading.Thread(target=bundle.make_bundle, args=(repo, nodes_info[node_id]['ip']))
+                bundle.threads.append(bundle_thread)
+                bundle_thread.start()
+
+            while len(bundle.bundles) != len(bundle.threads):
+                print('.', end=" ")
+                time.sleep(3)
+
+            logmsg.info('\nDownloading and unpacking bundles...')
+            for url in bundle.bundles:
+                bundle_file = args.directory + '/' + url.split('/')[-1]
+                bundle.download(args.directory, url)
+                Helper.unpack(args.directory, bundle_file)
+
+            missing_blocks = BlockRecovery.parse_missing_blocks(args.directory)
+            if len(missing_blocks) > 0:
                 logmsg.debug(missing_blocks) 
                 missing_blocks_file = f'{args.directory}/missing_block_ids.txt'
                 with open(missing_blocks_file, 'w') as file:
                     for line in missing_blocks:
                         file.write(line)
                 logmsg.info(f'Use {missing_blocks_file} to run Locate Missing Blocks in the Cluster steps')
+                exit()
+            else:
+                logmsg.info('No missing blocks found. Exiting')
+                exit()
+        
         elif userinput.lower() == 'c':
-            recovery_file = BlockRecovery.build_recovery(args)
-            userinput = input('\nContinue with recovery steps? (y/n/q) ')
+            recovery_file = BlockRecovery.build_recovery(args.directory)
+            userinput = input('\nContinue with recovery steps? (y/n) ')
             if userinput.lower() == 'y':
                 BlockRecovery.recover(repo, recovery_file)
             else:
                 exit(0)
+        
         elif userinput.lower() == 'r':
             if args.file is not None:
                 recovery_file = args.file
@@ -203,6 +240,7 @@ if __name__ == "__main__":
             else:
                 logmsg.info('Specify a -f/--file recovery-[timestamp].blocks')
                 exit(0)
+        
         elif userinput.lower() == 'q':
             exit(0)
         exit(0)

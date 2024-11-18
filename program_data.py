@@ -283,7 +283,7 @@ class PDApi():
         """ Ensure the creds specified with ('-su', '--stuser') ('-sp', '--stpw') work on the current cluster
             Prompt for creds if the given creds fail
         """
-        url = f'https://{mvip}/json-rpc/10.0'
+        url = f'https://{mvip}/json-rpc/12.0'
         payload = "{\n\t\"method\": \"GetClusterInfo\",\n    \"params\": {},\n    \"id\": 1\n}"
         try:
             response = requests.post(url, auth=(repo.mvip_user, repo.mvip_pw), data=payload, verify=False)
@@ -302,7 +302,7 @@ class PDApi():
     def mip_send_get_return_json(creds, url, node_ip, payload):
         """ MIP send GET return json 
         """
-        url = f'https://{node_ip}:442/json-rpc/10.0/'
+        url = f'https://{node_ip}:442/json-rpc/12.0/'
         try:
             logmsg.debug(f'Sending POST {url} {payload}')
             response = requests.post(url, auth=(creds[1], creds[2]), data=payload, verify=False)
