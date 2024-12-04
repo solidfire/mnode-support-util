@@ -328,10 +328,10 @@ if __name__ == "__main__":
         current_packages = Package.list_packages(repo)
         new_packages = current_packages
         percent_complete = 0
-        if not args.updatefile:
-            logmsg.info("Please use --updatefile and specify the full path to the package file")
+        if not args.file:
+            logmsg.info("Please use --file and specify the full path to the package file")
             exit()
-        json_return = Package.upload_element_image(repo, args.updatefile)
+        json_return = Package.upload_element_image(repo, args.file)
         while percent_complete != 100:
             url = f'{repo.base_url}/task-monitor/1/tasks/{json_return["taskId"]}'
             task_return = PDApi.send_get_return_json(repo, url, debug=repo.debug)
@@ -469,11 +469,11 @@ if __name__ == "__main__":
     # Update Management Services
     #
     elif args.action == 'updatems':
-        if not args.updatefile:
-            logmsg.info("-f --updatefile required")
+        if not args.file:
+            logmsg.info("-f --file required")
             exit(1)
         UpdateMS(repo) 
-        UpdateMS.sideload(repo, args.updatefile)
+        UpdateMS.sideload(repo, args.file)
         UpdateMS.deploy(repo)
         
     # Update asset passwords
