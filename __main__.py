@@ -460,7 +460,7 @@ if __name__ == "__main__":
                 Common.copy_file_from_download(repo, download)
                 logmsg.info(f'Local bundle: /tmp/{download}')
         else:
-            logmsg.info(f'Download link: {download_url}')
+            logmsg.info(f'Download link: {repo.download_url}')
             Common.copy_file_from_download(repo, bundle_name)
             logmsg.info(f'Local bundle: /tmp/{bundle_name}')
         
