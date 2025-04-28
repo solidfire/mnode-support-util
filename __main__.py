@@ -426,11 +426,7 @@ if __name__ == "__main__":
             storage_id = Common.select_target_cluster(repo)
             bundle = StorageBundle(storage_id)
             json_return = bundle.check_running_bundle(repo)
-            if json_return['state'] == 'completed' or json_return['state'] == 'deleted':
-                download_url = bundle.collect_bundle(repo)
-                bundle_name = download_url.split('/')[-1]
-                bundles.append(bundle_name)
-            elif json_return['state'] == 'inProgress':
+            if json_return['state'] == 'inProgress':
                 logmsg.info('A log collection is already in progress. Please wait or cancel the collection')
                 download_url = bundle._watch_bundle(repo)
                 logmsg.info('Now you can start a new log collection')
@@ -443,8 +439,9 @@ if __name__ == "__main__":
                 bundle_name = download_url.split('/')[-1]
                 bundles.append(bundle_name)
             else:
-                logmsg.info("Cannot start a new log collection. See /var/log/mnode-support-util.log for details")
-                logmsg.debug(json.dumps(json_return))
+                download_url = bundle.collect_bundle(repo)
+                bundle_name = download_url.split('/')[-1]
+                bundles.append(bundle_name)
         if userinput.lower() == 'm' or userinput.lower() == 'b':
             mnode = 'mNode'
             mnode_bundle = SupportBundle(repo)    
